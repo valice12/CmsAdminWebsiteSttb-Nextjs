@@ -40,7 +40,7 @@ export default function AkademikPage() {
   const loadPrograms = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllAcademicPrograms();
+      const data = await getAllAcademicPrograms(1, 100);
       setPrograms(data.items);
     } catch (error) {
       toast.error('Gagal mengambil data akademik dari backend');
@@ -156,7 +156,7 @@ export default function AkademikPage() {
          <div>
             <h3 className="font-bold text-amber-900">Catatan Integrasi Backend</h3>
             <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-               Halaman ini sekarang menggunakan <code>api/v1/academics/get-available-programs</code>. Ketersediaan data bergantung pada respon dari server utama.
+               Halaman ini menggunakan <code>api/v1/cms/academic-programs/get-all-academic-programs</code>. Data disinkronkan secara real-time.
             </p>
          </div>
       </div>
@@ -184,10 +184,7 @@ export default function AkademikPage() {
                   <DialogHeader className="text-left">
                     <DialogTitle className="text-3xl font-black text-gray-900 tracking-tight">Hapus Data?</DialogTitle>
                     <DialogDescription className="font-bold text-gray-500 pt-3 text-base">
-                      Anda akan menghapus program <span className="text-red-600 leading-relaxed font-black">"{selectedProgram?.programName}"</span> secara permanen. <br/><br/>
-                      <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
-                         <AlertCircle className="w-3 h-3" /> Endpoint Delete Belum Tersedia
-                      </span>
+                      Anda akan menghapus program <span className="text-red-600 leading-relaxed font-black">"{selectedProgram?.programName}"</span> secara permanen.
                     </DialogDescription>
                   </DialogHeader>
               </div>
@@ -202,9 +199,18 @@ export default function AkademikPage() {
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                        toast.error("Gagal: Endpoint Delete tidak tersedia (404)");
+                  onClick={async () => {
+                      try {
+                        if (selectedProgram) {
+                          await deleteAcademicProgram(selectedProgram.id);
+                          toast.success("Berhasil menghapus program studi");
+                          loadPrograms();
+                        }
+                      } catch (error) {
+                        toast.error("Gagal menghapus program studi");
+                      } finally {
                         setDeleteDialogOpen(false);
+                      }
                   }}
                   className="flex-1 h-14 rounded-2xl font-black bg-red-500 hover:bg-red-600 text-white shadow-xl shadow-red-200 transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-[11px]"
                 >

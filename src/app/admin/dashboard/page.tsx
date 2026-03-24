@@ -3,19 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  getAllNews, 
-  getAllEvents, 
-  getAllAcademicPrograms, 
-  getAllAdministrators, 
-  getAllLecturers 
+  getDashboardData
 } from '@/lib/api';
 import { 
   Newspaper, 
   Calendar, 
   Users, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle, 
   Shield, 
   GraduationCap, 
   ArrowRight,
@@ -24,7 +17,6 @@ import {
   Zap,
   Layout
 } from 'lucide-react';
-import { formatDateTime } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -44,7 +36,6 @@ export default function DashboardPage() {
     programs: 0,
     users: 0,
   });
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -55,29 +46,13 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      const [news, events, programs, admins, lecturers] = await Promise.all([
-        getAllNews(1, 10),
-        getAllEvents(1, 10),
-        getAllAcademicPrograms(),
-        getAllAdministrators(),
-        getAllLecturers(),
-      ]);
-
+      const dashboardData = await getDashboardData();
       setStats({
-        news: news.totalNews || news.totalItems || news.items?.length || 0,
-        events: events.totalEvents || events.totalItems || events.items?.length || 0,
-        programs: programs.totalItems || programs.items?.length || 0,
-        users: (admins.totalItems || admins.items?.length || 0) + (lecturers.totalItems || lecturers.items?.length || 0),
+        news: dashboardData.totalNews || 0,
+        events: dashboardData.totalEvent || 0,
+        programs: dashboardData.totalAcademicProgram || 0,
+        users: (dashboardData.totalAdministrator || 0) + (dashboardData.totalLecturer || 0),
       });
-
-      // Combine activities
-      const activities: any[] = [
-        ...(news.items || []).map((n: any) => ({ type: 'news', title: n.title, date: n.publicationDate, status: 'published' })),
-        ...(events.items || []).map((e: any) => ({ type: 'event', title: e.eventTitle || e.name || e.title, date: e.startsAtDate || e.startDate || e.date, status: 'published' })),
-      ];
-
-      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setRecentActivities(activities.slice(0, 8));
     } catch (error) {
       console.error("Failed to load dashboard data", error);
     } finally {
@@ -211,39 +186,10 @@ export default function DashboardPage() {
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Sinkronisasi Data...</p>
                </div>
-            ) : recentActivities.length === 0 ? (
-              <div className="p-20 text-center text-muted-foreground italic font-black uppercase tracking-widest opacity-[0.2]">
-                Belum ada aktivitas terekam.
-              </div>
             ) : (
-              recentActivities.map((activity, index) => (
-                <div key={index} className="p-8 hover:bg-gray-50/50 transition-all group relative">
-                  <div className="flex items-center gap-6 relative z-10">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${
-                      activity.type === 'news' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
-                    }`}>
-                      {activity.type === 'news' ? (
-                        <Newspaper className="w-6 h-6" />
-                      ) : (
-                        <Calendar className="w-6 h-6" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-lg text-gray-900 truncate group-hover:text-primary transition-colors">{activity.title}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                         <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${activity.type === 'news' ? 'text-blue-500' : 'text-emerald-500'}`}>
-                            {activity.type === 'news' ? 'Portal Berita' : 'Kalender Event'}
-                         </div>
-                         <div className="w-1.5 h-1.5 bg-gray-200 rounded-full" />
-                         <span className="text-[10px] font-bold text-gray-400 uppercase">{formatDateTime(activity.date)}</span>
-                      </div>
-                    </div>
-                    <div className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 group-hover:bg-green-500 group-hover:text-white transition-all shadow-sm">
-                       Verified
-                    </div>
-                  </div>
-                </div>
-              ))
+              <div className="p-20 text-center text-muted-foreground italic font-black uppercase tracking-widest opacity-[0.2]">
+                Aktifkan Activity Feed di modul berita &amp; kegiatan.
+              </div>
             )}
           </div>
           

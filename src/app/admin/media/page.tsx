@@ -46,7 +46,7 @@ export default function MediaPage() {
   const loadMedia = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllMedia(activeFormat, 1, 50);
+      const data = await getAllMedia(activeFormat, 1, 100);
       setMedia(data.items);
     } catch (error) {
       toast.error(`Gagal mengambil data ${activeFormat}`);
@@ -96,7 +96,7 @@ export default function MediaPage() {
         <div className="max-w-xs text-left">
           <p className="font-bold text-gray-900 truncate hover:text-primary cursor-pointer transition-colors" onClick={() => router.push(`/admin/media/${row.original.id}?format=${activeFormat}`)}>{row.original.mediaTitle}</p>
           <p className="text-[10px] text-muted-foreground mt-1 font-extrabold uppercase tracking-widest">
-            {row.original.authors.map(a => a.fullName).join(', ') || 'No Author'}
+            {row.original.authors?.map(a => a.fullName).join(', ') || 'No Author'}
           </p>
         </div>
       ),
@@ -106,7 +106,7 @@ export default function MediaPage() {
       header: 'Kategori',
       cell: ({ row }) => (
          <div className="flex flex-wrap gap-1">
-            {row.original.category.map((cat, i) => (
+            {row.original.category?.map((cat, i) => (
                <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm border bg-purple-50 text-purple-700 border-purple-100">
                  {cat}
                </Badge>
@@ -198,9 +198,9 @@ export default function MediaPage() {
       <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 flex items-start gap-4 text-left">
          <AlertCircle className="w-6 h-6 text-purple-600 mt-1 shrink-0" />
          <div>
-            <h3 className="font-bold text-purple-900">Sinkronisasi Media</h3>
+            <h3 className="font-bold text-purple-900">Sinkronisasi Media Live</h3>
             <p className="text-sm text-purple-700 mt-1 leading-relaxed">
-               Data difilter berdasarkan format <b>{activeFormat.toUpperCase()}</b> melalui endpoint <code>api/v1/cms/media/get-all?MediaFormat={activeFormat}</code>.
+               Data disinkronkan langsung dari endpoint <code>api/v1/cms/media/get-all</code>. Filter format diterapkan untuk memastikan integritas data.
             </p>
          </div>
       </div>

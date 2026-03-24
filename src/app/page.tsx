@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signIn, signUp, initializeAuth } from '@/lib/auth';
+import { signIn, signUp } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Shield, Mail, Lock, User, Terminal } from 'lucide-react';
+import { Shield, Mail, Lock, User, Loader2 } from 'lucide-react';
 
 const signInSchema = z.object({
   email: z.string().email('Email tidak valid'),
@@ -17,7 +17,7 @@ const signInSchema = z.object({
 });
 
 const signUpSchema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter'),
+  fullName: z.string().min(3, 'Nama minimal 3 karakter'),
   email: z.string().email('Email tidak valid'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
   confirmPassword: z.string(),
@@ -31,64 +31,51 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    initializeAuth();
-  }, []);
 
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   const signUpForm = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
   });
 
-  const handleSignIn = (data: SignInFormData) => {
-    const result = signIn(data);
-    if (result.success) {
-      toast.success(result.message);
-      router.push('/admin/dashboard');
-    } else {
-      toast.error(result.message);
+  const handleSignIn = async (data: SignInFormData) => {
+    setIsSubmitting(true);
+    try {
+      const result = await signIn(data);
+      if (result.success) {
+        toast.success(result.message);
+        router.push('/admin/dashboard');
+      } else {
+        toast.error(result.message);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSignUp = (data: SignUpFormData) => {
-    const result = signUp({
-      name: data.name,
-      email: data.email,
-      password: data.password,
-    });
-    if (result.success) {
-      toast.success(result.message);
-      setMode('signin');
-      signUpForm.reset();
-    } else {
-      toast.error(result.message);
-    }
-  };
-
-  // Backdoor login function
-  const handleBackdoor = () => {
-    const result = signIn({
-      email: 'admin@university.ac.id',
-      password: 'admin123'
-    });
-    if (result.success) {
-      toast.success("Bypassed: Login Berhasil via Backdoor");
-      router.push('/admin/dashboard');
+  const handleSignUp = async (data: SignUpFormData) => {
+    setIsSubmitting(true);
+    try {
+      const result = await signUp({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setMode('signin');
+        signUpForm.reset();
+      } else {
+        toast.error(result.message);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -168,27 +155,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full h-11 font-bold"
-                disabled={signInForm.formState.isSubmitting}
+                disabled={isSubmitting}
               >
-                Sign In
-              </Button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-400 font-bold tracking-widest">Developer Backdoor</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBackdoor}
-                className="w-full h-11 border-gray-200 text-gray-600 hover:bg-gray-50 font-bold gap-2"
-              >
-                <Terminal className="w-4 h-4" /> Bypas Login (Quick Access)
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
               </Button>
             </form>
           )}
@@ -201,14 +170,14 @@ export default function LoginPage() {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
-                    {...signUpForm.register('name')}
+                    {...signUpForm.register('fullName')}
                     type="text"
                     placeholder="John Doe"
                     className="pl-10"
                   />
                 </div>
-                {signUpForm.formState.errors.name && (
-                  <p className="text-sm text-red-500 mt-1">{signUpForm.formState.errors.name.message}</p>
+                {signUpForm.formState.errors.fullName && (
+                  <p className="text-sm text-red-500 mt-1">{signUpForm.formState.errors.fullName.message}</p>
                 )}
               </div>
 
@@ -263,13 +232,13 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full h-11 font-bold"
-                disabled={signUpForm.formState.isSubmitting}
+                disabled={isSubmitting}
               >
-                Daftar Akun
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Daftar Akun'}
               </Button>
 
               <p className="text-xs text-center text-gray-500 mt-4 leading-relaxed px-4">
-                Setelah mendaftar, akun Anda akan diverifikasi oleh Super Admin sebelum dapat digunakan.
+                Pastikan Role yang tersedia sudah ada di database. Default role: <b>Admin</b>.
               </p>
             </form>
           )}

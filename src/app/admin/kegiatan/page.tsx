@@ -104,7 +104,7 @@ export default function KegiatanPage() {
       header: 'Kategori',
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
-          {row.original.category.map((cat, i) => (
+          {row.original.category?.map((cat, i) => (
              <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm bg-blue-50 text-blue-600 border-blue-100">
                {cat}
              </Badge>

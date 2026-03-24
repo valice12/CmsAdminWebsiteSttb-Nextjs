@@ -118,14 +118,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-white ring-2 ring-[#D4AF37]/20 shadow-lg shadow-gold/20">
               <span className="font-bold text-lg">
-                {user.name.charAt(0).toUpperCase()}
+                {user.fullName.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm truncate">{user.name}</p>
+              <p className="font-bold text-sm truncate">{user.fullName}</p>
               <p className="text-[11px] text-gray-400 truncate mb-1">{user.email}</p>
               <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30">
-                {user.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                {(user.roles?.[0] ?? 'Admin')}
               </span>
             </div>
           </div>

@@ -102,7 +102,7 @@ export default function BeritaPage() {
       header: 'Kategori',
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
-          {row.original.category.map((cat, i) => (
+          {row.original.category?.map((cat, i) => (
             <Badge key={i} variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 font-bold uppercase tracking-wider text-[10px]">
               {cat}
             </Badge>
@@ -172,9 +172,9 @@ export default function BeritaPage() {
          <AlertCircle className="w-6 h-6 text-amber-600 mt-1 shrink-0" />
          <div>
             <h3 className="font-bold text-amber-900">Manajemen Berita Live</h3>
-            <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-               Halaman ini terhubung langsung ke API Backend. Gunakan tombol di tabel untuk mengelola konten secara real-time.
-            </p>
+             <p className="text-sm text-amber-700 mt-1 leading-relaxed">
+                Halaman ini terhubung ke <code>api/v1/cms/news/get-all-news</code>. Data disinkronkan secara real-time.
+             </p>
          </div>
       </div>
 
@@ -200,10 +200,7 @@ export default function BeritaPage() {
               </div>
               <DialogTitle className="text-2xl font-extrabold text-gray-900">Hapus Berita?</DialogTitle>
               <DialogDescription className="text-gray-600 font-medium pt-2">
-                Apakah Anda yakin ingin menghapus berita <span className="text-red-600 font-bold">"{selectedNews?.title}"</span>? <br/><br/>
-                <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
-                   <AlertCircle className="w-3 h-3" /> Endpoint Delete Belum Tersedia di Backend
-                </span>
+                Apakah Anda yakin ingin menghapus berita <span className="text-red-600 font-bold">"{selectedNews?.title}"</span>?
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -216,9 +213,11 @@ export default function BeritaPage() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => {
-                    toast.error("Gagal: Endpoint Delete tidak ditemukan di backend (404)");
-                    setDeleteDialogOpen(false);
+                onClick={async () => {
+                    if (selectedNews) {
+                      await handleDelete(selectedNews.id);
+                      setDeleteDialogOpen(false);
+                    }
                 }}
                 className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200"
               >
