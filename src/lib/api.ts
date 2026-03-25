@@ -36,6 +36,16 @@ async function cmsFetch(url: string, options: RequestInit = {}) {
     headers,
   });
 
+  if (!response.ok) {
+    try {
+      const errorData = await response.clone().json();
+      console.error(`CMS API Error [${response.status}] ${url}:`, JSON.stringify(errorData, null, 2));
+    } catch {
+      const errorText = await response.clone().text();
+      console.error(`CMS API Error [${response.status}] ${url}:`, errorText);
+    }
+  }
+
   return response;
 }
 
@@ -155,21 +165,10 @@ export async function getDashboardData() {
 
 // ─── Media ────────────────────────────────────────────────────────────────────
 
-export async function getAllMedia(format: string, page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/media/get-all?PageSize=${pageSize}`);
+export async function getAllMedia(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/get-all?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error(`Failed to fetch media`);
-  const data = await response.json();
-
-  // Client-side filtering because backend GetAllMediaRequest doesn't have MediaFormat filter
-  if (format && data.items) {
-    const normalizedFormat = format.toLowerCase() === 'artikel' ? 'article' : format.toLowerCase();
-    data.items = data.items.filter((item: any) =>
-      item.mediaFormat?.toLowerCase() === normalizedFormat
-    );
-    data.totalMedia = data.items.length;
-  }
-
-  return data;
+  return await response.json();
 }
 
 // Specific Media Details

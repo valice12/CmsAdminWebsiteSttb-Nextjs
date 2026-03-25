@@ -10,6 +10,7 @@ import {
     getArticleById, 
     getVideoById, 
     getMonografById, 
+    getBuletinById,
     addMedia, 
     editMedia 
 } from '@/lib/api';
@@ -18,19 +19,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { 
     ArrowLeft, Save, FileText, MonitorPlay, BookOpen, 
-    Newspaper, Layers, Upload, Globe, User, Calendar, 
+    Newspaper, Layers, Upload, User, Calendar, 
     Image as ImageIcon, Link as LinkIcon, FileUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
 
 const mediaSchema = z.object({
-  slug: z.string().min(3, 'Slug minimal 3 karakter'),
   mediaTitle: z.string().min(5, 'Judul minimal 5 karakter'),
   mediaDescription: z.string().min(10, 'Deskripsi minimal 10 karakter'),
   authors: z.string().min(3, 'Penulis wajib diisi'),
   publicationDate: z.string(),
   category: z.string().min(1, 'Kategori wajib diisi'),
+  isPublished: z.boolean(),
   videoUrl: z.string().optional(),
   // For file uploads we'll use state
 });
@@ -55,12 +56,12 @@ export function MediaForm({ id }: MediaFormProps) {
   const form = useForm<MediaFormData>({
     resolver: zodResolver(mediaSchema),
     defaultValues: {
-      slug: '',
       mediaTitle: '',
       mediaDescription: '',
       authors: '',
       publicationDate: new Date().toISOString().slice(0, 10),
       category: 'General',
+      isPublished: true,
       videoUrl: '',
     },
   });
@@ -79,18 +80,33 @@ export function MediaForm({ id }: MediaFormProps) {
         case 'video': data = await getVideoById(mediaId); break;
         case 'journal': data = await getJournalById(mediaId); break;
         case 'monograf': data = await getMonografById(mediaId); break;
-        case 'buletin': data = await getJournalById(mediaId); break; // Assuming buletin uses journal model or similar
+        case 'buletin': data = await getBuletinById(mediaId); break;
         default: data = await getArticleById(mediaId);
       }
 
       if (data) {
+        // Map format-specific backend properties to frontend generic fields
+        const mappedTitle = 
+            data.videoTitle || 
+            data.articleTitle || 
+            data.journalTitle || 
+            data.monografTitle || 
+            data.buletinTitle || '';
+
+        const mappedDescription = 
+            data.videoDescription || 
+            data.articleContent || 
+            data.articleDescription || 
+            data.synopsis || 
+            data.description || '';
+
         form.reset({
-          slug: data.slug,
-          mediaTitle: data.mediaTitle,
-          mediaDescription: data.mediaDescription,
-          authors: data.authors?.map((a: any) => a.fullName).join(', ') || '',
+          mediaTitle: mappedTitle,
+          mediaDescription: mappedDescription,
+          authors: data.authors?.map((a: any) => a.authorName || a.fullName).join(', ') || '',
           publicationDate: new Date(data.publicationDate || new Date()).toISOString().slice(0, 10),
-          category: data.category?.[0] || 'General',
+          category: Array.isArray(data.category) ? data.category.join(', ') : (data.category || 'General'),
+          isPublished: data.isPublished !== undefined ? data.isPublished : true,
           videoUrl: data.videoUrl || '',
         });
         if (data.thumbnailPath) {
@@ -99,33 +115,83 @@ export function MediaForm({ id }: MediaFormProps) {
       }
     } catch (error) {
       toast.error('Gagal memuat detail media');
+      console.error(error);
     }
   };
 
   const onSubmit = async (data: MediaFormData) => {
     try {
       const formData = new FormData();
-      formData.append('Slug', data.slug);
-      formData.append('MediaTitle', data.mediaTitle);
-      formData.append('MediaDescription', data.mediaDescription);
-      formData.append('Authors', data.authors);
-      formData.append('PublicationDate', new Date(data.publicationDate).toISOString());
-      formData.append('Category', data.category);
-      formData.append('MediaFormat', activeFormat);
-
-      if (activeFormat === 'video' && data.videoUrl) {
-          formData.append('VideoUrl', data.videoUrl);
+      
+      // 1. Title handling
+      if (activeFormat === 'video') {
+          formData.append('VideoTitle', data.mediaTitle);
+      } else if (activeFormat === 'artikel') {
+          formData.append('ArticleTitle', data.mediaTitle);
+      } else if (activeFormat === 'journal') {
+          formData.append('JournalTitle', data.mediaTitle);
+      } else if (activeFormat === 'monograf') {
+          formData.append('MonografTitle', data.mediaTitle);
+      } else if (activeFormat === 'buletin') {
+          formData.append('BuletinTitle', data.mediaTitle);
       }
 
+      // 2. Description/Content
+      if (activeFormat === 'artikel') {
+          formData.append('ArticleContent', data.mediaDescription);
+          formData.append('ArticleDescription', data.mediaDescription.length > 200 ? data.mediaDescription.substring(0, 200) + '...' : data.mediaDescription);
+      } else if (activeFormat === 'video') {
+          formData.append('VideoDescription', data.mediaDescription);
+      } else if (activeFormat === 'monograf') {
+          formData.append('Synopsis', data.mediaDescription);
+      } else if (activeFormat === 'buletin') {
+          formData.append('Description', data.mediaDescription);
+      }
+
+      // 3. Categories (Standard multiple keys for primitive lists)
+      const categories = data.category.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      categories.forEach((cat) => {
+          formData.append('Category', cat);
+      });
+
+      // 4. Authors (Dot notation for complex types)
+      const authorNames = data.authors.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      authorNames.forEach((name, index) => {
+          formData.append(`Authors[${index}].AuthorName`, name);
+          formData.append(`Authors[${index}].AuthorPosition`, 'Contributor');
+      });
+
+      // 5. Shared fields
+      formData.append('PublicationDate', new Date(data.publicationDate).toISOString());
+      formData.append('IsPublished', data.isPublished.toString());
+
+      // 6. Format-specific extras
+      if (activeFormat === 'video') {
+          formData.append('VideoUrl', data.videoUrl || '');
+      } else if (activeFormat === 'journal') {
+          formData.append('Issn', '');
+          formData.append('EIssn', '');
+          formData.append('Doi', '');
+      } else if (activeFormat === 'monograf') {
+          formData.append('Price', '0');
+          formData.append('Isbn', '');
+          formData.append('Contact', '');
+      }
+
+      // 7. Thumbnail
       if (selectedThumbnail) {
         formData.append('Thumbnail', selectedThumbnail);
       }
 
+      // 8. Files
       if (selectedFile) {
-        // Map to correct field based on backend controller (PdfFile, etc)
-        const fileField = activeFormat === 'artikel' ? 'MainText' : 
-                         activeFormat === 'video' ? 'VideoFile' : 'PdfFile';
-        formData.append(fileField, selectedFile);
+        if (activeFormat === 'journal') {
+          formData.append('JournalFile', selectedFile);
+        } else if (activeFormat === 'buletin') {
+          formData.append('BuletinFile', selectedFile);
+        } else if (activeFormat !== 'artikel' && activeFormat !== 'video') {
+           formData.append('PdfFile', selectedFile);
+        }
       }
 
       const type = activeFormat === 'artikel' ? 'article' : 
@@ -190,6 +256,25 @@ export function MediaForm({ id }: MediaFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 space-y-8">
+            {!isEdit && (
+              <div className="space-y-2 border-b border-gray-50 pb-8">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Format Konten Baru</label>
+                <select 
+                  value={activeFormat}
+                  onChange={(e) => {
+                      setActiveFormat(e.target.value);
+                      form.reset();
+                  }}
+                  className="w-full h-14 bg-blue-50/30 text-primary border-none rounded-2xl text-sm font-bold shadow-inner focus:bg-white transition-all px-4 outline-none cursor-pointer"
+                >
+                  <option value="artikel">Artikel Teks</option>
+                  <option value="video">Video Konten</option>
+                  <option value="journal">Jurnal Ilmiah</option>
+                  <option value="monograf">Buku & Monograf</option>
+                  <option value="buletin">Buletin Kampus</option>
+                </select>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Judul Media</label>
@@ -198,10 +283,10 @@ export function MediaForm({ id }: MediaFormProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Slug URL</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tanggal Publikasi</label>
                 <div className="relative group">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                  <Input {...form.register('slug')} placeholder="slug-konten" className="pl-12 h-14 bg-gray-50/50 border-none rounded-2xl text-sm font-bold shadow-inner" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <Input type="date" {...form.register('publicationDate')} className="pl-12 h-14 bg-gray-50/50 border-none rounded-2xl text-sm font-bold shadow-inner" />
                 </div>
               </div>
             </div>
@@ -211,21 +296,12 @@ export function MediaForm({ id }: MediaFormProps) {
               <Textarea {...form.register('mediaDescription')} rows={6} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan deskripsi singkat mengenai konten ini..." />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Penulis / Kontributor</label>
-                   <div className="relative group">
-                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                     <Input {...form.register('authors')} placeholder="Nama lengkap penulis..." className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
-                   </div>
-                </div>
-                <div className="space-y-2">
-                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tanggal Publikasi</label>
-                   <div className="relative group">
-                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                     <Input type="date" {...form.register('publicationDate')} className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
-                   </div>
-                </div>
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Penulis / Kontributor <span className="text-gray-300 normal-case font-normal">(pisahkan dengan koma)</span></label>
+               <div className="relative group">
+                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                 <Input {...form.register('authors')} placeholder="John Doe, Jane Smith..." className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
+               </div>
             </div>
 
             {activeFormat === 'video' && (
@@ -274,6 +350,17 @@ export function MediaForm({ id }: MediaFormProps) {
                   <option value="Academic" className="bg-[#0B1B3D]">Academic</option>
                   <option value="Tutorial" className="bg-[#0B1B3D]">Tutorial</option>
                </select>
+            </div>
+            <div className="space-y-3 pt-4 border-t border-white/5">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Publikasi</label>
+                <div className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                    <input 
+                      type="checkbox" 
+                      {...form.register('isPublished')} 
+                      className="w-4 h-4 rounded border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-gray-900" 
+                    />
+                    <span className="text-xs font-bold text-gray-300">Publish ke Publik</span>
+                </div>
             </div>
           </div>
 

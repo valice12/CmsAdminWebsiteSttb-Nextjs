@@ -173,7 +173,7 @@ function PenggunaContent() {
     },
     {
       accessorKey: 'organizationalRole',
-      header: 'Jabatan Struktural',
+      header: 'Spesialisasi',
       cell: ({ row }) => (
         <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm">
            {row.original.organizationalRole}
@@ -182,7 +182,7 @@ function PenggunaContent() {
     },
     {
        accessorKey: 'roles',
-       header: 'Spesialisasi',
+       header: 'Jabatan Organisasi',
        cell: ({ row }) => (
           <div className="flex flex-wrap gap-1 max-w-[200px]">
              {row.original.roles.map((r, i) => (

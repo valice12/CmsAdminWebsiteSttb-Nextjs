@@ -31,8 +31,8 @@ const adminSchema = z.object({
 
 const lecturerSchema = z.object({
   lecturerName: z.string().min(3, 'Nama minimal 3 karakter'),
-  organizationalRole: z.string().min(2, 'Jabatan struktural wajib diisi'),
-  roles: z.string().min(3, 'Spesialisasi wajib diisi, pisahkan dengan koma'),
+  organizationalRole: z.string().min(2, 'Spesialisasi wajib diisi'),
+  roles: z.string().min(3, 'Jabatan organisasi wajib diisi, pisahkan dengan koma'),
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
 });
 
@@ -165,7 +165,7 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
                     <Input {...lecturerForm.register('lecturerName')} className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Struktural</label>
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Spesialisasi</label>
                     <Input {...lecturerForm.register('organizationalRole')} className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="space-y-2">
@@ -173,8 +173,8 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
                     <Input {...lecturerForm.register('degrees')} placeholder="S.Kom, M.T" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Spesialisasi (Pisahkan koma)</label>
-                    <Input {...lecturerForm.register('roles')} placeholder="Data Scientist, Lecturer" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Organisasi (Pisahkan koma)</label>
+                    <Input {...lecturerForm.register('roles')} placeholder="Ketua, Kaprodi, Dosen Tetap" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
                  </div>
               </div>
               <div className="md:col-span-1 space-y-4">
