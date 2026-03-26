@@ -171,6 +171,12 @@ export async function getAllMedia(page = 1, pageSize = 100) {
   return await response.json();
 }
 
+export async function getMediaCategories() {
+  const response = await fetch(`${BASE_URL}/media/get-media-categories`);
+  if (!response.ok) throw new Error('Failed to fetch media categories');
+  return response.json();
+}
+
 // Specific Media Details
 export async function getJournalById(id: number) {
   const response = await cmsFetch(`${CMS_BASE_URL}/media/journals/get/${id}`);
@@ -200,7 +206,6 @@ export async function getBuletinById(id: number) {
 // Media Management routes map
 const MEDIA_ROUTE_MAP: Record<string, string> = {
   'video': 'videos',
-  'artikel': 'articles',
   'article': 'articles',
   'journal': 'journals',
   'monograf': 'monografs',
@@ -276,13 +281,13 @@ export async function deleteAcademicProgram(id: number) {
 // ─── Profiles ─────────────────────────────────────────────────────────────────
 
 export async function getAllAdministrators() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators`);
+  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators?PageSize=100`);
   if (!response.ok) throw new Error('Failed to fetch administrators');
   return response.json();
 }
 
 export async function getAllLecturers() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers`);
+  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers?PageSize=100`);
   if (!response.ok) throw new Error('Failed to fetch lecturers');
   return response.json();
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import {
@@ -50,6 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -138,7 +139,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               return null;
             }
 
-            const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+            // Enhanced active state detection for query parameters (Tabs)
+            const currentTab = searchParams.get('tab');
+            const itemUrl = new URL(item.path, 'http://localhost'); // Dummy base to parse
+            const itemTab = itemUrl.searchParams.get('tab');
+            
+            let isActive = false;
+            
+            if (itemTab) {
+              // If menu item has a tab param (e.g. ?tab=foundation), 
+              // it's only active if pathname matches AND the tab param matches
+              isActive = pathname === itemUrl.pathname && currentTab === itemTab;
+            } else {
+              // Standard matching for items without tabs
+              // Note: if on a page with a tab, don't highlight items that only match the base path 
+              // but don't specify a tab (unless it's the only match)
+              isActive = pathname === item.path || (pathname.startsWith(item.path + '/') && !item.path.includes('?'));
+            }
+
             return (
               <Link
                 key={item.path}

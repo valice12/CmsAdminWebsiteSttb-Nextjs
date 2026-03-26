@@ -5,35 +5,41 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-    getJournalById, 
-    getArticleById, 
-    getVideoById, 
-    getMonografById, 
-    getBuletinById,
-    addMedia, 
-    editMedia 
+import {
+  getJournalById,
+  getArticleById,
+  getVideoById,
+  getMonografById,
+  getBuletinById,
+  addMedia,
+  editMedia,
+  getMediaCategories
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-    ArrowLeft, Save, FileText, MonitorPlay, BookOpen, 
-    Newspaper, Layers, Upload, User, Calendar, 
-    Image as ImageIcon, Link as LinkIcon, FileUp
+import {
+  ArrowLeft, Save, FileText, MonitorPlay, BookOpen,
+  Newspaper, Layers, Upload, User, Calendar,
+  Image as ImageIcon, Link as LinkIcon, FileUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { getImageUrl } from '@/lib/utils';
 
 const mediaSchema = z.object({
   mediaTitle: z.string().min(5, 'Judul minimal 5 karakter'),
-  mediaDescription: z.string().min(10, 'Deskripsi minimal 10 karakter'),
+  mediaDescription: z.string().min(10, 'Ringkasan minimal 10 karakter'),
+  mediaContent: z.string().optional(), // Tambahan untuk isi lengkap artikel
   authors: z.string().min(3, 'Penulis wajib diisi'),
   publicationDate: z.string(),
   category: z.string().min(1, 'Kategori wajib diisi'),
   isPublished: z.boolean(),
   videoUrl: z.string().optional(),
-  // For file uploads we'll use state
+  // Monograf specific
+  price: z.string().optional(),
+  isbn: z.string().optional(),
+  contact: z.string().optional(),
 });
 
 type MediaFormData = z.infer<typeof mediaSchema>;
@@ -46,23 +52,44 @@ export function MediaForm({ id }: MediaFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formatParam = searchParams.get('format') || 'artikel';
-  
+
   const isEdit = !!id;
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [activeFormat, setActiveFormat] = useState(formatParam);
+  // Normalize format: article, video, journal, monograf, buletin
+  const normalizedFormat = formatParam.toLowerCase() === 'artikel' ? 'article' : formatParam.toLowerCase();
+  const [activeFormat, setActiveFormat] = useState(normalizedFormat);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getMediaCategories();
+        // Backend returns: { items: [ "Cat A", "Cat B" ] } OR just [ "Cat A" ]
+        const catList = data.items || (Array.isArray(data) ? data : []);
+        setCategories(catList);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const form = useForm<MediaFormData>({
     resolver: zodResolver(mediaSchema),
     defaultValues: {
       mediaTitle: '',
       mediaDescription: '',
+      mediaContent: '',
       authors: '',
       publicationDate: new Date().toISOString().slice(0, 10),
       category: 'General',
       isPublished: true,
       videoUrl: '',
+      price: '0',
+      isbn: '',
+      contact: '',
     },
   });
 
@@ -76,7 +103,8 @@ export function MediaForm({ id }: MediaFormProps) {
     try {
       let data;
       switch (activeFormat) {
-        case 'artikel': data = await getArticleById(mediaId); break;
+        case 'artikel':
+        case 'article': data = await getArticleById(mediaId); break;
         case 'video': data = await getVideoById(mediaId); break;
         case 'journal': data = await getJournalById(mediaId); break;
         case 'monograf': data = await getMonografById(mediaId); break;
@@ -86,28 +114,32 @@ export function MediaForm({ id }: MediaFormProps) {
 
       if (data) {
         // Map format-specific backend properties to frontend generic fields
-        const mappedTitle = 
-            data.videoTitle || 
-            data.articleTitle || 
-            data.journalTitle || 
-            data.monografTitle || 
-            data.buletinTitle || '';
+        const mappedTitle =
+          data.videoTitle ||
+          data.articleTitle ||
+          data.journalTitle ||
+          data.monografTitle ||
+          data.buletinTitle || '';
 
-        const mappedDescription = 
-            data.videoDescription || 
-            data.articleContent || 
-            data.articleDescription || 
-            data.synopsis || 
-            data.description || '';
+        const mappedDescription =
+          data.videoDescription ||
+          data.articleContent ||
+          data.articleDescription ||
+          data.synopsis ||
+          data.description || '';
 
         form.reset({
           mediaTitle: mappedTitle,
-          mediaDescription: mappedDescription,
+          mediaDescription: data.articleDescription || data.synopsis || data.description || mappedDescription.substring(0, 200),
+          mediaContent: data.articleContent || mappedDescription,
           authors: data.authors?.map((a: any) => a.authorName || a.fullName).join(', ') || '',
           publicationDate: new Date(data.publicationDate || new Date()).toISOString().slice(0, 10),
-          category: Array.isArray(data.category) ? data.category.join(', ') : (data.category || 'General'),
+          category: Array.isArray(data.category) ? data.category.join(', ') : (typeof data.category === 'string' ? data.category : 'General'),
           isPublished: data.isPublished !== undefined ? data.isPublished : true,
           videoUrl: data.videoUrl || '',
+          price: data.price?.toString() || '0',
+          isbn: data.isbn || '',
+          contact: data.contact || '',
         });
         if (data.thumbnailPath) {
           setPreviewUrl(getImageUrl(data.thumbnailPath, activeFormat));
@@ -122,60 +154,67 @@ export function MediaForm({ id }: MediaFormProps) {
   const onSubmit = async (data: MediaFormData) => {
     try {
       const formData = new FormData();
-      
+
       // 1. Title handling
       if (activeFormat === 'video') {
-          formData.append('VideoTitle', data.mediaTitle);
-      } else if (activeFormat === 'artikel') {
-          formData.append('ArticleTitle', data.mediaTitle);
+        formData.append('VideoTitle', data.mediaTitle);
+      } else if (activeFormat === 'article' || activeFormat === 'artikel') {
+        formData.append('ArticleTitle', data.mediaTitle);
       } else if (activeFormat === 'journal') {
-          formData.append('JournalTitle', data.mediaTitle);
+        formData.append('JournalTitle', data.mediaTitle);
       } else if (activeFormat === 'monograf') {
-          formData.append('MonografTitle', data.mediaTitle);
+        formData.append('MonografTitle', data.mediaTitle);
       } else if (activeFormat === 'buletin') {
-          formData.append('BuletinTitle', data.mediaTitle);
+        formData.append('BuletinTitle', data.mediaTitle);
       }
 
-      // 2. Description/Content
-      if (activeFormat === 'artikel') {
-          formData.append('ArticleContent', data.mediaDescription);
-          formData.append('ArticleDescription', data.mediaDescription.length > 200 ? data.mediaDescription.substring(0, 200) + '...' : data.mediaDescription);
+      // 2. Description/Content/Summary
+      if (activeFormat === 'article' || activeFormat === 'artikel') {
+        formData.append('ArticleDescription', data.mediaDescription);
+        formData.append('ArticleContent', data.mediaContent || data.mediaDescription);
       } else if (activeFormat === 'video') {
-          formData.append('VideoDescription', data.mediaDescription);
+        formData.append('VideoDescription', data.mediaDescription);
       } else if (activeFormat === 'monograf') {
-          formData.append('Synopsis', data.mediaDescription);
+        formData.append('Synopsis', data.mediaDescription);
       } else if (activeFormat === 'buletin') {
-          formData.append('Description', data.mediaDescription);
+        formData.append('Description', data.mediaDescription);
       }
 
       // 3. Categories (Standard multiple keys for primitive lists)
       const categories = data.category.split(',').map(s => s.trim()).filter(s => s.length > 0);
       categories.forEach((cat) => {
-          formData.append('Category', cat);
+        formData.append('Category', cat);
       });
 
       // 4. Authors (Dot notation for complex types)
       const authorNames = data.authors.split(',').map(s => s.trim()).filter(s => s.length > 0);
       authorNames.forEach((name, index) => {
-          formData.append(`Authors[${index}].AuthorName`, name);
-          formData.append(`Authors[${index}].AuthorPosition`, 'Contributor');
+        formData.append(`Authors[${index}].AuthorName`, name);
+        formData.append(`Authors[${index}].AuthorPosition`, 'Contributor');
       });
 
       // 5. Shared fields
-      formData.append('PublicationDate', new Date(data.publicationDate).toISOString());
+      const isoDate = data.publicationDate ? new Date(data.publicationDate).toISOString() : new Date().toISOString();
+      formData.append('PublicationDate', isoDate);
       formData.append('IsPublished', data.isPublished.toString());
+
+      // DEBUG LOGGING
+      console.log('--- SUBMITTING MEDIA FORM ---');
+      formData.forEach((value, key) => {
+        console.log(`${key}: ${value instanceof File ? `File(${value.name})` : value}`);
+      });
 
       // 6. Format-specific extras
       if (activeFormat === 'video') {
-          formData.append('VideoUrl', data.videoUrl || '');
+        formData.append('VideoUrl', data.videoUrl || '');
       } else if (activeFormat === 'journal') {
-          formData.append('Issn', '');
-          formData.append('EIssn', '');
-          formData.append('Doi', '');
+        formData.append('Issn', '');
+        formData.append('EIssn', '');
+        formData.append('Doi', '');
       } else if (activeFormat === 'monograf') {
-          formData.append('Price', '0');
-          formData.append('Isbn', '');
-          formData.append('Contact', '');
+        formData.append('Price', data.price || '0');
+        formData.append('Isbn', data.isbn || '');
+        formData.append('Contact', data.contact || '');
       }
 
       // 7. Thumbnail
@@ -190,12 +229,12 @@ export function MediaForm({ id }: MediaFormProps) {
         } else if (activeFormat === 'buletin') {
           formData.append('BuletinFile', selectedFile);
         } else if (activeFormat !== 'artikel' && activeFormat !== 'video') {
-           formData.append('PdfFile', selectedFile);
+          formData.append('PdfFile', selectedFile);
         }
       }
 
-      const type = activeFormat === 'artikel' ? 'article' : 
-                   activeFormat === 'video' ? 'video' : 
+      const type = (activeFormat === 'artikel' || activeFormat === 'article') ? 'article' :
+                   activeFormat === 'video' ? 'video' :
                    activeFormat === 'journal' ? 'journal' :
                    activeFormat === 'monograf' ? 'monograf' : 'buletin';
 
@@ -259,15 +298,15 @@ export function MediaForm({ id }: MediaFormProps) {
             {!isEdit && (
               <div className="space-y-2 border-b border-gray-50 pb-8">
                 <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Format Konten Baru</label>
-                <select 
-                  value={activeFormat}
+                <select
+                  value={activeFormat === 'artikel' ? 'article' : activeFormat}
                   onChange={(e) => {
-                      setActiveFormat(e.target.value);
-                      form.reset();
+                    setActiveFormat(e.target.value);
+                    form.reset();
                   }}
                   className="w-full h-14 bg-blue-50/30 text-primary border-none rounded-2xl text-sm font-bold shadow-inner focus:bg-white transition-all px-4 outline-none cursor-pointer"
                 >
-                  <option value="artikel">Artikel Teks</option>
+                  <option value="article">Artikel Teks</option>
                   <option value="video">Video Konten</option>
                   <option value="journal">Jurnal Ilmiah</option>
                   <option value="monograf">Buku & Monograf</option>
@@ -292,16 +331,44 @@ export function MediaForm({ id }: MediaFormProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Keterangan / Abstrak</label>
-              <Textarea {...form.register('mediaDescription')} rows={6} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan deskripsi singkat mengenai konten ini..." />
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                {(activeFormat === 'article' || activeFormat === 'artikel') ? 'Ringkasan / Abstrak' : 'Keterangan / Sinopsis'}
+              </label>
+              <Textarea {...form.register('mediaDescription')} rows={3} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan ringkasan singkat..." />
             </div>
 
+            {(activeFormat === 'article' || activeFormat === 'artikel') && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Isi Lengkap Artikel</label>
+                <Textarea {...form.register('mediaContent')} rows={12} className="rounded-[2rem] bg-gray-50/50 border-none shadow-inner p-8 text-sm font-medium leading-relaxed min-h-[300px]" placeholder="Tuliskan isi artikel selengkapnya di sini..." />
+              </div>
+            )}
+            {(activeFormat === 'monograf') && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Harga (Buku/Monograf)</label>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
+                    <Input type="number" {...form.register('price')} placeholder="0" className="pl-10 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor ISBN</label>
+                  <Input {...form.register('isbn')} placeholder="978-..." className="h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kontak Pemesanan</label>
+                  <Input {...form.register('contact')} placeholder="WA: 08..." className="h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Penulis / Kontributor <span className="text-gray-300 normal-case font-normal">(pisahkan dengan koma)</span></label>
-               <div className="relative group">
-                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                 <Input {...form.register('authors')} placeholder="John Doe, Jane Smith..." className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
-               </div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Penulis / Kontributor <span className="text-gray-300 normal-case font-normal">(pisahkan dengan koma)</span></label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <Input {...form.register('authors')} placeholder="John Doe, Jane Smith..." className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
+              </div>
             </div>
 
             {activeFormat === 'video' && (
@@ -318,11 +385,11 @@ export function MediaForm({ id }: MediaFormProps) {
               <div className="space-y-3 pt-4 border-t border-gray-50">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">File Dokumen (PDF/DOCX)</label>
                 <div className="border-2 border-dashed border-gray-100 rounded-2xl p-8 flex flex-col items-center gap-4 bg-gray-50/30 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer relative">
-                    <input type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <FileUp className="w-10 h-10 text-gray-300" />
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter text-center">
-                        {selectedFile ? selectedFile.name : 'Klik atau seret file ke sini untuk upload'}
-                    </p>
+                  <input type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <FileUp className="w-10 h-10 text-gray-300" />
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter text-center">
+                    {selectedFile ? selectedFile.name : 'Klik atau seret file ke sini untuk upload'}
+                  </p>
                 </div>
               </div>
             )}
@@ -343,24 +410,60 @@ export function MediaForm({ id }: MediaFormProps) {
                 </div>
               )}
             </div>
-            <div className="space-y-3 pt-4">
-               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori Media</label>
-               <select {...form.register('category')} className="w-full h-11 rounded-xl bg-white/5 border-none text-white px-4 text-xs font-bold appearance-none">
-                  <option value="General" className="bg-[#0B1B3D]">General</option>
-                  <option value="Academic" className="bg-[#0B1B3D]">Academic</option>
-                  <option value="Tutorial" className="bg-[#0B1B3D]">Tutorial</option>
-               </select>
+            <div className="space-y-3 pt-4 border-t border-white/5">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori Media</label>
+              
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {form.watch('category').split(',').map(s => s.trim()).filter(s => s.length > 0).map((cat, i) => (
+                  <Badge key={i} variant="outline" className="bg-white/10 text-white hover:bg-white/20 border-none px-2 py-0 text-[10px] h-5">
+                    {cat}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <select 
+                  onChange={(e) => {
+                    const current = form.getValues('category');
+                    const selected = e.target.value;
+                    const items = current.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    if (!items.includes(selected)) {
+                      form.setValue('category', items.concat(selected).join(', '));
+                    }
+                  }} 
+                  className="flex-1 h-11 rounded-xl bg-white/5 border-none text-white px-4 text-xs font-bold appearance-none outline-none focus:ring-1 focus:ring-white/20"
+                >
+                  <option value="" className="bg-[#0B1B3D]">Pilih Kategori...</option>
+                  {categories.map((catName, idx) => (
+                    <option key={idx} value={catName} className="bg-[#0B1B3D]">
+                      {catName}
+                    </option>
+                  ))}
+                </select>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => form.setValue('category', '')}
+                  className="h-11 px-3 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
+                >
+                  Reset
+                </Button>
+              </div>
+              <p className="text-[9px] text-gray-500 font-medium italic mt-1 leading-tight">
+                *Pilih dari daftar atau ketik langsung di kolom input (legacy support).
+              </p>
             </div>
             <div className="space-y-3 pt-4 border-t border-white/5">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Publikasi</label>
-                <div className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
-                    <input 
-                      type="checkbox" 
-                      {...form.register('isPublished')} 
-                      className="w-4 h-4 rounded border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-gray-900" 
-                    />
-                    <span className="text-xs font-bold text-gray-300">Publish ke Publik</span>
-                </div>
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Publikasi</label>
+              <div className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                <input
+                  type="checkbox"
+                  {...form.register('isPublished')}
+                  className="w-4 h-4 rounded border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-gray-900"
+                />
+                <span className="text-xs font-bold text-gray-300">Publish ke Publik</span>
+              </div>
             </div>
           </div>
 
