@@ -31,7 +31,6 @@ interface MediaDTO {
   // Fallbacks for fields not in get-all DTO but used in UI
   authors?: { fullName: string }[];
   mediaDescription?: string;
-  category?: string[];
   thumbnailPath?: string;
 }
 
@@ -118,19 +117,6 @@ export default function MediaPage() {
          <Badge variant="outline" className="font-bold uppercase tracking-widest text-[10px] bg-green-50 text-green-700 border-green-200">
            {row.original.mediaFormat}
          </Badge>
-      ),
-    },
-    {
-      accessorKey: 'category',
-      header: 'Kategori',
-      cell: ({ row }) => (
-         <div className="flex flex-wrap gap-1">
-            {row.original.category?.map((cat, i) => (
-               <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm border bg-purple-50 text-purple-700 border-purple-100">
-                 {cat}
-               </Badge>
-            ))}
-         </div>
       ),
     },
     {

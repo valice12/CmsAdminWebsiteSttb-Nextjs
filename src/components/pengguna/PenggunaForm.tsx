@@ -16,6 +16,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Controller } from 'react-hook-form';
 import { 
     ArrowLeft, Save, User, Shield, Briefcase, 
     GraduationCap, BookOpen, Upload, Layout, Star
@@ -25,8 +33,8 @@ import { getImageUrl } from '@/lib/utils';
 
 const adminSchema = z.object({
   name: z.string().min(3, 'Nama minimal 3 karakter'),
-  division: z.string().min(2, 'Divisi wajib diisi'),
-  role: z.string().min(3, 'Jabatan wajib diisi'),
+  division: z.string().min(1, 'Divisi wajib dipilih'),
+  role: z.string().nullable().optional().or(z.literal('')),
 });
 
 const lecturerSchema = z.object({
@@ -34,6 +42,7 @@ const lecturerSchema = z.object({
   organizationalRole: z.string().min(2, 'Spesialisasi wajib diisi'),
   roles: z.string().min(3, 'Jabatan organisasi wajib diisi, pisahkan dengan koma'),
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
+  isActive: z.boolean(),
 });
 
 interface PenggunaFormProps {
@@ -57,7 +66,7 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
 
   const lecturerForm = useForm<z.infer<typeof lecturerSchema>>({
     resolver: zodResolver(lecturerSchema),
-    defaultValues: { lecturerName: '', organizationalRole: '', roles: '', degrees: '' }
+    defaultValues: { lecturerName: '', organizationalRole: '', roles: '', degrees: '', isActive: true }
   });
 
   useEffect(() => {
@@ -75,12 +84,14 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
         const data = await getLecturerById(uid);
         if (data) {
           lecturerForm.reset({
-            lecturerName: data.lecturerName,
-            organizationalRole: data.organizationalRole,
-            roles: data.roles?.join(', ') || '',
-            degrees: data.degrees?.join(', ') || ''
+            lecturerName: data.LecturerName || data.lecturerName || '',
+            organizationalRole: data.OrganizationalRole || data.organizationalRole || '',
+            roles: (data.Roles || data.roles)?.join(', ') || '',
+            degrees: (data.Degrees || data.degrees)?.join(', ') || '',
+            isActive: data.IsActive ?? data.isActive ?? true
           });
-          if (data.lecturerImagePath) setPreviewUrl(getImageUrl(data.lecturerImagePath, 'lecturers'));
+          const imgPath = data.ImagePath || data.imagePath || data.lecturerImagePath;
+          if (imgPath) setPreviewUrl(getImageUrl(imgPath, 'lecturers'));
         }
       }
     } catch (error) {
@@ -91,9 +102,13 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
   const onSubmit = async (data: any) => {
     try {
       if (activeType === 'foundation') {
-          const payload = { ...data, id: isEdit ? parseInt(id!) : undefined };
-          if (isEdit) await editAdministrator(payload);
-          else await addAdministrator(payload);
+          const formattedData = {
+            ...data,
+            role: data.role === 'none' ? '' : data.role,
+            id: isEdit ? parseInt(id!) : undefined
+          };
+          if (isEdit) await editAdministrator(formattedData);
+          else await addAdministrator(formattedData);
       } else {
           const formData = new FormData();
           if (isEdit) formData.append('Id', id!);
@@ -101,6 +116,7 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
           formData.append('OrganizationalRole', data.organizationalRole);
           data.roles.split(',').forEach((r: string) => formData.append('Roles', r.trim()));
           data.degrees.split(',').forEach((d: string) => formData.append('Degrees', d.trim()));
+          formData.append('IsActive', data.isActive.toString());
           if (selectedFile) formData.append('LecturerImage', selectedFile);
 
           if (isEdit) await editLecturer(formData);
@@ -144,17 +160,43 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Divisi / Unit</label>
-                <div className="relative">
-                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input {...adminForm.register('division')} className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold" />
-                </div>
+                <Controller
+                  name="division"
+                  control={adminForm.control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-none font-bold text-left px-4">
+                        <SelectValue placeholder="Pilih Divisi" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-none shadow-2xl">
+                        <SelectItem value="dewan pembina" className="font-bold py-3">Dewan Pembina</SelectItem>
+                        <SelectItem value="dewan pengurus" className="font-bold py-3">Dewan Pengurus</SelectItem>
+                        <SelectItem value="anggota pengurus & anggota" className="font-bold py-3">Anggota Pengurus & Anggota</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan</label>
-                <div className="relative">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input {...adminForm.register('role')} className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold" />
-                </div>
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan (Opsional)</label>
+                <Controller
+                  name="role"
+                  control={adminForm.control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-none font-bold text-left px-4">
+                        <SelectValue placeholder="Pilih Jabatan" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-none shadow-2xl">
+                        <SelectItem value="none" className="font-bold py-3 text-gray-400 italic">Tanpa Jabatan</SelectItem>
+                        <SelectItem value="ketua" className="font-bold py-3">Ketua</SelectItem>
+                        <SelectItem value="wakil ketua" className="font-bold py-3">Wakil Ketua</SelectItem>
+                        <SelectItem value="bendahara" className="font-bold py-3">Bendahara</SelectItem>
+                        <SelectItem value="sekretaris" className="font-bold py-3">Sekretaris</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
           ) : (
@@ -175,6 +217,17 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
                  <div className="space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Organisasi (Pisahkan koma)</label>
                     <Input {...lecturerForm.register('roles')} placeholder="Ketua, Kaprodi, Dosen Tetap" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                 </div>
+                 <div className="pt-4 flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                    <div className="space-y-0.5 text-left">
+                       <label className="text-sm font-black text-gray-700 uppercase tracking-wider">Status Aktif</label>
+                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Aktifkan untuk menampilkan di website publik</p>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      {...lecturerForm.register('isActive')}
+                      className="w-6 h-6 rounded-md border-gray-300 text-primary focus:ring-primary shadow-sm cursor-pointer"
+                    />
                  </div>
               </div>
               <div className="md:col-span-1 space-y-4">
