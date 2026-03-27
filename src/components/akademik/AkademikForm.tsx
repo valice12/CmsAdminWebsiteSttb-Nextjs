@@ -1,43 +1,78 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { getAcademicProgramById, addAcademicProgram, editAcademicProgram } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, GraduationCap, School, BookOpen, Star, Info, ShieldCheck, Activity, Building } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { 
+  ArrowLeft, Save, GraduationCap, School, BookOpen, Star, 
+  Info, ShieldCheck, Activity, Building, Plus, Trash2, 
+  ChevronDown, ChevronUp, Layers, BookMarked
+} from 'lucide-react';
 import { toast } from 'sonner';
+
+const lectureSchema = z.object({
+  lectureName: z.string().min(1, 'Nama mata kuliah wajib diisi'),
+  credits: z.coerce.number().default(0),
+  description: z.string().default(''),
+});
+
+const categorySchema = z.object({
+  categoryName: z.string().min(1, 'Nama kategori wajib diisi'),
+  totalCredits: z.coerce.number().default(0),
+  lectures: z.array(lectureSchema).default([]),
+});
 
 const programSchema = z.object({
   programName: z.string().min(3, 'Nama program minimal 3 karakter'),
   programDescription: z.string().min(10, 'Deskripsi minimal 10 karakter'),
   motto: z.string().min(5, 'Motto minimal 5 karakter'),
   degree: z.string().min(2, 'Jenjang wajib diisi'),
-  accreditation: z.string().min(1, 'Akreditasi wajib diisi'),
   informedDescription: z.string().optional(),
   transformedDescription: z.string().optional(),
   transformativeDescription: z.string().optional(),
-  programRequirements: z.string().optional(), // Will be converted to array
+  programRequirements: z.string().optional(),
+  notes: z.string().optional(),
+  lecturingSystem: z.string().optional(),
   totalCredits: z.coerce.number().optional(),
   duration: z.coerce.number().optional(),
+  isPublished: z.boolean(),
+  lectureCategory: z.array(categorySchema),
 });
+
+type LectureData = {
+  lectureName: string;
+  credits: number;
+  description: string;
+};
+
+type CategoryData = {
+  categoryName: string;
+  totalCredits: number;
+  lectures: LectureData[];
+};
 
 type ProgramFormData = {
   programName: string;
   programDescription: string;
   motto: string;
   degree: string;
-  accreditation: string;
   informedDescription?: string;
   transformedDescription?: string;
   transformativeDescription?: string;
   programRequirements?: string;
+  notes?: string;
+  lecturingSystem?: string;
   totalCredits?: number;
   duration?: number;
+  isPublished: boolean;
+  lectureCategory: CategoryData[];
 };
 
 interface AkademikFormProps {
@@ -55,14 +90,22 @@ export function AkademikForm({ id }: AkademikFormProps) {
       motto: '',
       programDescription: '',
       degree: '',
-      accreditation: '',
       informedDescription: '',
       transformedDescription: '',
       transformativeDescription: '',
       programRequirements: '',
+      notes: '',
+      lecturingSystem: '',
       totalCredits: 144,
       duration: 8,
+      isPublished: true,
+      lectureCategory: [],
     },
+  });
+
+  const { fields: categoryFields, append: appendCategory, remove: removeCategory } = useFieldArray({
+    control: form.control,
+    name: "lectureCategory"
   });
 
   useEffect(() => {
@@ -80,13 +123,16 @@ export function AkademikForm({ id }: AkademikFormProps) {
           motto: program.motto,
           programDescription: program.programDescription,
           degree: program.degree,
-          accreditation: program.accreditation,
           informedDescription: program.informedDescription || '',
           transformedDescription: program.transformedDescription || '',
           transformativeDescription: program.transformativeDescription || '',
           programRequirements: program.programRequirements?.join('\n') || '',
+          notes: program.notes?.join('\n') || '',
+          lecturingSystem: program.lecturingSystem?.join('\n') || '',
           totalCredits: program.totalCredits || 144,
           duration: program.duration || 8,
+          isPublished: program.isPublished ?? true,
+          lectureCategory: program.lectureCategory || [],
         });
       }
     } catch (error) {
@@ -100,8 +146,8 @@ export function AkademikForm({ id }: AkademikFormProps) {
         ...data,
         id: isEdit ? parseInt(id!) : undefined,
         programRequirements: data.programRequirements?.split('\n').filter(r => r.trim() !== '') || [],
-        notes: [],
-        lecturingSystem: [],
+        notes: data.notes?.split('\n').filter(r => r.trim() !== '') || [],
+        lecturingSystem: data.lecturingSystem?.split('\n').filter(r => r.trim() !== '') || [],
       };
 
       if (isEdit && id) {
@@ -120,7 +166,6 @@ export function AkademikForm({ id }: AkademikFormProps) {
   };
 
   const degrees = ['S1', 'S2', 'S3', 'D3', 'D4'];
-  const accreditations = ['A', 'B', 'C', 'Unggul', 'Baik Sekali'];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -211,6 +256,75 @@ export function AkademikForm({ id }: AkademikFormProps) {
                   <Textarea {...form.register('transformativeDescription')} rows={4} className="rounded-2xl bg-gray-50 border-none shadow-inner" />
                 </div>
              </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Sistem Perkuliahan (Per baris)</label>
+                   <Textarea {...form.register('lecturingSystem')} rows={4} className="rounded-2xl bg-gray-50 border-none shadow-inner text-sm font-medium" />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Catatan Tambahan (Per baris)</label>
+                   <Textarea {...form.register('notes')} rows={4} className="rounded-2xl bg-gray-50 border-none shadow-inner text-sm font-medium" />
+                </div>
+             </div>
+          </div>
+
+          {/* Curriculum Section */}
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 space-y-8">
+             <div className="flex items-center justify-between border-b border-gray-50 pb-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                      <BookMarked className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-black text-gray-900 tracking-tight uppercase tracking-widest text-[10px]">Struktur Kurikulum</h3>
+                </div>
+                <Button 
+                  type="button" 
+                  onClick={() => appendCategory({ categoryName: '', totalCredits: 0, lectures: [] })}
+                  variant="outline"
+                  className="rounded-xl border-dashed border-2 hover:border-primary hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Tambah Kategori
+                </Button>
+             </div>
+
+             <div className="space-y-6">
+                {categoryFields.map((category, categoryIndex) => (
+                  <div key={category.id} className="p-6 rounded-3xl bg-gray-50/50 border border-gray-100 space-y-4 relative group">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeCategory(categoryIndex)}
+                      className="absolute -top-2 -right-2 bg-white shadow-md rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="md:col-span-3 space-y-1">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori</label>
+                        <Input 
+                          {...form.register(`lectureCategory.${categoryIndex}.categoryName`)}
+                          placeholder="e.g. Mata Kuliah Inti"
+                          className="h-10 rounded-xl border-none shadow-inner bg-white font-bold text-gray-700"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total SKS</label>
+                        <Input 
+                          type="number"
+                          {...form.register(`lectureCategory.${categoryIndex}.totalCredits`)}
+                          className="h-10 rounded-xl border-none shadow-inner bg-white font-bold text-gray-700"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Sub-lectures */}
+                    <LectureFields categoryIndex={categoryIndex} control={form.control} register={form.register} />
+                  </div>
+                ))}
+             </div>
           </div>
         </div>
 
@@ -221,28 +335,10 @@ export function AkademikForm({ id }: AkademikFormProps) {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50" />
             
             <h3 className="text-sm font-black uppercase tracking-[0.3em] text-[#D4AF37] flex items-center gap-2">
-               <ShieldCheck className="w-4 h-4" /> Kredensial
+               <ShieldCheck className="w-4 h-4" /> Kredensial & Status
             </h3>
 
-            {/* Accreditation Select */}
-            <div className="space-y-3">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Status Akreditasi</label>
-              <div className="relative">
-                 <Star className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37] z-10" />
-                 <select
-                   {...form.register('accreditation')}
-                   className="w-full h-12 rounded-xl border-none bg-white/5 text-white pl-12 pr-4 text-xs font-black appearance-none focus:bg-white/10 transition-all cursor-pointer relative"
-                 >
-                   <option value="" className="bg-[#0B1B3D]">Pilih Akreditasi...</option>
-                   {accreditations.map(a => (
-                     <option key={a} value={a} className="bg-[#0B1B3D]">{a}</option>
-                   ))}
-                 </select>
-              </div>
-              {form.formState.errors.accreditation && (
-                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider ml-1 italic">{form.formState.errors.accreditation.message}</p>
-              )}
-            </div>
+            {/* Publication Status */}
 
             {/* Degree Select */}
             <div className="space-y-3">
@@ -318,6 +414,80 @@ export function AkademikForm({ id }: AkademikFormProps) {
           </div>
         </div>
       </form>
+    </div>
+  );
+}
+
+interface LectureFieldsProps {
+  categoryIndex: number;
+  control: Control<ProgramFormData>;
+  register: any;
+}
+
+function LectureFields({ categoryIndex, control, register }: { categoryIndex: number, control: Control<ProgramFormData>, register: any }) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `lectureCategory.${categoryIndex}.lectures`
+  });
+
+  return (
+    <div className="space-y-3 pl-4 border-l-2 border-primary/20 mt-4">
+      <div className="flex items-center justify-between">
+        <label className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Daftar Mata Kuliah</label>
+        <Button 
+          type="button" 
+          size="sm"
+          onClick={() => append({ lectureName: '', credits: 3, description: '' })}
+          className="h-7 text-[8px] font-black uppercase bg-primary/10 text-primary hover:bg-primary/20"
+        >
+          <Plus className="w-3 h-3 mr-1" /> Tambah Matkul
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        {fields.map((lecture, lectureIndex) => (
+          <div key={lecture.id} className="flex flex-col gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm relative group/item transition-all hover:shadow-md">
+             <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(lectureIndex)}
+                className="absolute top-2 right-2 h-6 w-6 text-red-500 opacity-0 group-hover/item:opacity-100 transition-all"
+             >
+                <Trash2 className="w-3 h-3" />
+             </Button>
+
+             <div className="grid grid-cols-4 gap-3">
+                <div className="col-span-3">
+                  <Input 
+                    {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.lectureName`)}
+                    placeholder="Nama Mata Kuliah"
+                    className="h-8 text-xs font-bold border-none bg-gray-50/50"
+                  />
+                </div>
+                <div>
+                  <Input 
+                    type="number"
+                    {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.credits`)}
+                    placeholder="SKS"
+                    className="h-8 text-xs font-bold border-none bg-gray-50/50"
+                  />
+                </div>
+             </div>
+             <Textarea 
+               {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.description`)}
+               placeholder="Deskripsi singkat mata kuliah..."
+               rows={2}
+               className="text-[10px] font-medium border-none bg-gray-50/50 p-2 min-h-[40px] resize-none"
+             />
+          </div>
+        ))}
+        {fields.length === 0 && (
+          <p className="text-center py-4 text-[9px] text-gray-400 font-bold italic uppercase tracking-widest border border-dashed rounded-xl">
+            Belum ada mata kuliah ditambahkan
+          </p>
+        )}
+      </div>
     </div>
   );
 }

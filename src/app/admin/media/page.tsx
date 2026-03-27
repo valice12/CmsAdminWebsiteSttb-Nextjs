@@ -31,6 +31,7 @@ interface MediaDTO {
   // Fallbacks for fields not in get-all DTO but used in UI
   authors?: { fullName: string }[];
   mediaDescription?: string;
+  category?: string[];
   thumbnailPath?: string;
 }
 
@@ -63,7 +64,7 @@ export default function MediaPage() {
     try {
       // Get logical API format name (e.g. 'article' not 'artikel')
       const format = selectedMedia.mediaFormat.toLowerCase() === 'artikel' ? 'article' : selectedMedia.mediaFormat.toLowerCase();
-      
+
       await deleteMedia(format, selectedMedia.id);
       toast.success(`Berhasil menghapus ${selectedMedia.mediaFormat}`);
       setDeleteDialogOpen(false);
@@ -85,12 +86,12 @@ export default function MediaPage() {
             alt={row.original.mediaName}
             className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
             onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Media';
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Media';
             }}
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" 
-               onClick={() => window.open(getImageUrl(row.original.thumbnailPath, row.original.mediaFormat), '_blank')}>
-             <ExternalLink className="w-4 h-4 text-white" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+            onClick={() => window.open(getImageUrl(row.original.thumbnailPath, row.original.mediaFormat), '_blank')}>
+            <ExternalLink className="w-4 h-4 text-white" />
           </div>
         </div>
       ),
@@ -100,9 +101,9 @@ export default function MediaPage() {
       header: 'Judul & Penulis',
       cell: ({ row }) => (
         <div className="max-w-xs text-left">
-          <p className="font-bold text-gray-900 truncate hover:text-primary cursor-pointer transition-colors" 
-             onClick={() => router.push(`/admin/media/${row.original.id}?format=${row.original.mediaFormat}`)}>
-              {row.original.mediaName}
+          <p className="font-bold text-gray-900 truncate hover:text-primary cursor-pointer transition-colors"
+            onClick={() => router.push(`/admin/media/${row.original.id}?format=${row.original.mediaFormat}`)}>
+            {row.original.mediaName}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1 font-extrabold uppercase tracking-widest">
             {row.original.authors?.map(a => a.fullName).join(', ') || 'No Author'}
@@ -114,9 +115,22 @@ export default function MediaPage() {
       accessorKey: 'mediaFormat',
       header: 'Tipe',
       cell: ({ row }) => (
-         <Badge variant="outline" className="font-bold uppercase tracking-widest text-[10px] bg-green-50 text-green-700 border-green-200">
-           {row.original.mediaFormat}
-         </Badge>
+        <Badge variant="outline" className="font-bold uppercase tracking-widest text-[10px] bg-green-50 text-green-700 border-green-200">
+          {row.original.mediaFormat}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'category',
+      header: 'Kategori',
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {row.original.category?.map((cat, i) => (
+            <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm border bg-purple-50 text-purple-700 border-purple-100">
+              {cat}
+            </Badge>
+          ))}
+        </div>
       ),
     },
     {
@@ -154,33 +168,33 @@ export default function MediaPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1 text-left">
-        <div className="flex flex-col gap-1 text-left">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            <ImageIcon className="w-8 h-8 text-primary" />
-            Media Library (Live)
-          </h1>
-          <p className="text-muted-foreground font-medium text-sm">
-            Manajemen multi-format konten media langsung dari database utama.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-           <Button onClick={() => router.push('/admin/media/create')} className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2">
-             <Plus className="w-4 h-4" />
-             Tambah Media Baru
-           </Button>
-        </div>
+          <div className="flex flex-col gap-1 text-left">
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+              <ImageIcon className="w-8 h-8 text-primary" />
+              Media Library (Live)
+            </h1>
+            <p className="text-muted-foreground font-medium text-sm">
+              Manajemen multi-format konten media langsung dari database utama.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => router.push('/admin/media/create')} className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Tambah Media Baru
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Backend Note */}
       <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 flex items-start gap-4 text-left">
-         <AlertCircle className="w-6 h-6 text-purple-600 mt-1 shrink-0" />
-         <div>
-            <h3 className="font-bold text-purple-900">Media Terpadu</h3>
-            <p className="text-sm text-purple-700 mt-1 leading-relaxed">
-               Semua daftar artikel, jurnal, video, dan monograf ditampilkan dalam satu tabel ini sesuai spesifikasi terbaru.
-            </p>
-         </div>
+        <AlertCircle className="w-6 h-6 text-purple-600 mt-1 shrink-0" />
+        <div>
+          <h3 className="font-bold text-purple-900">Media Terpadu</h3>
+          <p className="text-sm text-purple-700 mt-1 leading-relaxed">
+            Semua daftar artikel, jurnal, video, dan monograf ditampilkan dalam satu tabel ini sesuai spesifikasi terbaru.
+          </p>
+        </div>
       </div>
 
       {/* Data Table */}
