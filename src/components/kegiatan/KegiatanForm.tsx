@@ -91,7 +91,7 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
           location: event.location,
           startsAtDate: new Date(event.startsAtDate || new Date()).toISOString().slice(0, 16),
           endsAtDate: new Date(event.endsAtDate || new Date()).toISOString().slice(0, 16),
-          category: event.category?.[0] || 'Umum',
+          category: event.category?.[0] || event.Category?.[0] || 'Umum',
           isPublished: event.isPublished,
         });
         if (event.imagePath) {
@@ -114,7 +114,9 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
       formData.append('StartsAtDate', new Date(data.startsAtDate).toISOString());
       formData.append('EndsAtDate', new Date(data.endsAtDate).toISOString());
       formData.append('OrganizerName', data.organizerName);
-      formData.append('Category', data.category);
+      if (data.category) {
+        formData.append('Category', data.category);
+      }
       formData.append('IsPublished', data.isPublished.toString());
 
       if (selectedFile) {
