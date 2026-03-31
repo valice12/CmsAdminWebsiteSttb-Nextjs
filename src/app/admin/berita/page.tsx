@@ -88,7 +88,7 @@ export default function BeritaPage() {
       header: 'Judul Berita',
       cell: ({ row }) => (
         <div className="max-w-md text-left">
-          <p className="font-bold text-gray-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => router.push(`/admin/berita/${row.original.slug}`)}>
+          <p className="font-bold text-gray-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => router.push(`/admin/berita/${row.original.id}`)}>
             {row.original.title}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1 font-medium flex items-center gap-1">

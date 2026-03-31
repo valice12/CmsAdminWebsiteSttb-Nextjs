@@ -14,14 +14,6 @@ export interface SignInData {
   email: string;
   password: string;
 }
-
-export interface SignUpData {
-  fullName: string;
-  email: string;
-  password: string;
-  roleName?: string;
-}
-
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 export async function signIn(data: SignInData): Promise<{ success: boolean; message: string; user?: User }> {
@@ -29,7 +21,7 @@ export async function signIn(data: SignInData): Promise<{ success: boolean; mess
     const response = await fetch(`${CMS_AUTH_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: data.email, password: data.password }),
+      body: JSON.stringify({ Email: data.email, Password: data.password }),
     });
 
     if (!response.ok) {
@@ -38,7 +30,7 @@ export async function signIn(data: SignInData): Promise<{ success: boolean; mess
       try {
         const err = JSON.parse(errorText);
         message = err.message || err.title || message;
-      } catch {}
+      } catch { }
       return { success: false, message };
     }
 
@@ -54,36 +46,6 @@ export async function signIn(data: SignInData): Promise<{ success: boolean; mess
     return { success: true, message: 'Login berhasil', user };
   } catch (error) {
     console.error('Login error:', error);
-    return { success: false, message: 'Tidak dapat terhubung ke server. Pastikan backend berjalan.' };
-  }
-}
-
-export async function signUp(data: SignUpData): Promise<{ success: boolean; message: string }> {
-  try {
-    const response = await fetch(`${CMS_AUTH_URL}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fullName: data.fullName,
-        email: data.email,
-        password: data.password,
-        roleName: data.roleName ?? 'Viewer',
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let message = 'Registrasi gagal';
-      try {
-        const err = JSON.parse(errorText);
-        message = err.message || err.title || message;
-      } catch {}
-      return { success: false, message };
-    }
-
-    return { success: true, message: 'Registrasi berhasil. Akun siap digunakan.' };
-  } catch (error) {
-    console.error('Register error:', error);
     return { success: false, message: 'Tidak dapat terhubung ke server. Pastikan backend berjalan.' };
   }
 }

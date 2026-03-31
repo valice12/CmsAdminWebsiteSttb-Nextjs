@@ -64,11 +64,18 @@ export function BeritaForm({ id }: BeritaFormProps) {
 
   useEffect(() => {
     if (isEdit && id) {
-      loadNews(parseInt(id));
+      const numericId = parseInt(id);
+      if (!isNaN(numericId)) {
+        loadNews(numericId);
+      } else {
+        toast.error('ID Berita tidak valid');
+        router.push('/admin/berita');
+      }
     }
-  }, [id, isEdit]);
+  }, [id, isEdit, router]);
 
   const loadNews = async (newsId: number) => {
+    if (isNaN(newsId)) return;
     try {
       const news = await getNewsById(newsId);
       if (news) {

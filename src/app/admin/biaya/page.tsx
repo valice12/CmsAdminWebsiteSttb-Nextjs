@@ -33,7 +33,7 @@ export default function BiayaPage() {
     try {
       setIsLoading(true);
       const data = await getAllCosts();
-      setCosts(data || []);
+      setCosts(data.items || []);
     } catch (error) {
       toast.error('Gagal memuat data biaya');
     } finally {

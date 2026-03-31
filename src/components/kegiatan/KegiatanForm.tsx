@@ -68,11 +68,18 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
 
   useEffect(() => {
     if (isEdit && id) {
-      loadEvent(parseInt(id));
+      const numericId = parseInt(id);
+      if (!isNaN(numericId)) {
+        loadEvent(numericId);
+      } else {
+        toast.error('ID Kegiatan tidak valid');
+        router.push('/admin/kegiatan');
+      }
     }
-  }, [id, isEdit]);
+  }, [id, isEdit, router]);
 
   const loadEvent = async (eventId: number) => {
+    if (isNaN(eventId)) return;
     try {
       const event = await getEventById(eventId);
       if (event) {

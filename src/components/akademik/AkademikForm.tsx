@@ -19,14 +19,14 @@ import { toast } from 'sonner';
 
 const lectureSchema = z.object({
   lectureName: z.string().min(1, 'Nama mata kuliah wajib diisi'),
-  credits: z.coerce.number().default(0),
-  description: z.string().default(''),
+  credits: z.coerce.number(),
+  description: z.string(),
 });
 
 const categorySchema = z.object({
   categoryName: z.string().min(1, 'Nama kategori wajib diisi'),
-  totalCredits: z.coerce.number().default(0),
-  lectures: z.array(lectureSchema).default([]),
+  totalCredits: z.coerce.number(),
+  lectures: z.array(lectureSchema),
 });
 
 const programSchema = z.object({
@@ -46,34 +46,7 @@ const programSchema = z.object({
   lectureCategory: z.array(categorySchema),
 });
 
-type LectureData = {
-  lectureName: string;
-  credits: number;
-  description: string;
-};
-
-type CategoryData = {
-  categoryName: string;
-  totalCredits: number;
-  lectures: LectureData[];
-};
-
-type ProgramFormData = {
-  programName: string;
-  programDescription: string;
-  motto: string;
-  degree: string;
-  informedDescription?: string;
-  transformedDescription?: string;
-  transformativeDescription?: string;
-  programRequirements?: string;
-  notes?: string;
-  lecturingSystem?: string;
-  totalCredits?: number;
-  duration?: number;
-  isPublished: boolean;
-  lectureCategory: CategoryData[];
-};
+type ProgramFormData = z.infer<typeof programSchema>;
 
 interface AkademikFormProps {
   id?: string;
@@ -83,13 +56,13 @@ export function AkademikForm({ id }: AkademikFormProps) {
   const router = useRouter();
   const isEdit = !!id;
 
-  const form = useForm<ProgramFormData>({
+  const form = useForm({
     resolver: zodResolver(programSchema),
     defaultValues: {
       programName: '',
       motto: '',
       programDescription: '',
-      degree: '',
+      degree: 'S1',
       informedDescription: '',
       transformedDescription: '',
       transformativeDescription: '',
@@ -140,14 +113,15 @@ export function AkademikForm({ id }: AkademikFormProps) {
     }
   };
 
-  const onSubmit = async (data: ProgramFormData) => {
+  const onSubmit = async (data: any) => {
     try {
+      const formValues = data as any;
       const payload = {
-        ...data,
+        ...formValues,
         id: isEdit ? parseInt(id!) : undefined,
-        programRequirements: data.programRequirements?.split('\n').filter(r => r.trim() !== '') || [],
-        notes: data.notes?.split('\n').filter(r => r.trim() !== '') || [],
-        lecturingSystem: data.lecturingSystem?.split('\n').filter(r => r.trim() !== '') || [],
+        programRequirements: formValues.programRequirements?.split('\n').filter((r: string) => r.trim() !== '') || [],
+        notes: formValues.notes?.split('\n').filter((r: string) => r.trim() !== '') || [],
+        lecturingSystem: formValues.lecturingSystem?.split('\n').filter((r: string) => r.trim() !== '') || [],
       };
 
       if (isEdit && id) {
@@ -420,11 +394,11 @@ export function AkademikForm({ id }: AkademikFormProps) {
 
 interface LectureFieldsProps {
   categoryIndex: number;
-  control: Control<ProgramFormData>;
+  control: any;
   register: any;
 }
 
-function LectureFields({ categoryIndex, control, register }: { categoryIndex: number, control: Control<ProgramFormData>, register: any }) {
+function LectureFields({ categoryIndex, control, register }: LectureFieldsProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: `lectureCategory.${categoryIndex}.lectures`

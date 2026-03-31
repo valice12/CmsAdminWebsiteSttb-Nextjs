@@ -30,7 +30,7 @@ import { getImageUrl } from '@/lib/utils';
 const mediaSchema = z.object({
   mediaTitle: z.string().min(5, 'Judul minimal 5 karakter'),
   mediaDescription: z.string().min(10, 'Ringkasan minimal 10 karakter'),
-  mediaContent: z.string().optional(), // Tambahan untuk isi lengkap artikel
+  mediaContent: z.string().optional(),
   authors: z.string().min(3, 'Penulis wajib diisi'),
   publicationDate: z.string(),
   category: z.string().min(1, 'Kategori wajib diisi'),
@@ -40,6 +40,24 @@ const mediaSchema = z.object({
   price: z.string().optional(),
   isbn: z.string().optional(),
   contact: z.string().optional(),
+  // Journal specific
+  issn: z.string().optional(),
+  eissn: z.string().optional(),
+  doi: z.string().optional(),
+  // For validation logic
+  format: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.format === 'journal') {
+    if (!data.issn || data.issn.trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'ISSN wajib diisi untuk Jurnal', path: ['issn'] });
+    }
+    if (!data.eissn || data.eissn.trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'E-ISSN wajib diisi untuk Jurnal', path: ['eissn'] });
+    }
+    if (!data.doi || data.doi.trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'DOI wajib diisi untuk Jurnal', path: ['doi'] });
+    }
+  }
 });
 
 type MediaFormData = z.infer<typeof mediaSchema>;
@@ -51,15 +69,16 @@ interface MediaFormProps {
 export function MediaForm({ id }: MediaFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const formatParam = searchParams.get('format') || 'artikel';
+  const formatParam = searchParams.get('format');
+  const initialFormat = (formatParam || 'video').toLowerCase();
 
   const isEdit = !!id;
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
   // Normalize format: article, video, journal, monograf, buletin
-  const normalizedFormat = formatParam.toLowerCase() === 'artikel' ? 'article' : formatParam.toLowerCase();
-  const [activeFormat, setActiveFormat] = useState(normalizedFormat);
+  const [activeFormat, setActiveFormat] = useState(initialFormat === 'artikel' ? 'article' : initialFormat);
   const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
@@ -87,13 +106,18 @@ export function MediaForm({ id }: MediaFormProps) {
       category: 'General',
       isPublished: true,
       videoUrl: '',
-      price: '0',
+      price: '',
       isbn: '',
       contact: '',
+      issn: '',
+      eissn: '',
+      doi: '',
+      format: initialFormat,
     },
   });
 
   useEffect(() => {
+    form.setValue('format', activeFormat);
     if (isEdit && id) {
       loadMedia(parseInt(id));
     }
@@ -140,6 +164,10 @@ export function MediaForm({ id }: MediaFormProps) {
           price: data.price?.toString() || '0',
           isbn: data.isbn || '',
           contact: data.contact || '',
+          issn: data.issn || '',
+          eissn: data.eIssn || data.eissn || '',
+          doi: data.doi || '',
+          format: activeFormat,
         });
         if (data.thumbnailPath) {
           setPreviewUrl(getImageUrl(data.thumbnailPath, activeFormat));
@@ -198,6 +226,10 @@ export function MediaForm({ id }: MediaFormProps) {
       formData.append('PublicationDate', isoDate);
       formData.append('IsPublished', data.isPublished.toString());
 
+      if (isEdit && id) {
+        formData.append('Id', id.toString());
+      }
+
       // DEBUG LOGGING
       console.log('--- SUBMITTING MEDIA FORM ---');
       formData.forEach((value, key) => {
@@ -208,12 +240,13 @@ export function MediaForm({ id }: MediaFormProps) {
       if (activeFormat === 'video') {
         formData.append('VideoUrl', data.videoUrl || '');
       } else if (activeFormat === 'journal') {
-        formData.append('Issn', '');
-        formData.append('EIssn', '');
-        formData.append('Doi', '');
+        formData.append('Issn', data.issn || '');
+        formData.append('EIssn', data.eissn || '');
+        formData.append('Doi', data.doi || '');
+        if (data.isbn) formData.append('ISBN', data.isbn);
       } else if (activeFormat === 'monograf') {
         formData.append('Price', data.price || '0');
-        formData.append('Isbn', data.isbn || '');
+        formData.append('ISBN', data.isbn || '');
         formData.append('Contact', data.contact || '');
       }
 
@@ -359,6 +392,38 @@ export function MediaForm({ id }: MediaFormProps) {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kontak Pemesanan</label>
                   <Input {...form.register('contact')} placeholder="WA: 08..." className="h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                </div>
+              </div>
+            )}
+
+            {(activeFormat === 'journal') && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor ISSN</label>
+                  <div className="relative group">
+                    <Input {...form.register('issn')} placeholder="ISSN..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                  </div>
+                  {form.formState.errors.issn && <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.issn.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor E-ISSN</label>
+                  <div className="relative group">
+                    <Input {...form.register('eissn')} placeholder="E-ISSN..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                  </div>
+                  {form.formState.errors.eissn && <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.eissn.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor DOI</label>
+                  <div className="relative group">
+                    <Input {...form.register('doi')} placeholder="DOI (e.g. 10.1234/5678)..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                  </div>
+                  {form.formState.errors.doi && <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.doi.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor ISBN <span className="text-gray-300 normal-case font-normal">(Optional)</span></label>
+                  <div className="relative group">
+                    <Input {...form.register('isbn')} placeholder="ISBN..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
+                  </div>
                 </div>
               </div>
             )}

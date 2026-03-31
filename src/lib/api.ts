@@ -172,7 +172,7 @@ export async function getAllMedia(page = 1, pageSize = 100) {
 }
 
 export async function getMediaCategories() {
-  const response = await fetch(`${BASE_URL}/media/get-media-categories`);
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/get-all`);
   if (!response.ok) throw new Error('Failed to fetch media categories');
   return response.json();
 }
@@ -390,3 +390,145 @@ export async function deleteCost(id: number) {
   });
   if (!response.ok) throw new Error('Failed to delete cost');
 }
+
+export async function getAllCostCategories() {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-categories`);
+  if (!response.ok) throw new Error('Failed to fetch cost categories');
+  const data = await response.json();
+  return data.items || data;
+}
+
+// ─── Admission Deadlines ───────────────────────────────────────────────────────
+
+export async function getAllAdmissionDeadlines(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-all-batch-deadlines`);
+  if (!response.ok) throw new Error('Failed to fetch admission deadlines');
+  return response.json();
+}
+
+export async function getAdmissionDeadlineById(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-batch-deadline/${id}`);
+  return response.ok ? response.json() : null;
+}
+
+export async function editAdmissionDeadline(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/edit-batch-deadline`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to edit admission deadline');
+  return response.json();
+}
+
+export async function deleteAdmissionDeadline(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/delete-batch-deadline/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete admission deadline');
+}
+
+// ─── Auth / User Registration ───────────────────────────────────────────────
+
+export async function registerUser(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/register`, {
+    method: 'POST',
+    body: JSON.stringify({
+      FullName: data.fullName,
+      Email: data.email,
+      RoleName: data.roleName,
+      Password: data.password
+    }),
+  });
+  if (!response.ok) throw new Error('Failed to register user');
+  return response.json();
+}
+
+export async function getAllUsers(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-users?PageNumber=${page}&PageSize=${pageSize}`);
+  if (!response.ok) throw new Error('Failed to fetch users');
+  return response.json();
+}
+
+export async function getUserById(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-user/${id}`);
+  if (!response.ok) throw new Error('Failed to fetch user');
+  return response.json();
+}
+
+export async function updateUser(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/edit-user`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update user');
+  return response.json();
+}
+
+export async function deleteUser(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/delete-user/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete user');
+  // Return early for 204 No Content
+  if (response.status === 204) return;
+  return response.json().catch(() => ({}));
+}
+
+// ─── Roles ───────────────────────────────────────────────────────────────────
+
+export async function getAllRoles(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-roles?PageNumber=${page}&PageSize=${pageSize}`);
+  if (!response.ok) throw new Error('Failed to fetch roles');
+  return response.json();
+}
+
+export async function addRole(name: string, permissions: string[] = []) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/add-role`, {
+    method: 'POST',
+    body: JSON.stringify({ RoleName: name, RolePermissions: permissions }),
+  });
+  if (!response.ok) throw new Error('Failed to add role');
+  return response.json();
+}
+
+export async function updateRole(id: number, name: string, permissions: string[]) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/edit-role`, {
+    method: 'PUT',
+    body: JSON.stringify({ Id: id, RoleName: name, RolePermissions: permissions }),
+  });
+  if (!response.ok) throw new Error('Failed to update role');
+  return response.json();
+}
+
+export async function deleteRole(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/delete-role/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete role');
+}
+
+// ─── Permissions ─────────────────────────────────────────────────────────────
+
+export async function getAllPermissions(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-permissions?PageNumber=${page}&PageSize=${pageSize}`);
+  if (!response.ok) throw new Error('Failed to fetch permissions');
+  return response.json();
+}
+
+export async function addPermission(name: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/add-permission`, {
+    method: 'POST',
+    body: JSON.stringify({ Name: name }),
+  });
+  if (!response.ok) throw new Error('Failed to add permission');
+  return response.json();
+}
+
+export async function deletePermission(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/delete-permission/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete permission');
+}
+
+

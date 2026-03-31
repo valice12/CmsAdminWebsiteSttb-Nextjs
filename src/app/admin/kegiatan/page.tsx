@@ -90,7 +90,7 @@ export default function KegiatanPage() {
       header: 'Event & Penyelenggara',
       cell: ({ row }) => (
         <div className="max-w-md text-left">
-          <p className="font-bold text-gray-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => router.push(`/admin/kegiatan/${row.original.slug}`)}>
+          <p className="font-bold text-gray-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => router.push(`/admin/kegiatan/${row.original.id}`)}>
             {row.original.eventTitle}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1 font-medium flex items-center gap-1">

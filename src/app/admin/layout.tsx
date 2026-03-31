@@ -21,30 +21,41 @@ import {
   Search,
   Activity,
   DollarSign,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
+import { hasPermission } from '@/lib/permissions';
+import { MENU_STRUCTURE } from '@/lib/navigation';
 
 interface MenuItem {
   label: string;
   icon: React.ReactNode;
   path: string;
-  roles?: ('super_admin' | 'admin')[];
+  permission?: string;
 }
 
-const menuItems: MenuItem[] = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/admin/dashboard' },
-  { label: 'Berita (News)', icon: <Newspaper className="w-5 h-5" />, path: '/admin/berita' },
-  { label: 'Kegiatan (Event)', icon: <Calendar className="w-5 h-5" />, path: '/admin/kegiatan' },
-  { label: 'Akademik', icon: <GraduationCap className="w-5 h-5" />, path: '/admin/akademik' },
-  { label: 'Biaya Kuliah', icon: <DollarSign className="w-5 h-5 text-amber-500" />, path: '/admin/biaya' },
-  { label: 'Media Library', icon: <ImageIcon className="w-5 h-5" />, path: '/admin/media' },
-  { label: 'Pengurus Yayasan', icon: <Shield className="w-5 h-5" />, path: '/admin/pengguna?tab=foundation' },
-  { label: 'Dosen (Lecturer)', icon: <Users className="w-5 h-5 text-emerald-500" />, path: '/admin/pengguna?tab=lecturer' },
-  { label: 'User System', icon: <Users className="w-5 h-5 text-indigo-500" />, path: '/admin/user' },
-  { label: 'Halaman', icon: <FileText className="w-5 h-5" />, path: '/admin/halaman' },
-  { label: 'API Status', icon: <Activity className="w-5 h-5 text-amber-500" />, path: '/admin/status' },
-];
+// Map icons to paths from MENU_STRUCTURE
+const iconMap: Record<string, React.ReactNode> = {
+  '/admin/dashboard': <LayoutDashboard className="w-5 h-5" />,
+  '/admin/berita': <Newspaper className="w-5 h-5" />,
+  '/admin/kegiatan': <Calendar className="w-5 h-5" />,
+  '/admin/akademik': <GraduationCap className="w-5 h-5" />,
+  '/admin/biaya': <DollarSign className="w-5 h-5 text-amber-500" />,
+  '/admin/media': <ImageIcon className="w-5 h-5" />,
+  '/admin/pengurus-yayasan': <Shield className="w-5 h-5" />,
+  '/admin/dosen': <Users className="w-5 h-5 text-emerald-500" />,
+  '/admin/user': <Users className="w-5 h-5 text-indigo-500" />,
+  '/admin/role': <Lock className="w-5 h-5 text-amber-500" />,
+  '/admin/halaman': <FileText className="w-5 h-5" />,
+  '/admin/status': <Activity className="w-5 h-5 text-amber-500" />,
+};
+
+const menuItems: MenuItem[] = MENU_STRUCTURE.map(item => ({
+  ...item,
+  icon: iconMap[item.path] || <FileText className="w-5 h-5" />,
+}));
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -61,8 +72,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } else {
       setUser(currentUser);
       setIsLoading(false);
+
+      // Simple route protection based on menuItems + permissions
+      // Skip for dashboard which is the common landing
+      if (pathname !== '/admin/dashboard' && pathname !== '/admin') {
+        const matchingItem = menuItems.find(item => 
+          pathname === item.path || pathname.startsWith(item.path + '/')
+        );
+        
+        if (matchingItem && !hasPermission(currentUser.roles || [], matchingItem.permission)) {
+          router.push('/admin/dashboard');
+        }
+      }
     }
-  }, [router]);
+  }, [router, pathname]);
 
   const handleLogout = () => {
     signOut();
@@ -135,7 +158,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Navigation */}
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {menuItems.map((item) => {
-            if (item.roles && !item.roles.includes(user.role)) {
+            if (!hasPermission(user.roles || [], item.permission)) {
               return null;
             }
 

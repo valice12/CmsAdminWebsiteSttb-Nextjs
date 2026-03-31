@@ -11,15 +11,27 @@ import {
   addAdministrator,
   editAdministrator,
   addLecturer,
-  editLecturer
+  editLecturer,
+  registerUser,
+  getUserById,
+  updateUser,
+  getAllRoles
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, Save, User, Shield, Briefcase,
-  GraduationCap, BookOpen, Upload, Layout, Star
+  GraduationCap, BookOpen, Upload, Layout, Star,
+  Mail, Lock, UserPlus, ShieldCheck
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
 
@@ -36,19 +48,28 @@ const lecturerSchema = z.object({
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
 });
 
+const userSchema = z.object({
+  fullName: z.string().min(3, 'Nama minimal 3 karakter'),
+  email: z.string().email('Email tidak valid'),
+  roleName: z.string().min(1, 'Role wajib diisi'),
+  password: z.string().optional().or(z.literal('')),
+});
+
 interface PenggunaFormProps {
   id?: string;
+  type?: string;
 }
 
-export function PenggunaForm({ id }: PenggunaFormProps) {
+export function PenggunaForm({ id, type }: PenggunaFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const typeParam = searchParams.get('type') || 'foundation';
+  const typeParam = type || searchParams.get('type') || 'foundation';
 
   const isEdit = !!id;
   const [activeType, setActiveType] = useState(typeParam);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>(['SuperAdmin', 'Admin', 'Staff', 'Editor', 'Lecturer']);
 
   const adminForm = useForm<z.infer<typeof adminSchema>>({
     resolver: zodResolver(adminSchema),
@@ -60,18 +81,41 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
     defaultValues: { lecturerName: '', organizationalRole: '', roles: '', degrees: '' }
   });
 
+  const userForm = useForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
+    defaultValues: { fullName: '', email: '', roleName: 'Admin', password: '' }
+  });
+
   useEffect(() => {
     if (isEdit && id) {
       loadData(parseInt(id));
     }
   }, [id, isEdit, activeType]);
 
+  useEffect(() => {
+    if (activeType === 'user') {
+      fetchRoles();
+    }
+  }, [activeType]);
+
+  const fetchRoles = async () => {
+    try {
+      const data = await getAllRoles();
+      const rolesList = data.items || data.Items || data;
+      if (Array.isArray(rolesList)) {
+        setRoles(rolesList.map((r: any) => typeof r === 'string' ? r : (r.name || r.roleName)));
+      }
+    } catch (error) {
+      console.warn('Roles endpoint error, using fallback roles.');
+    }
+  };
+
   const loadData = async (uid: number) => {
     try {
       if (activeType === 'foundation') {
         const data = await getAdministratorById(uid);
         if (data) adminForm.reset({ name: data.name, division: data.division, role: data.role });
-      } else {
+      } else if (activeType === 'lecturer') {
         const data = await getLecturerById(uid);
         if (data) {
           lecturerForm.reset({
@@ -81,6 +125,16 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
             degrees: data.degrees?.join(', ') || ''
           });
           if (data.lecturerImagePath) setPreviewUrl(getImageUrl(data.lecturerImagePath, 'lecturers'));
+        }
+      } else if (activeType === 'user') {
+        const data = await getUserById(uid);
+        if (data) {
+          userForm.reset({
+            fullName: data.fullName,
+            email: data.email,
+            roleName: data.roles?.[0] || 'Admin',
+            password: ''
+          });
         }
       }
     } catch (error) {
@@ -94,7 +148,7 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
         const payload = { ...data, id: isEdit ? parseInt(id!) : undefined };
         if (isEdit) await editAdministrator(payload);
         else await addAdministrator(payload);
-      } else {
+      } else if (activeType === 'lecturer') {
         const formData = new FormData();
         if (isEdit) formData.append('Id', id!);
         formData.append('LecturerName', data.lecturerName);
@@ -105,9 +159,29 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
 
         if (isEdit) await editLecturer(formData);
         else await addLecturer(formData);
+      } else {
+        // User type
+        if (isEdit) {
+          await updateUser({
+            Id: parseInt(id!),
+            FullName: data.fullName,
+            Email: data.email,
+            IsActive: true, // Maintain active status for now
+            NewPassword: data.password || undefined,
+            Roles: [data.roleName],
+            Permissions: []
+          });
+        } else {
+          await registerUser(data);
+        }
       }
       toast.success('Data berhasil disimpan');
-      router.push(`/admin/pengguna?tab=${activeType === 'foundation' ? 'foundation' : 'lecturer'}`);
+      
+      // Redirect to appropriate page
+      if (activeType === 'foundation') router.push('/admin/pengurus-yayasan');
+      else if (activeType === 'lecturer') router.push('/admin/dosen');
+      else router.push('/admin/user');
+      
     } catch (error) {
       toast.error('Gagal menyimpan data');
       console.error(error);
@@ -122,17 +196,23 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
         </Button>
         <div className="text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            {activeType === 'foundation' ? <Star className="w-8 h-8 text-amber-500" /> : <GraduationCap className="w-8 h-8 text-emerald-500" />}
-            {isEdit ? 'Edit Profil' : 'Tambah Profil'}
+            {activeType === 'foundation' ? <Star className="w-8 h-8 text-amber-500" /> : (activeType === 'lecturer' ? <GraduationCap className="w-8 h-8 text-emerald-500" /> : <ShieldCheck className="w-8 h-8 text-indigo-500" />)}
+            {isEdit ? 'Edit Akun/Profil' : 'Tambah Akun/Profil'}
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">
-            Manajemen data {activeType === 'foundation' ? 'Pengurus Yayasan' : 'Dosen Akademik'}.
+            Manajemen data {activeType === 'foundation' ? 'Pengurus Yayasan' : (activeType === 'lecturer' ? 'Dosen Akademik' : 'User Akun')}.
           </p>
         </div>
       </div>
 
       <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 max-w-4xl mx-auto">
-        <form onSubmit={activeType === 'foundation' ? adminForm.handleSubmit(onSubmit) : lecturerForm.handleSubmit(onSubmit)} className="space-y-8 text-left">
+        <form 
+          onSubmit={
+            activeType === 'foundation' ? adminForm.handleSubmit(onSubmit) : 
+            (activeType === 'lecturer' ? lecturerForm.handleSubmit(onSubmit) : userForm.handleSubmit(onSubmit))
+          } 
+          className="space-y-8 text-left"
+        >
           {activeType === 'foundation' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2 md:col-span-2">
@@ -157,7 +237,7 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
                 </div>
               </div>
             </div>
-          ) : (
+          ) : activeType === 'lecturer' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6 md:col-span-1">
                 <div className="space-y-2">
@@ -198,13 +278,53 @@ export function PenggunaForm({ id }: PenggunaFormProps) {
                 </div>
               </div>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap Pengguna</label>
+                <div className="relative">
+                  <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
+                  <Input {...userForm.register('fullName')} placeholder="Masukkan nama lengkap..." className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none text-lg font-bold focus:bg-white transition-all shadow-inner" />
+                </div>
+                {userForm.formState.errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.fullName.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email User</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
+                  <Input type="email" {...userForm.register('email')} placeholder="email@sttb.ac.id" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                </div>
+                {userForm.formState.errors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.email.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password Baru</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
+                  <Input type="password" {...userForm.register('password')} placeholder="Min. 6 karakter" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                </div>
+                {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message}</p>}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Role Utama</label>
+                 <Select onValueChange={(val) => userForm.setValue('roleName', val)} defaultValue={userForm.getValues('roleName')}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Pilih Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           )}
 
           <div className="pt-6 flex justify-end gap-3 border-t border-gray-50">
             <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl px-8 h-12 font-bold text-gray-400">Batalkan</Button>
-            <Button type="submit" className="rounded-xl px-12 h-12 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-3">
+            <Button type="submit" isLoading={activeType === 'foundation' ? adminForm.formState.isSubmitting : (activeType === 'lecturer' ? lecturerForm.formState.isSubmitting : userForm.formState.isSubmitting)} className="rounded-xl px-12 h-12 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-3">
               <Save className="w-5 h-5" />
-              Simpan Profil
+              Simpan {activeType === 'user' ? 'Akun' : 'Profil'}
             </Button>
           </div>
         </form>
