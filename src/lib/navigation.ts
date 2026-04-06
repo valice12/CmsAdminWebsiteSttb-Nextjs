@@ -7,7 +7,7 @@ export interface NavItem {
 }
 
 export const MENU_STRUCTURE: NavItem[] = [
-  { label: 'Dashboard', path: '/admin/dashboard', permission: 'view_dashboard' },
+  { label: 'Dashboard', path: '/admin/dashboard' },
   { label: 'Berita (News)', path: '/admin/berita', permission: 'CanManageNews' },
   { label: 'Kegiatan (Event)', path: '/admin/kegiatan', permission: 'CanManageEvents' },
   { label: 'Akademik', path: '/admin/akademik', permission: 'CanManageAcademics' },

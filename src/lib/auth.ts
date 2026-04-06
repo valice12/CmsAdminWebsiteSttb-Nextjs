@@ -7,6 +7,7 @@ export interface User {
   fullName: string;
   email: string;
   roles: string[];
+  permissions: string[];
   token: string;
 }
 
@@ -39,6 +40,7 @@ export async function signIn(data: SignInData): Promise<{ success: boolean; mess
       fullName: result.fullName,
       email: result.email,
       roles: result.roles ?? [],
+      permissions: result.permissions ?? [],
       token: result.token ?? '',
     };
 
