@@ -102,18 +102,15 @@ export default function KegiatanPage() {
     {
       accessorKey: 'category',
       header: 'Kategori',
-      cell: ({ row }) => {
-        const categories = (row.original as any).category || (row.original as any).Category;
-        return (
-          <div className="flex flex-wrap gap-1">
-            {categories?.map((cat: string, i: number) => (
-               <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm bg-blue-50 text-blue-600 border-blue-100">
-                 {cat}
-               </Badge>
-            ))}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {row.original.category?.map((cat, i) => (
+             <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm bg-blue-50 text-blue-600 border-blue-100">
+               {cat}
+             </Badge>
+          ))}
+        </div>
+      ),
     },
     {
       accessorKey: 'startsAtDate',

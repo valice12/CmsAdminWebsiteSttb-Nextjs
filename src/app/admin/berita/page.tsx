@@ -100,18 +100,15 @@ export default function BeritaPage() {
     {
       accessorKey: 'category',
       header: 'Kategori',
-      cell: ({ row }) => {
-        const categories = (row.original as any).category || (row.original as any).Category;
-        return (
-          <div className="flex flex-wrap gap-1">
-            {categories?.map((cat: string, i: number) => (
-              <Badge key={i} variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 font-bold uppercase tracking-wider text-[10px]">
-                {cat}
-              </Badge>
-            ))}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {row.original.category?.map((cat, i) => (
+            <Badge key={i} variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 font-bold uppercase tracking-wider text-[10px]">
+              {cat}
+            </Badge>
+          ))}
+        </div>
+      ),
     },
     {
       accessorKey: 'publicationDate',

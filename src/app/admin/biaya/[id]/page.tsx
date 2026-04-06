@@ -3,7 +3,7 @@
 import { use } from 'react';
 import { BiayaForm } from '@/components/biaya/BiayaForm';
 
-export default function BiayaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function BiayaDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   return <BiayaForm id={id} />;
 }

@@ -4,10 +4,10 @@ import { use } from "react";
 import { KegiatanForm } from "@/components/kegiatan/KegiatanForm";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditKegiatanPage({ params }: PageProps) {
-  const { id } = use(params);
+  const { id } = params;
   return <KegiatanForm id={id} />;
 }

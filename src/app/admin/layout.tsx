@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentUser, signOut } from '@/lib/auth';
@@ -57,7 +57,7 @@ const menuItems: MenuItem[] = MENU_STRUCTURE.map(item => ({
   icon: iconMap[item.path] || <FileText className="w-5 h-5" />,
 }));
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -73,8 +73,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setUser(currentUser);
       setIsLoading(false);
 
-      // Simple route protection based on menuItems + permissions
-      // Skip for dashboard which is the common landing
       if (pathname !== '/admin/dashboard' && pathname !== '/admin') {
         const matchingItem = menuItems.find(item => 
           pathname === item.path || pathname.startsWith(item.path + '/')
@@ -162,21 +160,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               return null;
             }
 
-            // Enhanced active state detection for query parameters (Tabs)
             const currentTab = searchParams.get('tab');
-            const itemUrl = new URL(item.path, 'http://localhost'); // Dummy base to parse
+            const itemUrl = new URL(item.path, 'http://localhost');
             const itemTab = itemUrl.searchParams.get('tab');
             
             let isActive = false;
             
             if (itemTab) {
-              // If menu item has a tab param (e.g. ?tab=foundation), 
-              // it's only active if pathname matches AND the tab param matches
               isActive = pathname === itemUrl.pathname && currentTab === itemTab;
             } else {
-              // Standard matching for items without tabs
-              // Note: if on a page with a tab, don't highlight items that only match the base path 
-              // but don't specify a tab (unless it's the only match)
               isActive = pathname === item.path || (pathname.startsWith(item.path + '/') && !item.path.includes('?'));
             }
 
@@ -276,5 +268,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       )}
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground font-medium">Memuat Sesi...</p>
+        </div>
+      </div>
+    }>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
   );
 }

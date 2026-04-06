@@ -85,8 +85,8 @@ export function MediaForm({ id }: MediaFormProps) {
     const fetchCategories = async () => {
       try {
         const data = await getMediaCategories();
-        // Backend returns: { items: [ "Cat A", "Cat B" ] } OR just [ "Cat A" ]
-        const catList = data.items || (Array.isArray(data) ? data : []);
+        // Backend returns: { categories: [ "Cat A", "Cat B" ] }
+        const catList = data.categories || data.items || (Array.isArray(data) ? data : []);
         setCategories(catList);
       } catch (error) {
         console.error('Error fetching categories:', error);
