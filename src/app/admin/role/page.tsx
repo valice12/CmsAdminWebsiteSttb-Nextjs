@@ -159,8 +159,8 @@ export default function RolePage() {
       }
       setIsRoleDialogOpen(false);
       loadData();
-    } catch (error) {
-      toast.error('Gagal menyimpan role');
+    } catch (error: any) {
+      toast.error(error.message || 'Gagal menyimpan role');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -240,7 +240,7 @@ export default function RolePage() {
           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm transition-all group-hover:scale-110">
             <Shield className="w-5 h-5 text-indigo-500" />
           </div>
-          <span className="font-bold text-gray-900 uppercase tracking-tight">{row.original.name}</span>
+          <span className="font-bold text-gray-900">{row.original.name}</span>
         </div>
       ),
     },

@@ -177,7 +177,7 @@ export default function UserPage() {
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.roles.map((role, i) => (
-            <Badge key={i} variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm">
+            <Badge key={i} variant="outline" className="font-extrabold text-[9px] px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm">
               <Shield className="w-3 h-3 mr-1.5" />
               {role}
             </Badge>
@@ -366,7 +366,7 @@ export default function UserPage() {
                       />
                       <label 
                         htmlFor={`role-${role}`}
-                        className="text-xs font-black uppercase tracking-widest leading-none cursor-pointer grow text-gray-600 group-hover:text-indigo-600"
+                        className="text-xs font-black leading-none cursor-pointer grow text-gray-600 group-hover:text-indigo-600"
                       >
                         {role}
                       </label>

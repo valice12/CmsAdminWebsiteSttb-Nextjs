@@ -340,7 +340,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                           />
                           <label 
                             htmlFor={`form-role-${role}`}
-                            className={`text-[10px] font-black uppercase tracking-widest leading-none cursor-pointer grow transition-colors ${
+                            className={`text-[10px] font-black leading-none cursor-pointer grow transition-colors ${
                               userForm.watch('roleNames').includes(role) ? 'text-indigo-600' : 'text-gray-500'
                             }`}
                           >

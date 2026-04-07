@@ -487,7 +487,10 @@ export async function addRole(name: string, permissions: string[] = []) {
     method: 'POST',
     body: JSON.stringify({ RoleName: name, RolePermissions: permissions }),
   });
-  if (!response.ok) throw new Error('Failed to add role');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to add role');
+  }
   return response.json();
 }
 
@@ -496,7 +499,10 @@ export async function updateRole(id: number, name: string, permissions: string[]
     method: 'PUT',
     body: JSON.stringify({ Id: id, RoleName: name, RolePermissions: permissions }),
   });
-  if (!response.ok) throw new Error('Failed to update role');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to update role');
+  }
   return response.json();
 }
 
