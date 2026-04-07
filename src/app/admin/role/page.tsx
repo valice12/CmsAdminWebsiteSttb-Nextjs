@@ -89,6 +89,18 @@ export default function RolePage() {
     name: ''
   });
 
+  // Pagination for Roles
+  const [rolePage, setRolePage] = useState(1);
+  const [rolePageSize, setRolePageSize] = useState(100);
+  const [roleTotal, setRoleTotal] = useState(0);
+  const [rolePageCount, setRolePageCount] = useState(0);
+
+  // Pagination for Permissions
+  const [permPage, setPermPage] = useState(1);
+  const [permPageSize, setPermPageSize] = useState(100);
+  const [permTotal, setPermTotal] = useState(0);
+  const [permPageCount, setPermPageCount] = useState(0);
+
   // Delete Confirmation State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: number, name: string, type: 'role' | 'permission' } | null>(null);
@@ -103,18 +115,34 @@ export default function RolePage() {
       setIsAuthorized(true);
       loadData();
     }
-  }, []);
+  }, [rolePage, rolePageSize, permPage, permPageSize]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
       const [rolesData, permsData] = await Promise.all([
-        getAllRoles(),
-        getAllPermissions()
+        getAllRoles(rolePage, rolePageSize),
+        getAllPermissions(permPage, permPageSize)
       ]);
       
-      setRoles(rolesData.items || []);
-      setPermissions(permsData.items || []);
+      const rawRoles = rolesData.items || rolesData.Items || [];
+      setRoles(rawRoles.map((r: any) => ({
+        id: r.id || r.Id,
+        name: r.name || r.Name,
+        rolePermissions: r.rolePermissions || r.RolePermissions || [],
+        createdAt: r.createdAt || r.CreatedAt
+      })));
+      setRoleTotal(rolesData.totalRoles || rolesData.TotalRoles || rolesData.totalItems || rolesData.TotalItems || 0);
+      setRolePageCount(rolesData.totalPages || rolesData.TotalPages || 0);
+
+      const rawPerms = permsData.items || permsData.Items || [];
+      setPermissions(rawPerms.map((p: any) => ({
+        id: p.id || p.Id,
+        name: p.name || p.Name,
+        createdAt: p.createdAt || p.CreatedAt
+      })));
+      setPermTotal(permsData.totalPermissions || permsData.TotalPermissions || permsData.totalItems || permsData.TotalItems || 0);
+      setPermPageCount(permsData.totalPages || permsData.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data roles & permissions');
       console.error(error);
@@ -440,6 +468,11 @@ export default function RolePage() {
                     isLoading={isLoading}
                     searchKey="name"
                     searchPlaceholder="Cari role..."
+                    totalItems={roleTotal}
+                    pageCount={rolePageCount}
+                    pageIndex={rolePage}
+                    pageSize={rolePageSize}
+                    onPageChange={(page) => setRolePage(page)}
                 />
             </div>
         </TabsContent>
@@ -468,6 +501,11 @@ export default function RolePage() {
                     isLoading={isLoading}
                     searchKey="name"
                     searchPlaceholder="Cari permission key..."
+                    totalItems={permTotal}
+                    pageCount={permPageCount}
+                    pageIndex={permPage}
+                    pageSize={permPageSize}
+                    onPageChange={(page) => setPermPage(page)}
                 />
             </div>
         </TabsContent>

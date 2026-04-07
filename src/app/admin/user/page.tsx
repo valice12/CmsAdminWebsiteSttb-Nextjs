@@ -61,17 +61,33 @@ export default function UserPage() {
     selectedRoles: [] as string[],
     isActive: true
   });
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(100);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadUsers();
     fetchRolesAndPermissions();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadUsers = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllUsers();
-      setUsers(data.items || data.Items || []);
+      const data = await getAllUsers(pageIndex, pageSize);
+      const rawUsers = data.items || data.Items || [];
+      setUsers(rawUsers.map((u: any) => ({
+        id: u.id || u.Id,
+        fullName: u.fullName || u.FullName,
+        email: u.email || u.Email,
+        isActive: u.isActive !== undefined ? u.isActive : u.IsActive,
+        lastLoginAt: u.lastLoginAt || u.LastLoginAt,
+        createdAt: u.createdAt || u.CreatedAt,
+        roles: u.roles || u.Roles || [],
+        permissions: u.permissions || u.Permissions || []
+      })));
+      setTotalItems(data.totalUsers || data.TotalUsers || data.totalCount || data.TotalCount || rawUsers.length);
+      setPageCount(data.totalPages || data.TotalPages || 1);
     } catch (error) {
       toast.error('Gagal mengambil data user');
       console.error(error);
@@ -327,6 +343,11 @@ export default function UserPage() {
           isLoading={isLoading}
           searchKey="fullName"
           searchPlaceholder="Cari user system..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

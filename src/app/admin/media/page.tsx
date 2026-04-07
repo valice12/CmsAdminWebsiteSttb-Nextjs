@@ -42,16 +42,22 @@ export default function MediaPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaDTO | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadMedia();
-  }, []);
+  }, [pageIndex, pageSize, searchQuery]);
 
   const loadMedia = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllMedia(1, 100);
-      setMedia(data.items || []);
+      const data = await getAllMedia(pageIndex, pageSize);
+      setMedia(data.items || data.Items || []);
+      setTotalItems(data.totalMedia || data.TotalMedia || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data media');
       console.error(error);
@@ -202,6 +208,11 @@ export default function MediaPage() {
           isLoading={isLoading}
           globalFilter={searchQuery}
           onGlobalFilterChange={setSearchQuery}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

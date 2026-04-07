@@ -34,6 +34,10 @@ export default function BeritaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsDTO | null>(null);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
   const router = useRouter();
 
   const handleDelete = async (id: number) => {
@@ -51,13 +55,15 @@ export default function BeritaPage() {
 
   useEffect(() => {
     loadNews();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadNews = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllNews(1, 100);
-      setNews(data.items);
+      const data = await getAllNews(pageIndex, pageSize);
+      setNews(data.items || data.Items || []);
+      setTotalItems(data.totalNews || data.TotalNews || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data berita dari backend');
       console.error(error);
@@ -186,6 +192,11 @@ export default function BeritaPage() {
           isLoading={isLoading}
           searchKey="title"
           searchPlaceholder="Cari berita dari backend..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

@@ -68,7 +68,7 @@ export async function fetchWithTimeout(resource: string, options = {}, timeout =
 // ─── News ────────────────────────────────────────────────────────────────────
 
 export async function getAllNews(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/news/get-all-news?PageSize=${pageSize}`);
+  const response = await cmsFetch(`${CMS_BASE_URL}/news/get-all-news?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch news');
   return response.json();
 }
@@ -280,14 +280,14 @@ export async function deleteAcademicProgram(id: number) {
 
 // ─── Profiles ─────────────────────────────────────────────────────────────────
 
-export async function getAllAdministrators() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators?PageSize=100`);
+export async function getAllAdministrators(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch administrators');
   return response.json();
 }
 
-export async function getAllLecturers() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers?PageSize=100`);
+export async function getAllLecturers(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch lecturers');
   return response.json();
 }
@@ -355,8 +355,8 @@ export async function deleteLecturer(id: number) {
 
 // ─── Admission Costs ──────────────────────────────────────────────────────────
 
-export async function getAllCosts() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-costs`);
+export async function getAllCosts(page = 1, pageSize = 100) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-costs?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch admission costs');
   return response.json();
 }
@@ -401,7 +401,7 @@ export async function getAllCostCategories() {
 // ─── Admission Deadlines ───────────────────────────────────────────────────────
 
 export async function getAllAdmissionDeadlines(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-all-batch-deadlines`);
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-all-batch-deadlines?PageNumber=${page}&PageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch admission deadlines');
   return response.json();
 }
@@ -443,8 +443,14 @@ export async function registerUser(data: any) {
   return response.json();
 }
 
-export async function getAllUsers(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-users?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllUsers(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) query.append('UserName', search);
+
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-users?${query.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch users');
   return response.json();
 }
@@ -476,8 +482,14 @@ export async function deleteUser(id: number) {
 
 // ─── Roles ───────────────────────────────────────────────────────────────────
 
-export async function getAllRoles(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-roles?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllRoles(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) query.append('RoleName', search);
+
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-roles?${query.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch roles');
   return response.json();
 }
@@ -495,9 +507,10 @@ export async function addRole(name: string, permissions: string[] = []) {
 }
 
 export async function updateRole(id: number, name: string, permissions: string[]) {
+  const rolePermissionsDTOs = permissions.map(p => ({ PermissionName: p }));
   const response = await cmsFetch(`${CMS_BASE_URL}/users/edit-role`, {
     method: 'PUT',
-    body: JSON.stringify({ Id: id, RoleName: name, RolePermissions: permissions }),
+    body: JSON.stringify({ Id: id, RoleName: name, RolePermissions: rolePermissionsDTOs }),
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -515,8 +528,14 @@ export async function deleteRole(id: number) {
 
 // ─── Permissions ─────────────────────────────────────────────────────────────
 
-export async function getAllPermissions(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-permissions?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllPermissions(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) query.append('PermissionName', search);
+
+  const response = await cmsFetch(`${CMS_BASE_URL}/users/get-all-permissions?${query.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch permissions');
   return response.json();
 }

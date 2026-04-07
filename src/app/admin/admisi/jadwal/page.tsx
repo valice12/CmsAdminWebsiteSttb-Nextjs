@@ -28,16 +28,22 @@ export default function JadwalAdmisiPage() {
   const router = useRouter();
   const [deadlines, setDeadlines] = useState<AdmissionDeadlineDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadDeadlines();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadDeadlines = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllAdmissionDeadlines();
-      setDeadlines(data.items || []);
+      const data = await getAllAdmissionDeadlines(pageIndex, pageSize);
+      setDeadlines(data.items || data.Items || []);
+      setTotalItems(data.totalItems || data.TotalItems || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal memuat data jadwal admisi');
     } finally {
@@ -156,6 +162,11 @@ export default function JadwalAdmisiPage() {
           isLoading={isLoading}
           searchKey="academicYear"
           searchPlaceholder="Cari tahun akademik..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

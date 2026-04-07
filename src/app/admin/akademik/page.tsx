@@ -30,17 +30,23 @@ export default function AkademikPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<AkademikDTO | null>(null);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     loadPrograms();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadPrograms = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllAcademicPrograms(1, 100);
-      setPrograms(data.items);
+      const data = await getAllAcademicPrograms(pageIndex, pageSize);
+      setPrograms(data.items || data.Items || []);
+      setTotalItems(data.totalItems || data.TotalItems || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data akademik dari backend');
       console.error(error);
@@ -159,6 +165,11 @@ export default function AkademikPage() {
           isLoading={isLoading}
           searchKey="programName"
           searchPlaceholder="Cari program studi..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

@@ -24,16 +24,22 @@ export default function DosenPage() {
   const router = useRouter();
   const [data, setData] = useState<LecturerDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const response = await getAllLecturers();
+      const response = await getAllLecturers(pageIndex, pageSize);
       setData(response.items || response.Items || []);
+      setTotalItems(response.totalItems || response.TotalItems || 0);
+      setPageCount(response.totalPages || response.TotalPages || 0);
     } catch (error) {
       console.error('Error loading lecturers:', error);
       toast.error('Gagal mengambil data Dosen');
@@ -179,6 +185,11 @@ export default function DosenPage() {
           isLoading={isLoading}
           searchKey="lecturerName"
           searchPlaceholder="Cari dosen..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
     </div>

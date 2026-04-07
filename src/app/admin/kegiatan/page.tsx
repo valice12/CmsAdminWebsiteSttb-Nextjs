@@ -36,6 +36,10 @@ export default function KegiatanPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventDTO | null>(null);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
   const router = useRouter();
 
   const handleDelete = async (id: number) => {
@@ -53,13 +57,15 @@ export default function KegiatanPage() {
 
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadEvents = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllEvents(1, 100);
-      setEvents(data.items);
+      const data = await getAllEvents(pageIndex, pageSize);
+      setEvents(data.items || data.Items || []);
+      setTotalItems(data.totalEvents || data.TotalEvents || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
        toast.error('Gagal mengambil data event dari backend');
        console.error(error);
@@ -191,6 +197,11 @@ export default function KegiatanPage() {
           isLoading={isLoading}
           searchKey="eventTitle"
           searchPlaceholder="Cari data kegiatan..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

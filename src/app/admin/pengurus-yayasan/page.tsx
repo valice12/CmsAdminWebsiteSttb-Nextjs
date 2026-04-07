@@ -21,16 +21,22 @@ export default function PengurusYayasanPage() {
   const router = useRouter();
   const [data, setData] = useState<AdministratorDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const response = await getAllAdministrators();
+      const response = await getAllAdministrators(pageIndex, pageSize);
       setData(response.items || response.Items || []);
+      setTotalItems(response.totalItems || response.TotalItems || 0);
+      setPageCount(response.totalPages || response.TotalPages || 0);
     } catch (error) {
       console.error('Error loading administrators:', error);
       toast.error('Gagal mengambil data Pengurus Yayasan');
@@ -149,6 +155,11 @@ export default function PengurusYayasanPage() {
           isLoading={isLoading}
           searchKey="name"
           searchPlaceholder="Cari pengurus..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
     </div>
