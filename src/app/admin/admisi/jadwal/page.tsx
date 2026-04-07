@@ -154,6 +154,8 @@ export default function JadwalAdmisiPage() {
           columns={columns} 
           data={deadlines} 
           isLoading={isLoading}
+          searchKey="academicYear"
+          searchPlaceholder="Cari tahun akademik..."
         />
       </div>
 

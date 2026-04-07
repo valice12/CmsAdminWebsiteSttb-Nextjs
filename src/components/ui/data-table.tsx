@@ -20,6 +20,8 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   isLoading?: boolean;
+  globalFilter?: string;
+  onGlobalFilterChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -28,9 +30,12 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = 'Cari...',
   isLoading = false,
+  globalFilter: externalGlobalFilter,
+  onGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
 
   const table = useReactTable({
     data,
@@ -40,16 +45,18 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: onGlobalFilterChange ?? setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
+      globalFilter: externalGlobalFilter ?? globalFilter,
     },
   });
 
   return (
     <div className="space-y-4">
-      {/* Search */}
+      {/* Internal Search (Visible only if searchKey is provided) */}
       {searchKey && (
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
