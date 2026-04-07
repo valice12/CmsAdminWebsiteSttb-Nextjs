@@ -9,16 +9,22 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {};
 /**
  * Checks if a user has a specific permission based on backend response.
  */
-export function hasPermission(unused_userRoles: string[], requiredPermission?: string): boolean {
-  // If no permission required, allow access
-  if (!requiredPermission) return true;
-
+export function hasPermission(unused_userRoles: string[], requiredPermission?: string, requiredRoles?: string[]): boolean {
   // Get current user from storage
   const user = getCurrentUser();
   if (!user) return false;
 
   // Bypass for SuperAdmin role
   if (user.roles && user.roles.includes('SuperAdmin')) return true;
+
+  // If specific roles are required, check them first
+  if (requiredRoles && requiredRoles.length > 0) {
+    const hasRequiredRole = user.roles?.some(role => requiredRoles.includes(role));
+    if (!hasRequiredRole) return false;
+  }
+
+  // If no permission required (but role check passed or wasn't needed), allow access
+  if (!requiredPermission) return true;
 
   // Check explicit permissions
   return user.permissions?.includes(requiredPermission) || false;

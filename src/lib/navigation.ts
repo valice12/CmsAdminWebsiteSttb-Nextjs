@@ -4,6 +4,7 @@ export interface NavItem {
   label: string;
   path: string;
   permission?: string;
+  requiredRoles?: string[];
 }
 
 export const MENU_STRUCTURE: NavItem[] = [
@@ -17,7 +18,7 @@ export const MENU_STRUCTURE: NavItem[] = [
   { label: 'Pengurus Yayasan', path: '/admin/pengurus-yayasan', permission: 'CanManageAdministrator' },
   { label: 'Dosen (Lecturer)', path: '/admin/dosen', permission: 'CanManageLecturers' },
   { label: 'User System', path: '/admin/user', permission: 'CanManageUsers' },
-  { label: 'Role & Permission', path: '/admin/role', permission: 'CanManageAdministrator' },
+  { label: 'Role & Permission', path: '/admin/role', requiredRoles: ['SuperAdmin'] },
   { label: 'Halaman', path: '/admin/halaman', permission: 'CanManageNews' },
   { label: 'API Status', path: '/admin/status', permission: 'CanManageUsers' },
 ];
@@ -27,7 +28,7 @@ export const MENU_STRUCTURE: NavItem[] = [
  */
 export function getFirstAuthorizedPath(userRoles: string[]): string {
   for (const item of MENU_STRUCTURE) {
-    if (hasPermission(userRoles, item.permission)) {
+    if (hasPermission(userRoles, item.permission, item.requiredRoles)) {
       return item.path;
     }
   }

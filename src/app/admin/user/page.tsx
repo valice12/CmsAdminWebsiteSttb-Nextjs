@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -56,7 +58,7 @@ export default function UserPage() {
   const [selectedUser, setSelectedUser] = useState<CMSUserDTO | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState({
-    roleName: '',
+    selectedRoles: [] as string[],
     isActive: true
   });
 
@@ -120,7 +122,7 @@ export default function UserPage() {
   const handleEditClick = (user: CMSUserDTO) => {
     setSelectedUser(user);
     setEditData({
-      roleName: user.roles?.[0] || 'Admin',
+      selectedRoles: user.roles || [],
       isActive: user.isActive
     });
     setIsEditOpen(true);
@@ -136,10 +138,10 @@ export default function UserPage() {
         FullName: selectedUser.fullName,
         Email: selectedUser.email,
         IsActive: editData.isActive,
-        Roles: [editData.roleName],
+        Roles: editData.selectedRoles,
         Permissions: selectedUser.permissions || []
       });
-      toast.success('Role/Status user berhasil diperbarui');
+      toast.success('User updated successfully');
       setIsEditOpen(false);
       loadUsers();
     } catch (error) {
@@ -338,21 +340,40 @@ export default function UserPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 py-4">
-            <div className="space-y-2">
-              <Label>Role / Hak Akses</Label>
-              <Select 
-                value={editData.roleName} 
-                onValueChange={(val) => setEditData({...editData, roleName: val})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Roles / Hak Akses ({editData.selectedRoles.length})</Label>
+              <ScrollArea className="h-[200px] border rounded-2xl p-4 bg-gray-50/50 shadow-inner">
+                <div className="space-y-3">
+                  {roles.map((role) => (
+                    <div 
+                      key={role} 
+                      className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white transition-all cursor-pointer group shadow-sm border border-transparent hover:border-indigo-100"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const isSelected = editData.selectedRoles.includes(role);
+                        setEditData(prev => ({
+                          ...prev,
+                          selectedRoles: isSelected 
+                            ? prev.selectedRoles.filter(r => r !== role)
+                            : [...prev.selectedRoles, role]
+                        }));
+                      }}
+                    >
+                      <Checkbox 
+                        id={`role-${role}`} 
+                        checked={editData.selectedRoles.includes(role)} 
+                        className="h-5 w-5 border-2 rounded-md data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                      />
+                      <label 
+                        htmlFor={`role-${role}`}
+                        className="text-xs font-black uppercase tracking-widest leading-none cursor-pointer grow text-gray-600 group-hover:text-indigo-600"
+                      >
+                        {role}
+                      </label>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              </ScrollArea>
             </div>
             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
                <div className="space-y-0.5">

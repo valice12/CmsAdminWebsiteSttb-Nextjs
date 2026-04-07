@@ -34,6 +34,7 @@ interface MenuItem {
   icon: React.ReactNode;
   path: string;
   permission?: string;
+  requiredRoles?: string[];
 }
 
 // Map icons to paths from MENU_STRUCTURE
@@ -78,7 +79,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           pathname === item.path || pathname.startsWith(item.path + '/')
         );
         
-        if (matchingItem && !hasPermission(currentUser.roles || [], matchingItem.permission)) {
+        if (matchingItem && !hasPermission(currentUser.roles || [], matchingItem.permission, matchingItem.requiredRoles)) {
           router.push('/admin/dashboard');
         }
       }
@@ -156,7 +157,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Navigation */}
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {menuItems.map((item) => {
-            if (!hasPermission(user.roles || [], item.permission)) {
+            if (!hasPermission(user.roles || [], item.permission, item.requiredRoles)) {
               return null;
             }
 

@@ -518,7 +518,7 @@ export async function getAllPermissions(page = 1, pageSize = 100) {
 export async function addPermission(name: string) {
   const response = await cmsFetch(`${CMS_BASE_URL}/users/add-permission`, {
     method: 'POST',
-    body: JSON.stringify({ Name: name }),
+    body: JSON.stringify({ PermissionName: name }),
   });
   if (!response.ok) throw new Error('Failed to add permission');
   return response.json();
