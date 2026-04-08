@@ -199,7 +199,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/admin/pengguna')} className="rounded-full shadow-sm">
+        <Button variant="ghost" size="icon" onClick={() => router.push(activeType === 'foundation' ? '/admin/pengurus-yayasan' : '/admin/dosen')} className="rounded-full shadow-sm">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="text-left">

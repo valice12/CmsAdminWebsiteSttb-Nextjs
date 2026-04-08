@@ -105,6 +105,7 @@ export default function RolePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: number, name: string, type: 'role' | 'permission' } | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -400,20 +401,29 @@ export default function RolePage() {
 
         {/* Action Buttons - Distinct from Tab Selection */}
         <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={`Cari ${activeTab === 'roles' ? 'role' : 'permission'}...`}
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-600/20"
+            />
+          </div>
            {activeTab === 'roles' ? (
               <Button 
                   onClick={() => handleOpenRoleDialog()}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 rounded-2xl px-8 h-14 flex items-center gap-3 transition-all hover:scale-105 active:scale-95 group font-black uppercase tracking-widest text-[12px]"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 rounded-2xl px-8 h-11 flex items-center gap-3 transition-all hover:scale-105 active:scale-95 group font-black uppercase tracking-widest text-[11px]"
               >
-                  <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                   Tambah Role
               </Button>
            ) : (
               <Button 
                   onClick={() => setIsPermDialogOpen(true)}
-                  className="bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-200 rounded-2xl px-8 h-14 flex items-center gap-3 transition-all hover:scale-105 active:scale-95 group font-black uppercase tracking-widest text-[12px]"
+                  className="bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-200 rounded-2xl px-8 h-11 flex items-center gap-3 transition-all hover:scale-105 active:scale-95 group font-black uppercase tracking-widest text-[11px]"
               >
-                  <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                   Tambah Permission
               </Button>
            )}
@@ -461,13 +471,13 @@ export default function RolePage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+            <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
                 <DataTable
                     columns={roleColumns}
                     data={roles}
                     isLoading={isLoading}
-                    searchKey="name"
-                    searchPlaceholder="Cari role..."
+                    globalFilter={searchTerm}
+                    onGlobalFilterChange={setSearchTerm}
                     totalItems={roleTotal}
                     pageCount={rolePageCount}
                     pageIndex={rolePage}
@@ -494,13 +504,13 @@ export default function RolePage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+            <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
                 <DataTable
                     columns={permColumns}
                     data={permissions}
                     isLoading={isLoading}
-                    searchKey="name"
-                    searchPlaceholder="Cari permission key..."
+                    globalFilter={searchTerm}
+                    onGlobalFilterChange={setSearchTerm}
                     totalItems={permTotal}
                     pageCount={permPageCount}
                     pageIndex={permPage}

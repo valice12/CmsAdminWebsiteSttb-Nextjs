@@ -7,6 +7,7 @@ import { getAllNews, deleteNews } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ interface NewsDTO {
 export default function BeritaPage() {
   const [news, setNews] = useState<NewsDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsDTO | null>(null);
   const [pageIndex, setPageIndex] = useState(1);
@@ -164,13 +166,24 @@ export default function BeritaPage() {
             Menampilkan data berita langsung dari Backend STTB.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push("/admin/berita/create")}
-          className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-xl px-6 h-12 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-bold">Tambah Berita</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari berita..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push("/admin/berita/create")}
+            className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-2xl px-6 h-11 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-bold">Tambah Berita</span>
+          </Button>
+        </div>
       </div>
 
       {/* Backend Integration Note */}
@@ -185,13 +198,13 @@ export default function BeritaPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={news}
           isLoading={isLoading}
-          searchKey="title"
-          searchPlaceholder="Cari berita dari backend..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

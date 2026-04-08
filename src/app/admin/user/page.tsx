@@ -6,7 +6,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, UserCircle, Mail, Clock, CheckCircle, XCircle, Trash2, Key, Activity, Plus, Edit, Lock } from 'lucide-react';
+import { Shield, UserCircle, Mail, Clock, CheckCircle, XCircle, Trash2, Key, Activity, Plus, Edit, Lock, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 import { getAllUsers, deleteUser, getAllRoles, updateUser } from '@/lib/api';
@@ -57,6 +58,7 @@ export default function UserPage() {
   // Edit Role States
   const [selectedUser, setSelectedUser] = useState<CMSUserDTO | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editData, setEditData] = useState({
     selectedRoles: [] as string[],
     isActive: true
@@ -307,13 +309,24 @@ export default function UserPage() {
             Manajemen akun administrator dan hak akses fungsional CMS.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/admin/user/create')}
-          className="h-14 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3"
-        >
-          <Plus className="w-5 h-5" />
-          Tambah System User
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari user system..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-600/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push('/admin/user/create')}
+            className="h-11 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah System User
+          </Button>
+        </div>
       </div>
 
        {/* Security Note */}
@@ -336,13 +349,13 @@ export default function UserPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={users}
           isLoading={isLoading}
-          searchKey="fullName"
-          searchPlaceholder="Cari user system..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

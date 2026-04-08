@@ -39,7 +39,8 @@ export default function DashboardPage() {
     news: 0,
     events: 0,
     programs: 0,
-    users: 0,
+    foundation: 0,
+    lecturers: 0,
     video: 0,
     article: 0,
     journal: 0,
@@ -61,7 +62,8 @@ export default function DashboardPage() {
         news: dashboardData.totalNews || 0,
         events: dashboardData.totalEvent || 0,
         programs: dashboardData.totalAcademicProgram || 0,
-        users: (dashboardData.totalAdministrator || 0) + (dashboardData.totalLecturer || 0),
+        foundation: dashboardData.totalAdministrator || 0,
+        lecturers: dashboardData.totalLecturer || 0,
         video: dashboardData.totalVideo || 0,
         article: dashboardData.totalArticle || 0,
         journal: dashboardData.totalJournal || 0,
@@ -102,48 +104,56 @@ export default function DashboardPage() {
     },
     {
       label: 'Pengurus Yayasan',
-      value: stats.users,
-      icon: Users,
+      value: stats.foundation,
+      icon: Shield,
       color: 'bg-indigo-600',
-      path: '/admin/pengguna',
+      path: '/admin/pengurus-yayasan',
       description: 'Struktural Yayasan'
+    },
+    {
+      label: 'Dosen / Pengajar',
+      value: stats.lecturers,
+      icon: Users,
+      color: 'bg-emerald-600',
+      path: '/admin/dosen',
+      description: 'Tenaga Pendidik'
     },
   ];
 
   const mediaStats: StatCardProps[] = [
     {
-      label: 'Video Library',
+      label: 'Video Lib.',
       value: stats.video,
       icon: Video,
-      color: 'bg-red-600',
+      color: 'bg-slate-900',
       description: 'Koleksi video'
     },
     {
-      label: 'Artikel Populer',
+      label: 'Artikel',
       value: stats.article,
       icon: FileText,
-      color: 'bg-orange-600',
+      color: 'bg-amber-600',
       description: 'Karya tulis ilmiah'
     },
     {
-      label: 'Jurnal Ilmiah',
+      label: 'Jurnal',
       value: stats.journal,
       icon: BookOpen,
-      color: 'bg-teal-600',
+      color: 'bg-indigo-600',
       description: 'Publikasi riset'
     },
     {
       label: 'Monograf',
       value: stats.monograf,
       icon: Book,
-      color: 'bg-purple-600',
+      color: 'bg-emerald-600',
       description: 'Buku teks akademik'
     },
     {
       label: 'Buletin',
       value: stats.buletin,
       icon: Mail,
-      color: 'bg-pink-600',
+      color: 'bg-rose-600',
       description: 'Warta mingguan'
     },
   ];
@@ -170,7 +180,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Primary Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
         {primaryStats.map((stat, index) => (
           <div 
             key={index} 
@@ -205,100 +215,85 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 text-left">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 text-left items-stretch">
         {/* Media Repository Overview */}
-        <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 shadow-2xl shadow-gray-200/50 border border-gray-100 flex flex-col">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-none uppercase">Repositori Media</h2>
-              <p className="text-xs text-muted-foreground mt-2 font-bold uppercase tracking-widest opacity-60">Breakdown aset digital per kategori</p>
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-9 shadow-2xl shadow-gray-200/50 border border-gray-100 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase leading-none">Repositori Media</h2>
+                <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest opacity-60">Digital Asset Breakdown</p>
+              </div>
+              <Badge variant="outline" className="h-8 rounded-full font-black text-[9px] uppercase tracking-widest bg-gray-50 border-gray-100 px-4">
+                {stats.video + stats.article + stats.journal + stats.monograf + stats.buletin} Aset
+              </Badge>
             </div>
-            <Badge variant="outline" className="h-8 rounded-full font-black text-[9px] uppercase tracking-widest bg-gray-50 border-gray-100">
-              Total {stats.video + stats.article + stats.journal + stats.monograf + stats.buletin} Aset
-            </Badge>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-2">
+              {mediaStats.map((stat, i) => (
+                <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all group flex flex-col justify-center items-center text-center shadow-sm min-h-[140px]">
+                  <div className={`${stat.color} text-white w-10 h-10 rounded-xl flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-2xl font-black text-gray-900 tracking-tight mb-2">{isLoading ? '...' : stat.value}</h4>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 flex-1">
-            {mediaStats.map((stat, i) => (
-              <div key={i} className="bg-gray-50/50 rounded-3xl p-6 border border-transparent hover:border-primary/10 hover:bg-white hover:shadow-xl transition-all group flex flex-col justify-center items-center text-center">
-                <div className={`${stat.color} text-white w-10 h-10 rounded-xl flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">{isLoading ? '...' : stat.value}</h4>
-                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 p-6 rounded-2xl bg-gray-50 border border-gray-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[10px] font-bold text-gray-400 italic">
-               Gunakan tab <span className="text-primary font-black uppercase text-[11px] non-italic ml-1">Media Library</span> untuk pengelolaan file lebih lanjut.
-            </p>
-            <Button onClick={() => router.push('/admin/media')} className="h-9 px-6 rounded-full font-black text-[9px] uppercase tracking-widest shadow-md">
-               Browse Library <ArrowRight className="ml-2 w-3 h-3" />
+          <div className="mt-10 p-7 rounded-2xl bg-gray-50 border border-gray-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
+                  <Video className="w-5 h-5 text-primary" />
+               </div>
+               <p className="text-xs font-bold text-gray-500 italic max-w-xs leading-relaxed">
+                  Akses dan kelola seluruh library media akademik secara terpusat melalui portal administrator.
+               </p>
+            </div>
+            <Button onClick={() => router.push('/admin/media')} className="h-11 px-8 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white transition-all">
+               Browse Library <ArrowRight className="ml-3 w-4 h-4" />
             </Button>
           </div>
         </div>
-
-        {/* System & Actions Sidebar */}
-        <div className="space-y-10">
+ 
+        {/* System Sidebar */}
+        <div className="flex flex-col">
            {/* Detailed Breakdown */}
-           <div className="bg-[#0B1B3D] rounded-[3rem] p-10 text-white shadow-2xl shadow-navy/20 relative overflow-hidden group flex-1">
+           <div className="bg-[#0B1B3D] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy/20 relative overflow-hidden group h-full flex flex-col justify-between">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-10 flex items-center gap-2">
-                 <Shield className="w-4 h-4" /> Keamanan Sistem
-              </h3>
-              
-              <div className="space-y-8 relative z-10">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">Database Sync</span>
-                    <span className="text-xl font-black text-[#D4AF37] tracking-tight">100%</span>
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-12 flex items-center gap-2">
+                   <Shield className="w-4 h-4" /> Keamanan Sistem
+                </h3>
+                
+                <div className="space-y-10 relative z-10 px-2">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white/50">Database Sync</span>
+                      <span className="text-xl font-black text-[#D4AF37] tracking-tight">100%</span>
+                    </div>
+                    <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
+                       <div className="bg-[#D4AF37] h-full shadow-[0_0_15px_rgba(212,175,55,0.5)]" style={{ width: '100%' }} />
+                    </div>
                   </div>
-                  <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                     <div className="bg-[#D4AF37] h-full shadow-[0_0_15px_rgba(212,175,55,0.5)]" style={{ width: '100%' }} />
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">Server Health</span>
-                    <span className="text-xl font-black text-white tracking-tight">Optimal</span>
-                  </div>
-                  <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                     <div className="bg-white h-full" style={{ width: '100%' }} />
+ 
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white/50">Server Health</span>
+                      <span className="text-xl font-black text-white tracking-tight">Optimal</span>
+                    </div>
+                    <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
+                       <div className="bg-white h-full shadow-[0_0_15px_rgba(255,255,255,0.2)]" style={{ width: '100%' }} />
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div className="mt-12 p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                 <p className="text-[10px] font-bold text-gray-400 italic leading-relaxed">
-                    Terhubung ke backend portal <br/> melalui port <span className="text-white font-black">5066</span>.
+              <div className="mt-14 p-7 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md">
+                 <p className="text-[11px] font-bold text-gray-400 italic leading-relaxed">
+                    Sistem dalam kondisi optimal. <br/> Terhubung ke backend portal <br/> melalui port <span className="text-white font-black non-italic ml-1">5066</span>.
                  </p>
-              </div>
-           </div>
-
-           {/* Quick Access Grid */}
-           <div className="bg-white rounded-[3rem] p-10 shadow-2xl shadow-gray-200/50 border border-gray-100">
-              <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em] mb-8 leading-none">Akses Cepat</h3>
-              <div className="grid grid-cols-2 gap-4">
-                 {[
-                   { label: 'Buat Berita', icon: Newspaper, path: '/admin/berita/create' },
-                   { label: 'Add Event', icon: Calendar, path: '/admin/kegiatan/create' },
-                   { label: 'System status', icon: Layout, path: '/admin/status' },
-                   { label: 'Settings', icon: Activity, path: '/admin/status' },
-                 ].map((action, i) => (
-                    <button 
-                      key={i}
-                      onClick={() => router.push(action.path)}
-                      className="flex flex-col items-center justify-center gap-3 h-24 rounded-3xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-all group"
-                    >
-                       <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-all">
-                          <action.icon className="w-4 h-4" />
-                       </div>
-                       <span className="text-[9px] font-black uppercase tracking-widest">{action.label}</span>
-                    </button>
-                 ))}
               </div>
            </div>
         </div>

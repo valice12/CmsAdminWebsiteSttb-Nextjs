@@ -68,10 +68,12 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
       globalFilter: externalGlobalFilter ?? globalFilter,
-      pagination: isManualPagination ? {
-        pageIndex: (pageIndex ?? 1) - 1,
-        pageSize: pageSize ?? 10
-      } : undefined
+      ...(isManualPagination ? {
+        pagination: {
+          pageIndex: (pageIndex ?? 1) - 1,
+          pageSize: pageSize ?? 10
+        }
+      } : {})
     },
   });
 
@@ -163,11 +165,11 @@ export function DataTable<TData, TValue>({
           Showing <span className="text-gray-900 font-black">
             {isManualPagination 
               ? Math.min(((pageIndex ?? 1) - 1) * (pageSize ?? 10) + 1, totalItems ?? 0)
-              : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+              : (table.getState().pagination?.pageIndex ?? 0) * (table.getState().pagination?.pageSize ?? 10) + 1}
           </span> - <span className="text-gray-900 font-black">
             {isManualPagination
               ? Math.min((pageIndex ?? 1) * (pageSize ?? 10), totalItems ?? 0)
-              : Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)}
+              : Math.min(((table.getState().pagination?.pageIndex ?? 0) + 1) * (table.getState().pagination?.pageSize ?? 10), data.length)}
           </span> of <span className="text-gray-900 font-black">{totalItems ?? data.length}</span> records
         </p>
         <div className="flex items-center gap-2">

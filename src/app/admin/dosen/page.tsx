@@ -7,7 +7,8 @@ import { getAllLecturers, deleteLecturer } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Trash2, Plus, Edit, ExternalLink, Activity } from 'lucide-react';
+import { GraduationCap, Trash2, Plus, Edit, ExternalLink, Activity, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ export default function DosenPage() {
   const router = useRouter();
   const [data, setData] = useState<LecturerDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
@@ -154,13 +156,24 @@ export default function DosenPage() {
             Administrasi data <span className="text-emerald-600 font-bold italic">Dosen Akademik</span> Portal Utama.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/admin/dosen/create')}
-          className="rounded-2xl h-12 px-8 shadow-xl bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 text-white font-black uppercase tracking-widest flex items-center gap-3 transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          Tambah Dosen
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari dosen..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-emerald-500/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push('/admin/dosen/create')}
+            className="rounded-2xl h-11 px-8 shadow-xl bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 text-white font-black uppercase tracking-widest flex items-center gap-3 transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah Dosen
+          </Button>
+        </div>
       </div>
 
       <div className="bg-emerald-50 border border-emerald-100 rounded-[2rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
@@ -178,13 +191,13 @@ export default function DosenPage() {
          </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={data}
           isLoading={isLoading}
-          searchKey="lecturerName"
-          searchPlaceholder="Cari dosen..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

@@ -22,7 +22,7 @@ interface AkademikDTO {
   id: number;
   programName: string;
   degree: string;
-  totalCredits: number;
+  totalCredit: number;
 }
 
 export default function AkademikPage() {
@@ -86,12 +86,12 @@ export default function AkademikPage() {
     },
 
     {
-      accessorKey: 'totalCredits',
+      accessorKey: 'totalCredit',
       header: 'SKS',
       cell: ({ row }) => (
         <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
           <Award className="w-4 h-4 text-amber-500" />
-          {row.original.totalCredits || '-'} SKS
+          {row.original.totalCredit || '-'} SKS
         </div>
       ),
     },
@@ -158,13 +158,11 @@ export default function AkademikPage() {
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={programs}
           isLoading={isLoading}
-          searchKey="programName"
-          searchPlaceholder="Cari program studi..."
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

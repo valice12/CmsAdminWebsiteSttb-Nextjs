@@ -155,13 +155,11 @@ export default function JadwalAdmisiPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-100">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable 
           columns={columns} 
           data={deadlines} 
           isLoading={isLoading}
-          searchKey="academicYear"
-          searchPlaceholder="Cari tahun akademik..."
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

@@ -7,6 +7,7 @@ import { getAllEvents, deleteEvent } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Calendar, MapPin, Globe, Users, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, MapPin, Globe, Users, TrendingUp, Clock, CheckCircle, AlertCircle, Search } from 'lucide-react';
 import { formatDateTime, getImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -34,6 +35,7 @@ interface EventDTO {
 export default function KegiatanPage() {
   const [events, setEvents] = useState<EventDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventDTO | null>(null);
   const [pageIndex, setPageIndex] = useState(1);
@@ -169,13 +171,24 @@ export default function KegiatanPage() {
             Sinkronisasi data kegiatan kampus langsung dari pusat server.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push("/admin/kegiatan/create")}
-          className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-xl px-6 h-12 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-bold">Entry Event Baru</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari data kegiatan..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push("/admin/kegiatan/create")}
+            className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-2xl px-6 h-11 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-bold">Entry Event Baru</span>
+          </Button>
+        </div>
       </div>
 
        {/* Backend Integration Note */}
@@ -190,13 +203,13 @@ export default function KegiatanPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={events}
           isLoading={isLoading}
-          searchKey="eventTitle"
-          searchPlaceholder="Cari data kegiatan..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}
