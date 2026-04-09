@@ -2,51 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Shield, UserCircle, Mail, Clock, CheckCircle, XCircle, Trash2, Key, Activity, Plus, Edit, Lock, Search } from 'lucide-react';
+import { Shield, Plus, Key, Search, Activity } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 import { getAllUsers, deleteUser, getAllRoles, updateUser } from '@/lib/api';
 import { ROLE_PERMISSIONS } from '@/lib/permissions';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 
-interface CMSUserDTO {
-  id: number;
-  fullName: string;
-  email: string;
-  isActive: boolean;
-  lastLoginAt: string;
-  createdAt: string;
-  permissions: string[];
-  roles: string[];
-}
-
-interface RoleInfo {
-  name: string;
-  permissions: string[];
-}
+// Import local components
+import { UserEditDialog } from '@/components/user/UserEditDialog';
+import { getUserColumns, CMSUserDTO } from '@/components/user/UserColumns';
+import { UserStats } from '@/components/user/UserStats';
 
 export default function UserPage() {
   const router = useRouter();
@@ -170,131 +138,11 @@ export default function UserPage() {
     }
   };
 
-  const columns: ColumnDef<CMSUserDTO>[] = [
-    {
-      accessorKey: 'fullName',
-      header: 'System User',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-4 group text-left">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm transition-all group-hover:scale-110">
-            <UserCircle className="w-6 h-6 text-indigo-500" />
-          </div>
-          <div>
-            <p className="font-bold text-gray-900 group-hover:text-primary transition-colors">{row.original.fullName}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-               <Mail className="w-3 h-3 text-muted-foreground" />
-               <p className="text-[10px] text-muted-foreground font-medium">{row.original.email}</p>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'roles',
-      header: 'Roles',
-      cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.roles.map((role, i) => (
-            <Badge key={i} variant="outline" className="font-extrabold text-[9px] px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm">
-              <Shield className="w-3 h-3 mr-1.5" />
-              {role}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
-    {
-        id: 'permissions',
-        header: 'Permissions',
-        cell: ({ row }) => {
-          const directPerms = row.original.permissions || [];
-          const inheritedPerms = row.original.roles.flatMap(role => rolePermissionsMap[role] || []);
-          const allPerms = Array.from(new Set([...directPerms, ...inheritedPerms]));
-          
-          if (allPerms.length === 0) return <span className="text-[10px] text-gray-400 italic">No specific permissions</span>;
-          
-          return (
-            <div className="flex flex-wrap gap-1 max-w-[250px]">
-              {allPerms.map((p, i) => (
-                <Badge key={i} variant="outline" className="text-[8px] font-bold px-2 py-0 h-5 bg-gray-50 text-gray-500 border-gray-200">
-                  <Lock className="w-2.5 h-2.5 mr-1" />
-                  {p}
-                </Badge>
-              ))}
-            </div>
-          );
-        },
-      },
-    {
-      accessorKey: 'isActive',
-      header: 'Status',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-           {row.original.isActive ? (
-             <Badge className="bg-emerald-500 text-white border-none text-[9px] font-black uppercase tracking-widest px-2 py-0.5">
-                <CheckCircle className="w-3 h-3 mr-1" /> ACTIVE
-             </Badge>
-           ) : (
-             <Badge className="bg-red-500 text-white border-none text-[9px] font-black uppercase tracking-widest px-2 py-0.5">
-                <XCircle className="w-3 h-3 mr-1" /> INACTIVE
-             </Badge>
-           )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'lastLoginAt',
-      header: 'Last Activity',
-      cell: ({ row }) => (
-        <div className="flex flex-col gap-0.5 text-left">
-           <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
-              <Clock className="w-3.5 h-3.5 text-gray-400" />
-              {row.original.lastLoginAt && row.original.lastLoginAt !== '0001-01-01T00:00:00' 
-                ? new Date(row.original.lastLoginAt).toLocaleDateString('id-ID', {
-                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                  }) 
-                : 'Belum Login'}
-           </div>
-           <p className="text-[9px] text-gray-400 font-medium italic ml-5">Dibuat: {new Date(row.original.createdAt).toLocaleDateString()}</p>
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Aksi',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => handleEditClick(row.original)}
-            className="h-8 w-8 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-            title="Edit Role/Status"
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => toast.info("Reset password function not directly available")}
-            className="h-8 w-8 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-            title="Reset Password"
-          >
-            <Key className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => handleDelete(row.original.id)}
-            className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-colors"
-            title="Hapus User"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const columns = getUserColumns({
+    rolePermissionsMap,
+    onEdit: handleEditClick,
+    onDelete: handleDelete
+  });
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
@@ -364,94 +212,18 @@ export default function UserPage() {
         />
       </div>
 
-      {/* Edit Role Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Update User: {selectedUser?.fullName}</DialogTitle>
-            <DialogDescription>
-              Ubah role atau status aktifasi user system ini.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-6 py-4">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Roles / Hak Akses ({editData.selectedRoles.length})</Label>
-              <ScrollArea className="h-[200px] border rounded-2xl p-4 bg-gray-50/50 shadow-inner">
-                <div className="space-y-3">
-                  {roles.map((role) => (
-                    <div 
-                      key={role} 
-                      className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white transition-all cursor-pointer group shadow-sm border border-transparent hover:border-indigo-100"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const isSelected = editData.selectedRoles.includes(role);
-                        setEditData(prev => ({
-                          ...prev,
-                          selectedRoles: isSelected 
-                            ? prev.selectedRoles.filter(r => r !== role)
-                            : [...prev.selectedRoles, role]
-                        }));
-                      }}
-                    >
-                      <Checkbox 
-                        id={`role-${role}`} 
-                        checked={editData.selectedRoles.includes(role)} 
-                        className="h-5 w-5 border-2 rounded-md data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                      />
-                      <label 
-                        htmlFor={`role-${role}`}
-                        className="text-xs font-black leading-none cursor-pointer grow text-gray-600 group-hover:text-indigo-600"
-                      >
-                        {role}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
-               <div className="space-y-0.5">
-                  <Label className="text-sm font-bold">Status Akun</Label>
-                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">
-                    {editData.isActive ? 'User dapat melakukan login' : 'Akses user dibekukan'}
-                  </p>
-               </div>
-               <Switch 
-                 checked={editData.isActive} 
-                 onCheckedChange={(val) => setEditData({...editData, isActive: val})}
-               />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Batal</Button>
-            <Button 
-              onClick={handleUpdateUser} 
-              disabled={isLoading}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              {isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserEditDialog 
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        selectedUser={selectedUser}
+        editData={editData}
+        setEditData={setEditData}
+        roles={roles}
+        isLoading={isLoading}
+        onSave={handleUpdateUser}
+      />
 
-       {/* Technical Stats Overlay */}
-       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Total Accounts', value: users.length, icon: Shield, color: 'text-indigo-600' },
-            { label: 'Active Users', value: users.filter(u => u.isActive).length, icon: CheckCircle, color: 'text-emerald-500' },
-            { label: 'Avg Activity', value: 'High', icon: Activity, color: 'text-amber-500' },
-            { label: 'System Health', value: '100%', icon: CheckCircle, color: 'text-emerald-500' },
-          ].map((stat, i) => (
-             <div key={i} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-                 <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{stat.label}</p>
-                    <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-                 </div>
-                 <stat.icon className={`w-10 h-10 opacity-10 ${stat.color}`} />
-             </div>
-          ))}
-       </div>
+       <UserStats users={users} />
     </div>
   );
 }
