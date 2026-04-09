@@ -32,7 +32,7 @@ export default function UserPage() {
     isActive: true
   });
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(99);
   const [totalItems, setTotalItems] = useState(0);
   const [pageCount, setPageCount] = useState(0);
 

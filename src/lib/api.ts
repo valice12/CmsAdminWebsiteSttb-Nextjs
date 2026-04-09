@@ -506,8 +506,11 @@ export async function addRole(name: string, permissions: string[] = []) {
   return response.json();
 }
 
-export async function updateRole(id: number, name: string, permissions: string[]) {
-  const rolePermissionsDTOs = permissions.map(p => ({ PermissionName: p }));
+export async function updateRole(id: number, name: string, permissions: { id: number, name: string }[]) {
+  const rolePermissionsDTOs = permissions.map(p => ({ 
+    Id: p.id, 
+    PermissionName: p.name 
+  }));
   const response = await cmsFetch(`${CMS_BASE_URL}/users/edit-role`, {
     method: 'PUT',
     body: JSON.stringify({ Id: id, RoleName: name, RolePermissions: rolePermissionsDTOs }),
@@ -528,7 +531,7 @@ export async function deleteRole(id: number) {
 
 // ─── Permissions ─────────────────────────────────────────────────────────────
 
-export async function getAllPermissions(page = 1, pageSize = 100, search = '') {
+export async function getAllPermissions(page = 1, pageSize = 99, search = '') {
   const query = new URLSearchParams({
     PageNumber: page.toString(),
     PageSize: pageSize.toString(),

@@ -313,40 +313,36 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message}</p>}
               </div>
               <div className="space-y-4 md:col-span-2">
-                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Roles / Hak Akses ({userForm.watch('roleNames').length})</label>
+                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Role / Hak Akses Utama</label>
                  <ScrollArea className="h-[200px] border rounded-2xl p-6 bg-indigo-50/20 shadow-inner">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {roles.map((role) => (
-                        <div 
+                        <label 
                           key={role} 
+                          htmlFor={`form-role-${role}`}
                           className={`flex items-center space-x-3 p-4 rounded-2xl border-2 transition-all cursor-pointer group hover:scale-[1.02] active:scale-95 ${
                             userForm.watch('roleNames').includes(role)
                             ? 'bg-white border-indigo-200 shadow-md ring-1 ring-indigo-50'
                             : 'bg-transparent border-transparent hover:bg-white/50 hover:border-indigo-100'
                           }`}
-                          onClick={() => {
-                            const current = userForm.getValues('roleNames');
-                            const isSelected = current.includes(role);
-                            const next = isSelected 
-                              ? current.filter(r => r !== role)
-                              : [...current, role];
-                            userForm.setValue('roleNames', next);
-                          }}
                         >
                           <Checkbox 
                             id={`form-role-${role}`} 
                             checked={userForm.watch('roleNames').includes(role)} 
+                            onCheckedChange={() => {
+                              // Force single selection: just set to current role
+                              userForm.setValue('roleNames', [role]);
+                            }}
                             className="h-5 w-5 border-2 rounded-md data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 shadow-sm"
                           />
-                          <label 
-                            htmlFor={`form-role-${role}`}
+                          <span 
                             className={`text-[10px] font-black leading-none cursor-pointer grow transition-colors ${
                               userForm.watch('roleNames').includes(role) ? 'text-indigo-600' : 'text-gray-500'
                             }`}
                           >
                             {role}
-                          </label>
-                        </div>
+                          </span>
+                        </label>
                       ))}
                     </div>
                  </ScrollArea>

@@ -16,12 +16,15 @@ import {
   Menu,
   X,
   Shield,
+  ShieldCheck,
   ChevronRight,
+  ChevronDown,
   Bell,
   Search,
   Activity,
   DollarSign,
   Lock,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +38,7 @@ interface MenuItem {
   path: string;
   permission?: string;
   requiredRoles?: string[];
+  children?: MenuItem[];
 }
 
 // Map icons to paths from MENU_STRUCTURE
@@ -44,19 +48,119 @@ const iconMap: Record<string, React.ReactNode> = {
   '/admin/kegiatan': <Calendar className="w-5 h-5" />,
   '/admin/akademik': <GraduationCap className="w-5 h-5" />,
   '/admin/biaya': <DollarSign className="w-5 h-5 text-amber-500" />,
+  '/admin/admisi/jadwal': <Clock className="w-5 h-5 text-amber-400" />,
   '/admin/media': <ImageIcon className="w-5 h-5" />,
-  '/admin/pengurus-yayasan': <Shield className="w-5 h-5" />,
-  '/admin/dosen': <Users className="w-5 h-5 text-emerald-500" />,
-  '/admin/user': <Users className="w-5 h-5 text-indigo-500" />,
-  '/admin/role': <Lock className="w-5 h-5 text-amber-500" />,
+  '/admin/personalia': <Users className="w-5 h-5 text-emerald-500" />,
+  '/admin/keamanan': <ShieldCheck className="w-5 h-5 text-indigo-600" />,
   '/admin/halaman': <FileText className="w-5 h-5" />,
   '/admin/status': <Activity className="w-5 h-5 text-amber-500" />,
 };
 
-const menuItems: MenuItem[] = MENU_STRUCTURE.map(item => ({
+const mapNavItemToMenuItem = (item: any): MenuItem => ({
   ...item,
   icon: iconMap[item.path] || <FileText className="w-5 h-5" />,
-}));
+  children: item.children ? item.children.map(mapNavItemToMenuItem) : undefined
+});
+
+const menuItems: MenuItem[] = MENU_STRUCTURE.map(mapNavItemToMenuItem);
+
+function SidebarNavItem({ 
+  item, 
+  pathname, 
+  searchParams, 
+  setSidebarOpen 
+}: { 
+  item: MenuItem; 
+  pathname: string; 
+  searchParams: any; 
+  setSidebarOpen: (open: boolean) => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Detect if any child is active
+  const hasActiveChild = item.children?.some(child => {
+    return pathname === child.path || (pathname.startsWith(child.path + '/') && !child.path.includes('?'));
+  });
+
+  // Effect to auto-expand if child is active
+  useEffect(() => {
+    if (hasActiveChild) {
+      setIsExpanded(true);
+    }
+  }, [hasActiveChild]);
+
+  const currentTab = searchParams.get('tab');
+  const itemUrl = item.path.includes('http') ? new URL(item.path) : new URL(item.path, 'http://localhost');
+  const itemTab = itemUrl.searchParams.get('tab');
+  
+  let isActive = false;
+  
+  if (itemTab) {
+    isActive = pathname === itemUrl.pathname && currentTab === itemTab;
+  } else if (!item.children) {
+    isActive = pathname === item.path || (pathname.startsWith(item.path + '/') && !item.path.includes('?'));
+  }
+
+  // If item has children, it's a dropdown toggle (unless it's a direct link too)
+  if (item.children) {
+    return (
+      <div className="space-y-1">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-[13px] font-bold transition-all ${
+            hasActiveChild || isActive
+              ? 'bg-[#1E3A5F] text-[#D4AF37] shadow-lg shadow-black/20'
+              : 'text-gray-400 hover:bg-[#1E3A5F] hover:text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="shrink-0">{item.icon}</div>
+            <span className="truncate">{item.label}</span>
+          </div>
+          <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {isExpanded && (
+          <div className="pl-4 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-300">
+            {item.children.map((child) => {
+              const childActive = pathname === child.path || (pathname.startsWith(child.path + '/') && !child.path.includes('?'));
+              return (
+                <Link
+                  key={child.path}
+                  href={child.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-lg text-[13px] font-bold transition-all ${
+                    childActive
+                      ? 'text-[#D4AF37] bg-white/5'
+                      : 'text-gray-500 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-current opacity-40 shrink-0" />
+                  <span className="truncate">{child.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={item.path}
+      onClick={() => setSidebarOpen(false)}
+      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-[13px] font-bold transition-all ${
+        isActive
+          ? 'bg-[#1E3A5F] text-[#D4AF37] shadow-lg shadow-black/20'
+          : 'text-gray-400 hover:bg-[#1E3A5F] hover:text-white'
+      }`}
+    >
+      <div className="shrink-0">{item.icon}</div>
+      <span className="truncate">{item.label}</span>
+    </Link>
+  );
+}
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -156,39 +260,39 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Navigation */}
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            if (!hasPermission(user.roles || [], item.permission, item.requiredRoles)) {
-              return null;
-            }
-
-            const currentTab = searchParams.get('tab');
-            const itemUrl = new URL(item.path, 'http://localhost');
-            const itemTab = itemUrl.searchParams.get('tab');
+          {(() => {
+            const userRoles = user?.roles || [];
             
-            let isActive = false;
-            
-            if (itemTab) {
-              isActive = pathname === itemUrl.pathname && currentTab === itemTab;
-            } else {
-              isActive = pathname === item.path || (pathname.startsWith(item.path + '/') && !item.path.includes('?'));
-            }
+            const checkVisibility = (navItem: MenuItem): boolean => {
+              const hasBasePermission = hasPermission(userRoles, navItem.permission, navItem.requiredRoles);
+              
+              if (navItem.children && navItem.children.length > 0) {
+                const anyChildVisible = navItem.children.some(child => checkVisibility(child));
+                return (navItem.permission || navItem.requiredRoles) ? (hasBasePermission && anyChildVisible) : anyChildVisible;
+              }
 
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                  isActive
-                    ? 'bg-[#1E3A5F] text-[#D4AF37] shadow-lg shadow-black/20'
-                    : 'text-gray-400 hover:bg-[#1E3A5F] hover:text-white'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+              return hasBasePermission;
+            };
+
+            return menuItems.map((item) => {
+              if (!checkVisibility(item)) return null;
+
+              const filteredItem = {
+                ...item,
+                children: item.children ? item.children.filter(child => checkVisibility(child)) : undefined
+              };
+
+              return (
+                <SidebarNavItem 
+                  key={item.path} 
+                  item={filteredItem} 
+                  pathname={pathname} 
+                  searchParams={searchParams} 
+                  setSidebarOpen={setSidebarOpen} 
+                />
+              );
+            });
+          })()}
         </nav>
 
         {/* Logout */}

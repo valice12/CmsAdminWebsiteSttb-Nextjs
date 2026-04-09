@@ -99,14 +99,14 @@ export function RoleDialog({
             
             <div className="grid grid-cols-1 gap-2.5">
               {permissions.map((perm) => (
-                <div 
+                <label 
                   key={perm.id} 
+                  htmlFor={`perm-${perm.id}`}
                   className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer group ${
                     roleFormData.selectedPermissions.includes(perm.name)
                       ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-md'
                       : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
                   }`}
-                  onClick={() => togglePermissionInRole(perm.name)}
                 >
                   <div className="flex items-center gap-4">
                       <div className={`p-2 rounded-xl transition-colors ${roleFormData.selectedPermissions.includes(perm.name) ? 'bg-indigo-300/20' : 'bg-gray-100'}`}>
@@ -115,11 +115,12 @@ export function RoleDialog({
                      <span className="text-sm font-black tracking-tight">{perm.name}</span>
                   </div>
                   <Checkbox 
+                    id={`perm-${perm.id}`}
                     checked={roleFormData.selectedPermissions.includes(perm.name)}
                     onCheckedChange={() => togglePermissionInRole(perm.name)}
                     className="h-6 w-6 border-2 border-gray-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-lg"
                   />
-                </div>
+                </label>
               ))}
             </div>
           </div>
