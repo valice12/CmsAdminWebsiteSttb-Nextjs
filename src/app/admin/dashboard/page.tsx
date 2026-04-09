@@ -174,7 +174,7 @@ export default function DashboardPage() {
         
         <div className="flex items-center gap-2 bg-gray-100/50 p-2 rounded-2xl">
            <Badge variant="outline" className="bg-white px-4 py-2 font-black text-[10px] uppercase tracking-widest border-gray-100 shadow-sm">
-              <Activity className="w-3 h-3 mr-2 text-green-500" /> Server: localhost:5066
+              <Activity className="w-3 h-3 mr-2 text-green-500" /> Host: {process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).host : 'localhost:5066'}
            </Badge>
         </div>
       </div>

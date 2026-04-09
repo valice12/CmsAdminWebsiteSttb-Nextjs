@@ -18,9 +18,13 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan CMS di komputer lokal Anda.
     ```bash
     npm install
     ```
-2.  **Konfigurasi API**:
-    Project ini dikonfigurasi untuk membaca API di `http://localhost:5066/api/v1`. Jika Anda perlu mengubahnya, edit file:
-    `src/lib/api.ts` (Variabel `BASE_URL`).
+2.  **Konfigurasi API & Network**:
+    Buat file `.env.local` di folder utama (lihat `.env.local.example`):
+    ```env
+    NEXT_PUBLIC_API_URL=http://[IPv4-ADDRESS]:5066/api/v1
+    ```
+    - Ganti `[IPv4-ADDRESS]` dengan IP komputer Anda (contoh: `192.168.18.34`).
+    - Hal ini diperlukan agar CMS dapat diakses dari device lain (mobile) dalam satu network.
 3.  **Menjalankan Mode Pengembangan**:
     ```bash
     npm run dev

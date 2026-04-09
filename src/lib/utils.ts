@@ -35,11 +35,14 @@ export function getImageUrl(path: string | null | undefined, module: string = 'g
   // Clean the path from leading slashes and common prefixes
   let cleanPath = path.replace(/^\/+/, '').replace(/\\/g, '/');
   
+  // Extract base host from configured API URL
+  const apiHost = process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).origin : 'http://localhost:5066';
+  
   // If the path already contains Uploads or uploads, we just normalize the casing for the host part
   if (cleanPath.toLowerCase().startsWith('uploads/')) {
-    return `http://localhost:5066/${cleanPath}`;
+    return `${apiHost}/${cleanPath}`;
   }
 
   // Otherwise, we assume it's just a filename and prepend the full standardized path
-  return `http://localhost:5066/uploads/images/${module.toLowerCase()}/${cleanPath}`;
+  return `${apiHost}/uploads/images/${module.toLowerCase()}/${cleanPath}`;
 }

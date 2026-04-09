@@ -2,26 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   Shield, 
   Plus, 
-  Edit, 
-  Trash2, 
-  Lock, 
-  CheckCircle, 
-  X,
   Search,
   Settings2,
-  Key,
-  Database,
+  Lock,
   ShieldCheck,
-  AlertTriangle,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  Trash2,
+  Database
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -45,9 +37,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { 
   Tabs, 
   TabsContent, 
@@ -55,18 +45,11 @@ import {
   TabsTrigger 
 } from '@/components/ui/tabs';
 
-interface RoleDTO {
-  id: number;
-  name: string;
-  rolePermissions: string[];
-  createdAt: string;
-}
-
-interface PermissionDTO {
-  id: number;
-  name: string;
-  createdAt?: string;
-}
+// Import local components
+import { RoleDialog } from '@/components/role/RoleDialog';
+import { PermissionDialog } from '@/components/role/PermissionDialog';
+import { getRoleColumns, getPermissionColumns, RoleDTO, PermissionDTO } from '@/components/role/RoleColumns';
+import { RoleStats } from '@/components/role/RoleStats';
 
 export default function RolePage() {
   const router = useRouter();
@@ -152,8 +135,6 @@ export default function RolePage() {
     }
   };
 
-  // --- Role Handlers ---
-
   const handleOpenRoleDialog = (role?: RoleDTO) => {
     if (role) {
       setEditingRole(role);
@@ -196,8 +177,6 @@ export default function RolePage() {
     }
   };
 
-  // --- Permission Handlers ---
-
   const handleSavePermission = async () => {
     if (!permFormData.name.trim()) {
       toast.error('Nama permission harus diisi');
@@ -218,8 +197,6 @@ export default function RolePage() {
       setIsLoading(false);
     }
   };
-
-  // --- Unified Delete Handler ---
 
   const confirmDelete = (id: number, name: string, type: 'role' | 'permission') => {
     setItemToDelete({ id, name, type });
@@ -258,107 +235,14 @@ export default function RolePage() {
     }));
   };
 
-  // --- Table Columns ---
+  const roleColumns = getRoleColumns({
+    onEditRole: handleOpenRoleDialog,
+    onDeleteRole: (id, name) => confirmDelete(id, name, 'role')
+  });
 
-  const roleColumns: ColumnDef<RoleDTO>[] = [
-    {
-      accessorKey: 'name',
-      header: 'Role Name',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm transition-all group-hover:scale-110">
-            <Shield className="w-5 h-5 text-indigo-500" />
-          </div>
-          <span className="font-bold text-gray-900">{row.original.name}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'rolePermissions',
-      header: 'Permissions',
-      cell: ({ row }) => {
-        const perms = row.original.rolePermissions || [];
-        if (perms.length === 0) return <span className="text-[10px] text-gray-400 italic font-medium">No permissions assigned</span>;
-        
-        return (
-          <div className="flex flex-wrap gap-1.5 max-w-[400px]">
-            {perms.map((p, i) => (
-              <Badge key={i} variant="outline" className="text-[9px] font-black uppercase tracking-tighter px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border-indigo-100/50">
-                <Lock className="w-2.5 h-2.5 mr-1" />
-                {p}
-              </Badge>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="h-9 w-9 text-indigo-500 hover:bg-indigo-50"
-            onClick={() => handleOpenRoleDialog(row.original)}
-          >
-            <Edit className="w-4.5 h-4.5" />
-          </Button>
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="h-9 w-9 text-red-500 hover:bg-red-50"
-            onClick={() => confirmDelete(row.original.id, row.original.name, 'role')}
-          >
-            <Trash2 className="w-4.5 h-4.5" />
-          </Button>
-        </div>
-      ),
-    }
-  ];
-
-  const permColumns: ColumnDef<PermissionDTO>[] = [
-    {
-      accessorKey: 'name',
-      header: 'Permission Key',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm transition-all group-hover:scale-110">
-            <Key className="w-5 h-5 text-amber-500" />
-          </div>
-          <code className="px-2 py-1 bg-gray-50 rounded-md font-mono text-sm font-bold text-gray-700">
-            {row.original.name}
-          </code>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Register Date',
-      cell: ({ row }) => (
-        <span className="text-xs font-medium text-gray-500">
-           {row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : '-'}
-        </span>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="h-9 w-9 text-red-500 hover:bg-red-50"
-            onClick={() => confirmDelete(row.original.id, row.original.name, 'permission')}
-          >
-            <Trash2 className="w-4.5 h-4.5" />
-          </Button>
-        </div>
-      ),
-    }
-  ];
+  const permColumns = getPermissionColumns({
+    onDeletePermission: (id, name) => confirmDelete(id, name, 'permission')
+  });
 
   if (isAuthorized === false) {
     return (
@@ -382,7 +266,7 @@ export default function RolePage() {
   }
 
   if (isAuthorized === null) {
-      return null; // or loading spinner
+      return null;
   }
 
   return (
@@ -399,7 +283,6 @@ export default function RolePage() {
           </p>
         </div>
 
-        {/* Action Buttons - Distinct from Tab Selection */}
         <div className="flex items-center gap-3">
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -441,7 +324,6 @@ export default function RolePage() {
                 </TabsTrigger>
             </TabsList>
             
-            {/* Summary counters in the tab bar area */}
             <div className="hidden lg:flex items-center gap-8">
                <div className="flex flex-col items-end">
                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Roles</span>
@@ -455,7 +337,6 @@ export default function RolePage() {
         </div>
 
         <TabsContent value="roles" className="animate-in slide-in-from-left-4 duration-500 m-0">
-            {/* Guide Card for Roles */}
             <div className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 mb-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-indigo-900">
                     <Shield className="w-full h-full" />
@@ -488,7 +369,6 @@ export default function RolePage() {
         </TabsContent>
 
         <TabsContent value="permissions" className="animate-in slide-in-from-right-4 duration-500 m-0">
-             {/* Guide Card for Permissions */}
              <div className="bg-amber-50 border border-amber-100 rounded-[2.5rem] p-8 mb-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-amber-900">
                     <Lock className="w-full h-full" />
@@ -521,140 +401,25 @@ export default function RolePage() {
         </TabsContent>
       </Tabs>
 
-      {/* Role Dialog */}
-      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-10 bg-indigo-600 text-white text-left relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2" />
-            <DialogTitle className="text-3xl font-black tracking-tighter uppercase relative z-10">
-              {editingRole ? 'Update Role' : 'Tambah Role Baru'}
-            </DialogTitle>
-            <DialogDescription className="text-indigo-100 font-medium opacity-90 relative z-10">
-              Konfigurasi tingkatan akses dengan memilih permission yang sesuai.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nama Role</Label>
-              <Input 
-                value={roleFormData.name}
-                onChange={(e) => setRoleFormData({...roleFormData, name: e.target.value})}
-                placeholder="Misal: Marketing Senior"
-                className="h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 transition-all text-lg"
-              />
-            </div>
+      <RoleDialog 
+        open={isRoleDialogOpen}
+        onOpenChange={setIsRoleDialogOpen}
+        editingRole={editingRole}
+        roleFormData={roleFormData}
+        setRoleFormData={setRoleFormData}
+        permissions={permissions}
+        isLoading={isLoading}
+        onSave={handleSaveRole}
+        togglePermissionInRole={togglePermissionInRole}
+      />
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pilih Access Keys ({roleFormData.selectedPermissions.length})</Label>
-                <div className="flex gap-2">
-                   <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-[9px] font-black uppercase text-indigo-600 hover:bg-indigo-50 rounded-lg h-7"
-                    onClick={() => setRoleFormData({...roleFormData, selectedPermissions: permissions.map(p => p.name)})}
-                   >
-                     Select All
-                   </Button>
-                   <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-[9px] font-black uppercase text-gray-400 hover:bg-gray-50 rounded-lg h-7"
-                    onClick={() => setRoleFormData({...roleFormData, selectedPermissions: []})}
-                   >
-                     Clear
-                   </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-2.5">
-                {permissions.map((perm) => (
-                  <div 
-                    key={perm.id} 
-                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer group ${
-                      roleFormData.selectedPermissions.includes(perm.name)
-                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-md'
-                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                    onClick={() => togglePermissionInRole(perm.name)}
-                  >
-                    <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-xl transition-colors ${roleFormData.selectedPermissions.includes(perm.name) ? 'bg-indigo-300/20' : 'bg-gray-100'}`}>
-                           <Lock className={`w-4 h-4 ${roleFormData.selectedPermissions.includes(perm.name) ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        </div>
-                       <span className="text-sm font-black tracking-tight">{perm.name}</span>
-                    </div>
-                    <Checkbox 
-                      checked={roleFormData.selectedPermissions.includes(perm.name)}
-                      onCheckedChange={() => togglePermissionInRole(perm.name)}
-                      className="h-6 w-6 border-2 border-gray-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="p-10 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
-            <Button 
-              variant="ghost" 
-              onClick={() => setIsRoleDialogOpen(false)}
-              className="font-black uppercase tracking-widest text-[11px] text-gray-500 hover:bg-gray-100 h-14"
-            >
-              Batal
-            </Button>
-            <Button 
-              onClick={handleSaveRole} 
-              disabled={isLoading}
-              className="h-14 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-indigo-200 grow sm:grow-0 transition-all active:scale-95"
-            >
-              {isLoading ? 'Processing...' : (editingRole ? 'Update Role' : 'Create Role')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Permission Dialog */}
-      <Dialog open={isPermDialogOpen} onOpenChange={setIsPermDialogOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-10 bg-amber-500 text-white text-left relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2" />
-            <DialogTitle className="text-3xl font-black tracking-tighter uppercase relative z-10">Add Permission</DialogTitle>
-            <DialogDescription className="text-amber-100 font-medium opacity-90 relative z-10">
-              Daftarkan functional access key baru ke dalam sistem.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-10">
-             <div className="space-y-4">
-               <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Permission Key Name (PascalCase)</Label>
-               <Input 
-                 value={permFormData.name}
-                 onChange={(e) => setPermFormData({ name: e.target.value })}
-                 placeholder="Misal: CanManageInventory"
-                 className="h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-amber-500 text-lg"
-               />
-               <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-lg flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Gunakan format PascalCase untuk konsistensi di Backend.
-               </p>
-             </div>
-          </div>
-          <DialogFooter className="p-10 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
-             <Button 
-              variant="ghost" 
-              onClick={() => setIsPermDialogOpen(false)}
-              className="font-black uppercase tracking-widest text-[11px] text-gray-500 hover:bg-gray-100 h-14"
-            >
-              Batal
-            </Button>
-             <Button 
-                onClick={handleSavePermission} 
-                className="h-14 px-10 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-amber-200 transition-all active:scale-95"
-             >
-                Save Key
-             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PermissionDialog 
+        open={isPermDialogOpen}
+        onOpenChange={setIsPermDialogOpen}
+        permFormData={permFormData}
+        setPermFormData={setPermFormData}
+        onSave={handleSavePermission}
+      />
 
       {/* Unified Styled Delete Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -694,24 +459,7 @@ export default function RolePage() {
         </DialogContent>
       </Dialog>
 
-       {/* Summary Stats */}
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { label: 'Registered Roles', value: roles.length, icon: Shield, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-            { label: 'Access Keys', value: permissions.length, icon: Lock, color: 'text-amber-500', bgColor: 'bg-amber-50' },
-            { label: 'Policy Coverage', value: '100%', icon: CheckCircle, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
-          ].map((stat, i) => (
-             <div key={i} className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-xl transition-all group hover:-translate-y-1">
-                 <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{stat.label}</p>
-                    <p className={`text-4xl font-black ${stat.color}`}>{stat.value}</p>
-                 </div>
-                 <div className={`w-20 h-20 rounded-[1.5rem] ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner`}>
-                    <stat.icon className={`w-10 h-10 opacity-60 ${stat.color}`} />
-                 </div>
-             </div>
-          ))}
-       </div>
+      <RoleStats rolesCount={roles.length} permissionsCount={permissions.length} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // Authentication utilities backed by the CMS backend API
 
-const CMS_AUTH_URL = 'http://localhost:5066/api/v1/cms';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5066/api/v1';
+const CMS_AUTH_URL = `${API_URL}/cms`;
 const CURRENT_USER_KEY = 'cms_current_user';
 
 export interface User {
