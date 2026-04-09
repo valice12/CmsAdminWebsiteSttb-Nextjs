@@ -22,7 +22,7 @@ interface AkademikDTO {
   id: number;
   programName: string;
   degree: string;
-  totalCredits: number;
+  totalCredit: number;
 }
 
 export default function AkademikPage() {
@@ -30,17 +30,23 @@ export default function AkademikPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<AkademikDTO | null>(null);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     loadPrograms();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadPrograms = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllAcademicPrograms(1, 100);
-      setPrograms(data.items);
+      const data = await getAllAcademicPrograms(pageIndex, pageSize);
+      setPrograms(data.items || data.Items || []);
+      setTotalItems(data.totalItems || data.TotalItems || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data akademik dari backend');
       console.error(error);
@@ -80,12 +86,12 @@ export default function AkademikPage() {
     },
 
     {
-      accessorKey: 'totalCredits',
+      accessorKey: 'totalCredit',
       header: 'SKS',
       cell: ({ row }) => (
         <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
           <Award className="w-4 h-4 text-amber-500" />
-          {row.original.totalCredits || '-'} SKS
+          {row.original.totalCredit || '-'} SKS
         </div>
       ),
     },
@@ -152,13 +158,16 @@ export default function AkademikPage() {
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={programs}
           isLoading={isLoading}
-          searchKey="programName"
-          searchPlaceholder="Cari program studi..."
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

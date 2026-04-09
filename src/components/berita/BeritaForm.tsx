@@ -83,7 +83,7 @@ export function BeritaForm({ id }: BeritaFormProps) {
           slug: news.slug,
           title: news.title,
           content: news.content,
-          category: news.category?.[0] || news.Category?.[0] || '',
+          category: news.category?.[0] || '',
           isPublished: news.isPublished,
           publishDate: new Date(news.publishedAt || new Date()).toISOString().slice(0, 16),
         });
@@ -105,9 +105,7 @@ export function BeritaForm({ id }: BeritaFormProps) {
       formData.append('Content', data.content);
       formData.append('PublicationDate', new Date(data.publishDate).toISOString());
       formData.append('IsPublished', data.isPublished.toString());
-      if (data.category) {
-        formData.append('Category', data.category);
-      }
+      formData.append('Category', data.category);
       
       if (selectedFile) {
         formData.append('NewsImage', selectedFile);

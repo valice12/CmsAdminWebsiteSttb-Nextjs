@@ -102,7 +102,7 @@ export function AkademikForm({ id }: AkademikFormProps) {
           programRequirements: program.programRequirements?.join('\n') || '',
           notes: program.notes?.join('\n') || '',
           lecturingSystem: program.lecturingSystem?.join('\n') || '',
-          totalCredits: program.totalCredits || 144,
+          totalCredits: program.totalCredits || program.totalCredit || 144,
           duration: program.duration || 8,
           isPublished: program.isPublished ?? true,
           lectureCategory: program.lectureCategory || [],

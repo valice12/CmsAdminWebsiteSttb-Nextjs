@@ -6,7 +6,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, UserCircle, Mail, Clock, CheckCircle, XCircle, Trash2, Key, Activity, Plus, Edit, Lock } from 'lucide-react';
+import { Shield, UserCircle, Mail, Clock, CheckCircle, XCircle, Trash2, Key, Activity, Plus, Edit, Lock, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 import { getAllUsers, deleteUser, getAllRoles, updateUser } from '@/lib/api';
@@ -26,6 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -55,21 +58,38 @@ export default function UserPage() {
   // Edit Role States
   const [selectedUser, setSelectedUser] = useState<CMSUserDTO | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editData, setEditData] = useState({
-    roleName: '',
+    selectedRoles: [] as string[],
     isActive: true
   });
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(100);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadUsers();
     fetchRolesAndPermissions();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadUsers = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllUsers();
-      setUsers(data.items || data.Items || []);
+      const data = await getAllUsers(pageIndex, pageSize);
+      const rawUsers = data.items || data.Items || [];
+      setUsers(rawUsers.map((u: any) => ({
+        id: u.id || u.Id,
+        fullName: u.fullName || u.FullName,
+        email: u.email || u.Email,
+        isActive: u.isActive !== undefined ? u.isActive : u.IsActive,
+        lastLoginAt: u.lastLoginAt || u.LastLoginAt,
+        createdAt: u.createdAt || u.CreatedAt,
+        roles: u.roles || u.Roles || [],
+        permissions: u.permissions || u.Permissions || []
+      })));
+      setTotalItems(data.totalUsers || data.TotalUsers || data.totalCount || data.TotalCount || rawUsers.length);
+      setPageCount(data.totalPages || data.TotalPages || 1);
     } catch (error) {
       toast.error('Gagal mengambil data user');
       console.error(error);
@@ -120,7 +140,7 @@ export default function UserPage() {
   const handleEditClick = (user: CMSUserDTO) => {
     setSelectedUser(user);
     setEditData({
-      roleName: user.roles?.[0] || 'Admin',
+      selectedRoles: user.roles || [],
       isActive: user.isActive
     });
     setIsEditOpen(true);
@@ -136,10 +156,10 @@ export default function UserPage() {
         FullName: selectedUser.fullName,
         Email: selectedUser.email,
         IsActive: editData.isActive,
-        Roles: [editData.roleName],
+        Roles: editData.selectedRoles,
         Permissions: selectedUser.permissions || []
       });
-      toast.success('Role/Status user berhasil diperbarui');
+      toast.success('User updated successfully');
       setIsEditOpen(false);
       loadUsers();
     } catch (error) {
@@ -175,7 +195,7 @@ export default function UserPage() {
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.roles.map((role, i) => (
-            <Badge key={i} variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm">
+            <Badge key={i} variant="outline" className="font-extrabold text-[9px] px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm">
               <Shield className="w-3 h-3 mr-1.5" />
               {role}
             </Badge>
@@ -289,13 +309,24 @@ export default function UserPage() {
             Manajemen akun administrator dan hak akses fungsional CMS.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/admin/user/create')}
-          className="h-14 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3"
-        >
-          <Plus className="w-5 h-5" />
-          Tambah System User
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari user system..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-600/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push('/admin/user/create')}
+            className="h-11 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah System User
+          </Button>
+        </div>
       </div>
 
        {/* Security Note */}
@@ -318,13 +349,18 @@ export default function UserPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={users}
           isLoading={isLoading}
-          searchKey="fullName"
-          searchPlaceholder="Cari user system..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 
@@ -338,21 +374,40 @@ export default function UserPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 py-4">
-            <div className="space-y-2">
-              <Label>Role / Hak Akses</Label>
-              <Select 
-                value={editData.roleName} 
-                onValueChange={(val) => setEditData({...editData, roleName: val})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Roles / Hak Akses ({editData.selectedRoles.length})</Label>
+              <ScrollArea className="h-[200px] border rounded-2xl p-4 bg-gray-50/50 shadow-inner">
+                <div className="space-y-3">
+                  {roles.map((role) => (
+                    <div 
+                      key={role} 
+                      className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white transition-all cursor-pointer group shadow-sm border border-transparent hover:border-indigo-100"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const isSelected = editData.selectedRoles.includes(role);
+                        setEditData(prev => ({
+                          ...prev,
+                          selectedRoles: isSelected 
+                            ? prev.selectedRoles.filter(r => r !== role)
+                            : [...prev.selectedRoles, role]
+                        }));
+                      }}
+                    >
+                      <Checkbox 
+                        id={`role-${role}`} 
+                        checked={editData.selectedRoles.includes(role)} 
+                        className="h-5 w-5 border-2 rounded-md data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                      />
+                      <label 
+                        htmlFor={`role-${role}`}
+                        className="text-xs font-black leading-none cursor-pointer grow text-gray-600 group-hover:text-indigo-600"
+                      >
+                        {role}
+                      </label>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              </ScrollArea>
             </div>
             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
                <div className="space-y-0.5">

@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Trash2, FileImage, FileVideo, FileText, Upload, Eye, ExternalLink, ImageIcon, MonitorPlay, FileCode, AlertCircle, BookOpen, Layers, Newspaper } from 'lucide-react';
+import { Plus, Trash2, FileImage, FileVideo, FileText, Upload, Eye, ExternalLink, ImageIcon, MonitorPlay, FileCode, AlertCircle, BookOpen, Layers, Newspaper, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatDateTime, getImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -41,16 +41,23 @@ export default function MediaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaDTO | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadMedia();
-  }, []);
+  }, [pageIndex, pageSize, searchQuery]);
 
   const loadMedia = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllMedia(1, 100);
-      setMedia(data.items || []);
+      const data = await getAllMedia(pageIndex, pageSize);
+      setMedia(data.items || data.Items || []);
+      setTotalItems(data.totalMedia || data.TotalMedia || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal mengambil data media');
       console.error(error);
@@ -121,19 +128,6 @@ export default function MediaPage() {
       ),
     },
     {
-      accessorKey: 'category',
-      header: 'Kategori',
-      cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.category?.map((cat, i) => (
-            <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm border bg-purple-50 text-purple-700 border-purple-100">
-              {cat}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
-    {
       accessorKey: 'publishedAt',
       header: 'Upload Date',
       cell: ({ row }) => (
@@ -177,12 +171,21 @@ export default function MediaPage() {
               Manajemen multi-format konten media langsung dari database utama.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={() => router.push('/admin/media/create')} className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Tambah Media Baru
-            </Button>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari media..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
+            />
           </div>
+          <Button onClick={() => router.push('/admin/media/create')} className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Tambah Media Baru
+          </Button>
         </div>
       </div>
 
@@ -198,12 +201,18 @@ export default function MediaPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={media}
           isLoading={isLoading}
-          searchPlaceholder={`Cari media...`}
+          globalFilter={searchQuery}
+          onGlobalFilterChange={setSearchQuery}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

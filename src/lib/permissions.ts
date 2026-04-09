@@ -1,81 +1,33 @@
+import { getCurrentUser } from './auth';
+
 /**
  * Frontend Role & Permission Mapping
- * This is used for UI conditional rendering (hiding/showing menus)
- * without requiring backend changes.
+ * @deprecated Use dynamic backend-driven permissions from search results instead.
  */
-
-export const ROLE_PERMISSIONS: Record<string, string[]> = {
-  'SuperAdmin': [
-    'CanManageAdministrator',
-    'CanManageNews',
-    'CanManageAcademics',
-    'CanManageMedia',
-    'CanManageEvents',
-    'CanManageUsers',
-    'CanManageLecturers',
-    'CanManageAdmissionCost',
-    'view_dashboard'
-  ],
-  'Admin': [
-    'CanManageNews',
-    'CanManageAcademics',
-    'CanManageMedia',
-    'CanManageEvents',
-    'CanManageLecturers',
-    'CanManageAdmissionCost',
-    'view_dashboard'
-  ],
-  'Admin Akademik': [
-    'CanManageAcademics',
-    'view_dashboard'
-  ],
-  'Admin Media': [
-    'CanManageMedia',
-    'view_dashboard'
-  ],
-  'Admin Berita': [
-    'CanManageNews',
-    'CanManageEvents',
-    'CanManageMedia',
-    'view_dashboard'
-  ],
-  'Admin Keuangan': [
-    'CanManageAdmissionCost',
-    'view_dashboard'
-  ],
-  'KEUANGAN': [
-    'CanManageAdmissionCost',
-    'view_dashboard'
-  ],
-  'Admin Event': [
-    'CanManageEvents',
-    'view_dashboard'
-  ],
-  'Dosen': [
-    'CanManageLecturers',
-    'view_dashboard'
-  ],
-  'Pengurus Yayasan': [
-    'CanManageAdministrator',
-    'view_dashboard'
-  ]
-};
+export const ROLE_PERMISSIONS: Record<string, string[]> = {};
 
 /**
- * Checks if a user with given roles has a specific permission.
+ * Checks if a user has a specific permission based on backend response.
  */
-export function hasPermission(userRoles: string[], requiredPermission?: string): boolean {
-  // If no permission required, allow access
+export function hasPermission(unused_userRoles: string[], requiredPermission?: string, requiredRoles?: string[]): boolean {
+  // Get current user from storage
+  const user = getCurrentUser();
+  if (!user) return false;
+
+  // Bypass for SuperAdmin role
+  if (user.roles && user.roles.includes('SuperAdmin')) return true;
+
+  // If specific roles are required, check them first
+  if (requiredRoles && requiredRoles.length > 0) {
+    const hasRequiredRole = user.roles?.some(role => requiredRoles.includes(role));
+    if (!hasRequiredRole) return false;
+  }
+
+  // If no permission required (but role check passed or wasn't needed), allow access
   if (!requiredPermission) return true;
 
-  // Flatten all permissions for all roles the user has
-  const userPermissions = new Set<string>();
-  userRoles.forEach(role => {
-    const perms = ROLE_PERMISSIONS[role] || [];
-    perms.forEach(p => userPermissions.add(p));
-  });
-
-  return userPermissions.has(requiredPermission) || userPermissions.has('SuperAdmin');
+  // Check explicit permissions
+  return user.permissions?.includes(requiredPermission) || false;
 }
 
 /**

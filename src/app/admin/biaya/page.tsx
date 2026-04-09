@@ -24,16 +24,22 @@ export default function BiayaPage() {
   const router = useRouter();
   const [costs, setCosts] = useState<CostDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadCosts();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadCosts = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllCosts();
-      setCosts(data.items || []);
+      const data = await getAllCosts(pageIndex, pageSize);
+      setCosts(data.items || data.Items || []);
+      setTotalItems(data.totalItems || data.TotalItems || 0);
+      setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
       toast.error('Gagal memuat data biaya');
     } finally {
@@ -145,6 +151,11 @@ export default function BiayaPage() {
           columns={columns} 
           data={costs} 
           isLoading={isLoading}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
 

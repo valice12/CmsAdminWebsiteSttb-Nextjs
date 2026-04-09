@@ -77,7 +77,7 @@ export default function LoginPage() {
                 <Input
                   {...signInForm.register('email')}
                   type="email"
-                  placeholder="admin@sttb.ac.id"
+                  placeholder="Email"
                   className="pl-10"
                 />
               </div>

@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { initializeAuth } from "@/lib/auth";
 import { initializeStorage } from "@/lib/storage";
 
-const geistSans = Geist({
+const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const monoFallback = {
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+};
 
 export default function RootLayout({
   children,
@@ -30,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${monoFallback.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

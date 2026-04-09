@@ -7,7 +7,8 @@ import { getAllAdministrators, deleteAdministrator } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Shield, Briefcase, Trash2, Plus, Edit, Activity } from 'lucide-react';
+import { Star, Shield, Briefcase, Trash2, Plus, Edit, Activity, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 interface AdministratorDTO {
@@ -21,16 +22,23 @@ export default function PengurusYayasanPage() {
   const router = useRouter();
   const [data, setData] = useState<AdministratorDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [pageIndex, pageSize]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const response = await getAllAdministrators();
+      const response = await getAllAdministrators(pageIndex, pageSize);
       setData(response.items || response.Items || []);
+      setTotalItems(response.totalItems || response.TotalItems || 0);
+      setPageCount(response.totalPages || response.TotalPages || 0);
     } catch (error) {
       console.error('Error loading administrators:', error);
       toast.error('Gagal mengambil data Pengurus Yayasan');
@@ -118,13 +126,24 @@ export default function PengurusYayasanPage() {
             Administrasi data <span className="text-amber-600 font-bold italic">Pengurus Yayasan</span> Portal Utama.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/admin/pengurus-yayasan/create')}
-          className="rounded-2xl h-12 px-8 shadow-xl bg-amber-500 hover:bg-amber-600 shadow-amber-500/20 text-white font-black uppercase tracking-widest flex items-center gap-3 transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          Tambah Pengurus
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari pengurus..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-amber-500/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push('/admin/pengurus-yayasan/create')}
+            className="rounded-2xl h-11 px-8 shadow-xl bg-amber-500 hover:bg-amber-600 shadow-amber-500/20 text-white font-black uppercase tracking-widest flex items-center gap-3 transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah Pengurus
+          </Button>
+        </div>
       </div>
 
       <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
@@ -142,13 +161,18 @@ export default function PengurusYayasanPage() {
          </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
           data={data}
           isLoading={isLoading}
-          searchKey="name"
-          searchPlaceholder="Cari pengurus..."
+          globalFilter={searchTerm}
+          onGlobalFilterChange={setSearchTerm}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
     </div>

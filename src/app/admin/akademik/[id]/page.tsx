@@ -4,10 +4,10 @@ import { use } from "react";
 import { AkademikForm } from "@/components/akademik/AkademikForm";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditAkademikPage({ params }: PageProps) {
-  const { id } = use(params);
+  const { id } = params;
   return <AkademikForm id={id} />;
 }
