@@ -13,7 +13,7 @@ import {
   getBuletinById,
   addMedia,
   editMedia,
-  getMediaCategories
+  getAllMediaCategories
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,7 @@ const mediaSchema = z.object({
   issn: z.string().optional(),
   eissn: z.string().optional(),
   doi: z.string().optional(),
+  abstract: z.string().optional(),
   // For validation logic
   format: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -84,9 +85,10 @@ export function MediaForm({ id }: MediaFormProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getMediaCategories(true);
-        // Backend returns: { categories: [ "Cat A", "Cat B" ] }
-        const catList = data.categories || data.items || (Array.isArray(data) ? data : []);
+        const data = await getAllMediaCategories(1, 10, true);
+        // Backend returns: { categories: [ { id, categoryName, ... }, ... ] }
+        const rawList = data.categories || data.items || (Array.isArray(data) ? data : []);
+        const catList = rawList.map((c: any) => typeof c === 'string' ? c : (c.categoryName || c.CategoryName || c.name || c.Name));
         setCategories(catList);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -112,6 +114,7 @@ export function MediaForm({ id }: MediaFormProps) {
       issn: '',
       eissn: '',
       doi: '',
+      abstract: '',
       format: initialFormat,
     },
   });
@@ -167,6 +170,7 @@ export function MediaForm({ id }: MediaFormProps) {
           issn: data.issn || '',
           eissn: data.eIssn || data.eissn || '',
           doi: data.doi || '',
+          abstract: data.abstract || '',
           format: activeFormat,
         });
         if (data.thumbnailPath) {
@@ -243,7 +247,7 @@ export function MediaForm({ id }: MediaFormProps) {
         formData.append('Issn', data.issn || '');
         formData.append('EIssn', data.eissn || '');
         formData.append('Doi', data.doi || '');
-        if (data.isbn) formData.append('ISBN', data.isbn);
+        formData.append('Abstract', data.abstract || '');
       } else if (activeFormat === 'monograf') {
         formData.append('Price', data.price || '0');
         formData.append('ISBN', data.isbn || '');
@@ -362,13 +366,27 @@ export function MediaForm({ id }: MediaFormProps) {
                 </div>
               </div>
             </div>
+            
+            {activeFormat === 'journal' && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Abstrak Jurnal</label>
+                <Textarea 
+                  {...form.register('abstract')} 
+                  rows={6} 
+                  className="rounded-2xl bg-blue-50/30 border-none shadow-inner p-4 text-sm font-medium leading-relaxed" 
+                  placeholder="Tuliskan abstrak jurnal ilmiah di sini..." 
+                />
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                {(activeFormat === 'article' || activeFormat === 'artikel') ? 'Ringkasan / Abstrak' : 'Keterangan / Sinopsis'}
-              </label>
-              <Textarea {...form.register('mediaDescription')} rows={3} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan ringkasan singkat..." />
-            </div>
+            {activeFormat !== 'journal' && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                  {(activeFormat === 'article' || activeFormat === 'artikel') ? 'Ringkasan / Abstrak' : 'Keterangan / Sinopsis'}
+                </label>
+                <Textarea {...form.register('mediaDescription')} rows={3} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan ringkasan singkat..." />
+              </div>
+            )}
 
             {(activeFormat === 'article' || activeFormat === 'artikel') && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -418,12 +436,6 @@ export function MediaForm({ id }: MediaFormProps) {
                     <Input {...form.register('doi')} placeholder="DOI (e.g. 10.1234/5678)..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
                   </div>
                   {form.formState.errors.doi && <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.doi.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomor ISBN <span className="text-gray-300 normal-case font-normal">(Optional)</span></label>
-                  <div className="relative group">
-                    <Input {...form.register('isbn')} placeholder="ISBN..." className="h-12 bg-blue-50/30 border-none rounded-xl text-sm font-bold shadow-inner px-4" />
-                  </div>
                 </div>
               </div>
             )}
