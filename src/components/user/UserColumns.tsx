@@ -75,7 +75,9 @@ export const getUserColumns = ({ rolePermissionsMap, onEdit, onDelete }: ColumnP
         const inheritedPerms = row.original.roles.flatMap(role => rolePermissionsMap[role] || []);
         const allPerms = Array.from(new Set([...directPerms, ...inheritedPerms]));
         
-        if (allPerms.length === 0) return <span className="text-[10px] text-gray-400 italic">No specific permissions</span>;
+        if (allPerms.length === 0) {
+          return <span className="text-[10px] text-gray-400 italic">No specific permissions</span>;
+        }
         
         return (
           <div className="flex flex-wrap gap-1 max-w-[250px]">

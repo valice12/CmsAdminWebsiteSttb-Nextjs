@@ -46,7 +46,8 @@ export default function UserPage() {
       setIsLoading(true);
       const data = await getAllUsers(pageIndex, pageSize);
       const rawUsers = data.items || data.Items || [];
-      setUsers(rawUsers.map((u: any) => ({
+      
+      const mappedUsers: CMSUserDTO[] = rawUsers.map((u: any) => ({
         id: u.id || u.Id,
         fullName: u.fullName || u.FullName,
         email: u.email || u.Email,
@@ -55,7 +56,9 @@ export default function UserPage() {
         createdAt: u.createdAt || u.CreatedAt,
         roles: u.roles || u.Roles || [],
         permissions: u.permissions || u.Permissions || []
-      })));
+      }));
+
+      setUsers(mappedUsers);
       setTotalItems(data.totalUsers || data.TotalUsers || data.totalCount || data.TotalCount || rawUsers.length);
       setPageCount(data.totalPages || data.TotalPages || 1);
     } catch (error) {
@@ -90,7 +93,9 @@ export default function UserPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus user ini?')) return;
+    if (!confirm('Apakah Anda yakin ingin menghapus user ini?')) {
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -115,7 +120,9 @@ export default function UserPage() {
   };
 
   const handleUpdateUser = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -145,7 +152,7 @@ export default function UserPage() {
   });
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-10 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
@@ -169,9 +176,9 @@ export default function UserPage() {
           </div>
           <Button 
             onClick={() => router.push('/admin/user/create')}
-            className="h-11 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3"
+            className="h-11 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-200 flex items-center gap-3 transition-all"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
             Tambah System User
           </Button>
         </div>
@@ -182,21 +189,17 @@ export default function UserPage() {
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-indigo-900">
              <Activity className="w-full h-full" />
           </div>
-          
           <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shrink-0">
              <Key className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-black tracking-tight text-indigo-900">
-               Otoritas & Hak Akses
-            </h3>
+            <h3 className="text-xl font-black tracking-tight text-indigo-900">Otoritas & Hak Akses</h3>
             <p className="text-sm mt-1 font-medium leading-relaxed max-w-2xl text-indigo-700/80">
                Setiap role memiliki kumpulan <b>Permissions</b> (hak akses) spesifik. Di bawah ini ditampilkan gabungan permission dari role dan permission yang diberikan langsung ke user.
             </p>
          </div>
       </div>
 
-      {/* Data Table */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
         <DataTable
           columns={columns}
@@ -222,8 +225,8 @@ export default function UserPage() {
         isLoading={isLoading}
         onSave={handleUpdateUser}
       />
-
-       <UserStats users={users} />
+      
+      <UserStats users={users} />
     </div>
   );
 }

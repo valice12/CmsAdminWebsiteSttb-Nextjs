@@ -48,7 +48,9 @@ export const getRoleColumns = ({ onEditRole, onDeleteRole }: Pick<ColumnProps, '
     header: 'Permissions',
     cell: ({ row }) => {
       const perms = row.original.rolePermissions || [];
-      if (perms.length === 0) return <span className="text-[10px] text-gray-400 italic font-medium">No permissions assigned</span>;
+      if (perms.length === 0) {
+        return <span className="text-[10px] text-gray-400 italic font-medium">No permissions assigned</span>;
+      }
       
       return (
         <div className="flex flex-wrap gap-1.5 max-w-[400px]">

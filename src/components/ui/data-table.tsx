@@ -176,7 +176,13 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => isManualPagination ? onPageChange?.((pageIndex ?? 1) - 1) : table.previousPage()}
+            onClick={() => {
+              if (isManualPagination) {
+                onPageChange?.((pageIndex ?? 1) - 1);
+              } else {
+                table.previousPage();
+              }
+            }}
             disabled={isManualPagination ? (pageIndex ?? 1) <= 1 : !table.getCanPreviousPage()}
             className="h-10 rounded-xl px-4 border-gray-100 hover:bg-gray-50 font-bold transition-all disabled:opacity-30"
           >
@@ -191,7 +197,13 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => isManualPagination ? onPageChange?.((pageIndex ?? 1) + 1) : table.nextPage()}
+            onClick={() => {
+              if (isManualPagination) {
+                onPageChange?.((pageIndex ?? 1) + 1);
+              } else {
+                table.nextPage();
+              }
+            }}
             disabled={isManualPagination ? (pageIndex ?? 1) >= (pageCount ?? 0) : !table.getCanNextPage()}
             className="h-10 rounded-xl px-4 border-gray-100 hover:bg-gray-50 font-bold transition-all disabled:opacity-30"
           >

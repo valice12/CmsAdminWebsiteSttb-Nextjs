@@ -119,7 +119,9 @@ export default function PermissionPage() {
   };
 
   const handleExecuteDelete = async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete) {
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -160,7 +162,9 @@ export default function PermissionPage() {
     );
   }
 
-  if (isAuthorized === null) return null;
+  if (isAuthorized === null) {
+    return null;
+  }
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
