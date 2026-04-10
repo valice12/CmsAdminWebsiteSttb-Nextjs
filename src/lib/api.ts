@@ -79,10 +79,35 @@ export async function getNewsById(id: number) {
   return response.json();
 }
 
-export async function getAllNewsCategories() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/news/get-all-categories`);
+export async function getAllNewsCategories(page = 1, pageSize = 10, fetchAll = false) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/news/get-all-categories?PageNumber=${page}&PageSize=${pageSize}&FetchAll=${fetchAll}`);
   if (!response.ok) throw new Error('Failed to fetch news categories');
   return response.json();
+}
+
+export async function addNewsCategory(categoryName: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/news/add-category`, {
+    method: 'POST',
+    body: JSON.stringify({ CategoryName: categoryName }),
+  });
+  if (!response.ok) throw new Error('Failed to add news category');
+  return response.json();
+}
+
+export async function editNewsCategory(id: number, categoryName: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/news/edit-category`, {
+    method: 'PUT',
+    body: JSON.stringify({ Id: id, CategoryName: categoryName }),
+  });
+  if (!response.ok) throw new Error('Failed to edit news category');
+  return response.json();
+}
+
+export async function deleteNewsCategory(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/news/delete-category/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete news category');
 }
 
 export async function addNews(formData: FormData) {
@@ -124,10 +149,35 @@ export async function getEventById(id: number) {
   return response.json();
 }
 
-export async function getAllEventCategories() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/events/get-all-categories`);
+export async function getAllEventCategories(page = 1, pageSize = 10, fetchAll = false) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/events/get-all-categories?PageNumber=${page}&PageSize=${pageSize}&FetchAll=${fetchAll}`);
   if (!response.ok) throw new Error('Failed to fetch event categories');
   return response.json();
+}
+
+export async function addEventCategory(categoryName: string, slug: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/events/add-category`, {
+    method: 'POST',
+    body: JSON.stringify({ CategoryName: categoryName, Slug: slug }),
+  });
+  if (!response.ok) throw new Error('Failed to add event category');
+  return response.json();
+}
+
+export async function editEventCategory(id: number, categoryName: string, slug: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/events/edit-category`, {
+    method: 'PUT',
+    body: JSON.stringify({ Id: id, CategoryName: categoryName, Slug: slug }),
+  });
+  if (!response.ok) throw new Error('Failed to edit event category');
+  return response.json();
+}
+
+export async function deleteEventCategory(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/events/delete-category/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete event category');
 }
 
 export async function addEvent(formData: FormData) {
@@ -171,10 +221,35 @@ export async function getAllMedia(page = 1, pageSize = 100) {
   return await response.json();
 }
 
-export async function getMediaCategories() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/get-all`);
+export async function getAllMediaCategories(page = 1, pageSize = 10, fetchAll = false) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/get-all?PageNumber=${page}&PageSize=${pageSize}&FetchAll=${fetchAll}`);
   if (!response.ok) throw new Error('Failed to fetch media categories');
   return response.json();
+}
+
+export async function addMediaCategory(categoryName: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/add`, {
+    method: 'POST',
+    body: JSON.stringify({ CategoryName: categoryName }),
+  });
+  if (!response.ok) throw new Error('Failed to add media category');
+  return response.json();
+}
+
+export async function editMediaCategory(id: number, categoryName: string) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/edit`, {
+    method: 'PUT',
+    body: JSON.stringify({ Id: id, CategoryName: categoryName }),
+  });
+  if (!response.ok) throw new Error('Failed to edit media category');
+  return response.json();
+}
+
+export async function deleteMediaCategory(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/categories/delete/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete media category');
 }
 
 // Specific Media Details
@@ -276,6 +351,52 @@ export async function deleteAcademicProgram(id: number) {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete academic program');
+}
+
+// ─── Academic Courses ──────────────────────────────────────────────────────────
+
+export async function getAllCourses(page?: number, pageSize?: number, fetchAll = false) {
+  let url = `${CMS_BASE_URL}/academic-programs/get-all-courses?FetchAll=${fetchAll}`;
+  
+  if (!fetchAll) {
+    const p = page || 1;
+    const ps = pageSize || 10;
+    url += `&PageNumber=${p}&PageSize=${ps}`;
+  }
+
+  const response = await cmsFetch(url);
+  if (!response.ok) throw new Error('Failed to fetch courses');
+  return response.json();
+}
+
+export async function getCourseById(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/get-course/${id}`);
+  return response.ok ? response.json() : null;
+}
+
+export async function addCourse(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/add-course`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to add course');
+  return response.json();
+}
+
+export async function editCourse(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/edit-course`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to edit course');
+  return response.json();
+}
+
+export async function deleteCourse(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/delete-course/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete course');
 }
 
 // ─── Profiles ─────────────────────────────────────────────────────────────────
@@ -391,11 +512,41 @@ export async function deleteCost(id: number) {
   if (!response.ok) throw new Error('Failed to delete cost');
 }
 
-export async function getAllCostCategories() {
-  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-categories`);
+export async function getAllCostCategories(page = 1, pageSize = 10, fetchAll = false) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/get-all?PageNumber=${page}&PageSize=${pageSize}&FetchAll=${fetchAll}`);
   if (!response.ok) throw new Error('Failed to fetch cost categories');
   const data = await response.json();
-  return data.items || data;
+  return data;
+}
+
+export async function getCostCategoryById(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/get/${id}`);
+  return response.ok ? response.json() : null;
+}
+
+export async function addCostCategory(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/add`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to add cost category');
+  return response.json();
+}
+
+export async function editCostCategory(data: any) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/edit`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to edit cost category');
+  return response.json();
+}
+
+export async function deleteCostCategory(id: number) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/delete/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete cost category');
 }
 
 // ─── Admission Deadlines ───────────────────────────────────────────────────────

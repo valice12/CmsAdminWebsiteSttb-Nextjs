@@ -11,41 +11,49 @@ export interface NavItem {
 export const MENU_STRUCTURE: NavItem[] = [
   { label: 'Dashboard', path: '/admin/dashboard' },
   {
-    label: 'Berita (News)',
+    label: 'Berita',
     path: '/admin/berita',
     permission: 'CanManageNews',
     children: [
-      { label: 'Manage Berita', path: '/admin/berita' },
-      { label: 'Manage Category', path: '/admin/berita/categories' },
+      { label: 'Kelola Berita', path: '/admin/berita' },
+      { label: 'Kelola Kategori', path: '/admin/berita/categories' },
     ]
   },
   {
-    label: 'Kegiatan (Event)',
+    label: 'Kegiatan',
     path: '/admin/kegiatan',
     permission: 'CanManageEvents',
     children: [
-      { label: 'Manage Kegiatan', path: '/admin/kegiatan' },
-      { label: 'Manage Category', path: '/admin/kegiatan/categories' },
+      { label: 'Kelola Kegiatan', path: '/admin/kegiatan' },
+      { label: 'Kelola Kategori', path: '/admin/kegiatan/categories' },
     ]
   },
   {
     label: 'Akademik',
     path: '/admin/akademik',
-    permission: 'CanManageAcademics',
+    permission: 'CanManageAcademicPrograms',
     children: [
-      { label: 'Manage Akademik', path: '/admin/akademik' },
-      { label: 'Placeholder', path: '/admin/akademik/placeholder' },
+      { label: 'Kelola Program Studi', path: '/admin/akademik' },
+      { label: 'Kelola Mata Kuliah', path: '/admin/akademik/mata-kuliah' },
     ]
   },
-  { label: 'Biaya Kuliah', path: '/admin/biaya', permission: 'CanManageAdmissionCost' },
+  { 
+    label: 'Biaya Kuliah', 
+    path: '/admin/biaya', 
+    permission: 'CanManageAdmissionCost',
+    children: [
+      { label: 'Kelola Biaya', path: '/admin/biaya' },
+      { label: 'Kelola Kategori', path: '/admin/biaya/categories' },
+    ]
+  },
   { label: 'Jadwal Admisi', path: '/admin/admisi/jadwal', permission: 'CanManageAdmission' },
   {
     label: 'Media Library',
     path: '/admin/media',
     permission: 'CanManageMedia',
     children: [
-      { label: 'Manage Media', path: '/admin/media' },
-      { label: 'Manage Media Category', path: '/admin/media/category' },
+      { label: 'Kelola Media', path: '/admin/media' },
+      { label: 'Kelola Kategori Media', path: '/admin/media/category' },
     ]
   },
   {
@@ -62,9 +70,9 @@ export const MENU_STRUCTURE: NavItem[] = [
     path: '/admin/keamanan',
     requiredRoles: ['SuperAdmin'],
     children: [
-      { label: 'User System', path: '/admin/user', permission: 'CanManageUsers' },
-      { label: 'Role Group', path: '/admin/role' },
-      { label: 'Permission Key', path: '/admin/permission' },
+      { label: 'Kelola User', path: '/admin/user', permission: 'CanManageUsers' },
+      { label: 'Kelola Role', path: '/admin/role' },
+      { label: 'Kelola Permission', path: '/admin/permission' },
     ]
   },
   { label: 'Halaman', path: '/admin/halaman', permission: 'CanManagePages' },

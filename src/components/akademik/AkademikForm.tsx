@@ -5,28 +5,34 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getAcademicProgramById, addAcademicProgram, editAcademicProgram } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { 
   ArrowLeft, Save, GraduationCap, School, BookOpen, Star, 
   Info, ShieldCheck, Activity, Building, Plus, Trash2, 
-  ChevronDown, ChevronUp, Layers, BookMarked
+  ChevronDown, ChevronUp, Layers, BookMarked, ExternalLink,
+  Search, Check, AlertCircle
 } from 'lucide-react';
+import { 
+  getAcademicProgramById, 
+  addAcademicProgram, 
+  editAcademicProgram,
+  getAllCourses
+} from '@/lib/api';
 import { toast } from 'sonner';
 
 const lectureSchema = z.object({
-  lectureName: z.string().min(1, 'Nama mata kuliah wajib diisi'),
+  id: z.coerce.number(), // This is the Course ID (from database)
+  courseName: z.string().optional(),
   credits: z.coerce.number(),
-  description: z.string(),
+  description: z.string().optional(),
 });
 
 const categorySchema = z.object({
   categoryName: z.string().min(1, 'Nama kategori wajib diisi'),
   totalCredits: z.coerce.number(),
-  lectures: z.array(lectureSchema),
+  courses: z.array(lectureSchema),
 });
 
 const programSchema = z.object({
@@ -43,7 +49,7 @@ const programSchema = z.object({
   totalCredits: z.coerce.number().optional(),
   duration: z.coerce.number().optional(),
   isPublished: z.boolean(),
-  lectureCategory: z.array(categorySchema),
+  courseCategory: z.array(categorySchema),
 });
 
 type ProgramFormData = z.infer<typeof programSchema>;
@@ -55,6 +61,8 @@ interface AkademikFormProps {
 export function AkademikForm({ id }: AkademikFormProps) {
   const router = useRouter();
   const isEdit = !!id;
+  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const [isLoadingCourses, setIsLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(programSchema),
@@ -72,14 +80,54 @@ export function AkademikForm({ id }: AkademikFormProps) {
       totalCredits: 144,
       duration: 8,
       isPublished: true,
-      lectureCategory: [],
+      courseCategory: [],
     },
   });
 
   const { fields: categoryFields, append: appendCategory, remove: removeCategory } = useFieldArray({
     control: form.control,
-    name: "lectureCategory"
+    name: "courseCategory"
   });
+
+  // Watch for course changes to automate SKS
+  const watchedCategories = form.watch("courseCategory");
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllCourses(undefined, undefined, true);
+      setAvailableCourses(data.items || data.Items || []);
+    } catch (error) {
+      console.error('Failed to fetch courses', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Automate Category Total SKS & Program Total SKS
+  useEffect(() => {
+    if (!watchedCategories) return;
+
+    let programTotal = 0;
+    watchedCategories.forEach((category, index) => {
+      const categorySks = category.courses?.reduce((sum, course) => sum + (Number(course.credits) || 0), 0) || 0;
+      
+      // Update Category Total if changed
+      if (form.getValues(`courseCategory.${index}.totalCredits`) !== categorySks) {
+        form.setValue(`courseCategory.${index}.totalCredits`, categorySks, { shouldValidate: true });
+      }
+      programTotal += categorySks;
+    });
+
+    // Update Program Total if changed
+    if (form.getValues('totalCredits') !== programTotal) {
+      form.setValue('totalCredits', programTotal, { shouldValidate: true });
+    }
+  }, [watchedCategories]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -91,21 +139,34 @@ export function AkademikForm({ id }: AkademikFormProps) {
     try {
       const program = await getAcademicProgramById(programId);
       if (program) {
+        const rawCategories = program.courseCategory || program.lectureCategory || [];
+        // Map backend structure (which might have Course data) to our form structure
+        const mappedCategories = rawCategories.map((cat: any) => ({
+           categoryName: cat.categoryName || cat.name,
+           totalCredits: cat.totalCredits || 0,
+           courses: (cat.courses || cat.lectures || []).map((c: any) => ({
+              id: c.id,
+              courseName: c.courseName || c.name,
+              credits: c.credits || 0,
+              description: c.description || ''
+           }))
+        }));
+
         form.reset({
-          programName: program.programName,
+          programName: program.programName || program.name,
           motto: program.motto,
-          programDescription: program.programDescription,
-          degree: program.degree,
+          programDescription: program.programDescription || program.graduateProfileDescription,
+          degree: program.degree || program.degreeAbbr,
           informedDescription: program.informedDescription || '',
           transformedDescription: program.transformedDescription || '',
           transformativeDescription: program.transformativeDescription || '',
           programRequirements: program.programRequirements?.join('\n') || '',
           notes: program.notes?.join('\n') || '',
           lecturingSystem: program.lecturingSystem?.join('\n') || '',
-          totalCredits: program.totalCredits || program.totalCredit || 144,
-          duration: program.duration || 8,
+          totalCredits: program.totalCredits || 0,
+          duration: program.duration || program.studyDuration || 8,
           isPublished: program.isPublished ?? true,
-          lectureCategory: program.lectureCategory || [],
+          courseCategory: mappedCategories,
         });
       }
     } catch (error) {
@@ -243,8 +304,31 @@ export function AkademikForm({ id }: AkademikFormProps) {
              </div>
           </div>
 
-          {/* Curriculum Section */}
+           {/* Curriculum Section */}
           <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 space-y-8">
+             {/* Instructional Note */}
+             <div className="bg-amber-50/50 rounded-[2rem] p-6 border border-amber-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4 text-left">
+                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-amber-500/20">
+                        <AlertCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-black text-amber-900 uppercase tracking-tight">Pusat Data Kurikulum</h4>
+                        <p className="text-[10px] text-amber-800/70 font-medium leading-relaxed mt-0.5">
+                            Mata kuliah dikelola secara terpusat. Gunakan menu Kelola Mata Kuliah untuk menambah data baru.
+                        </p>
+                    </div>
+                </div>
+                <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => window.open('/admin/akademik/mata-kuliah', '_blank')}
+                    className="rounded-xl border-amber-200 bg-white text-amber-600 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap h-10"
+                >
+                    <ExternalLink className="w-3 h-3 mr-2" /> Kelola MK
+                </Button>
+             </div>
+
              <div className="flex items-center justify-between border-b border-gray-50 pb-6">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
@@ -254,7 +338,7 @@ export function AkademikForm({ id }: AkademikFormProps) {
                 </div>
                 <Button 
                   type="button" 
-                  onClick={() => appendCategory({ categoryName: '', totalCredits: 0, lectures: [] })}
+                  onClick={() => appendCategory({ categoryName: '', totalCredits: 0, courses: [] })}
                   variant="outline"
                   className="rounded-xl border-dashed border-2 hover:border-primary hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest"
                 >
@@ -277,25 +361,31 @@ export function AkademikForm({ id }: AkademikFormProps) {
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="md:col-span-3 space-y-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori</label>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Nama Kategori</label>
                         <Input 
-                          {...form.register(`lectureCategory.${categoryIndex}.categoryName`)}
+                          {...form.register(`courseCategory.${categoryIndex}.categoryName`)}
                           placeholder="e.g. Mata Kuliah Inti"
                           className="h-10 rounded-xl border-none shadow-inner bg-white font-bold text-gray-700"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total SKS</label>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Total SKS</label>
                         <Input 
                           type="number"
-                          {...form.register(`lectureCategory.${categoryIndex}.totalCredits`)}
+                          {...form.register(`courseCategory.${categoryIndex}.totalCredits`)}
                           className="h-10 rounded-xl border-none shadow-inner bg-white font-bold text-gray-700"
                         />
                       </div>
                     </div>
 
                     {/* Sub-lectures */}
-                    <LectureFields categoryIndex={categoryIndex} control={form.control} register={form.register} />
+                    <LectureFields 
+                        categoryIndex={categoryIndex} 
+                        control={form.control} 
+                        register={form.register} 
+                        availableCourses={availableCourses}
+                        setValue={form.setValue}
+                    />
                   </div>
                 ))}
              </div>
@@ -396,25 +486,38 @@ interface LectureFieldsProps {
   categoryIndex: number;
   control: any;
   register: any;
+  availableCourses: any[];
+  setValue: any;
 }
 
-function LectureFields({ categoryIndex, control, register }: LectureFieldsProps) {
+function LectureFields({ categoryIndex, control, register, availableCourses, setValue }: LectureFieldsProps) {
   const { fields, append, remove } = useFieldArray({
     control,
-    name: `lectureCategory.${categoryIndex}.lectures`
+    name: `courseCategory.${categoryIndex}.courses`
   });
+
+  const handleCourseSelection = (lectureIndex: number, courseId: string) => {
+     const courseIdNum = Number(courseId);
+     const course = availableCourses.find(c => c.id === courseIdNum);
+     if (course) {
+        setValue(`courseCategory.${categoryIndex}.courses.${lectureIndex}.id`, course.id);
+        setValue(`courseCategory.${categoryIndex}.courses.${lectureIndex}.courseName`, course.courseName);
+        setValue(`courseCategory.${categoryIndex}.courses.${lectureIndex}.credits`, course.credits);
+        setValue(`courseCategory.${categoryIndex}.courses.${lectureIndex}.description`, course.description);
+     }
+  };
 
   return (
     <div className="space-y-3 pl-4 border-l-2 border-primary/20 mt-4">
       <div className="flex items-center justify-between">
-        <label className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Daftar Mata Kuliah</label>
+        <label className="text-[9px] font-black text-primary uppercase tracking-[0.2em] text-left block">Daftar Mata Kuliah</label>
         <Button 
           type="button" 
           size="sm"
-          onClick={() => append({ lectureName: '', credits: 3, description: '' })}
-          className="h-7 text-[8px] font-black uppercase bg-primary/10 text-primary hover:bg-primary/20"
+          onClick={() => append({ id: 0, courseName: '', credits: 0, description: '' })}
+          className="h-7 text-[8px] font-black uppercase bg-primary/10 text-primary hover:bg-primary/20 rounded-lg px-3"
         >
-          <Plus className="w-3 h-3 mr-1" /> Tambah Matkul
+          <Plus className="w-3 h-3 mr-1" /> Tambah MK
         </Button>
       </div>
 
@@ -426,34 +529,40 @@ function LectureFields({ categoryIndex, control, register }: LectureFieldsProps)
                 variant="ghost"
                 size="icon"
                 onClick={() => remove(lectureIndex)}
-                className="absolute top-2 right-2 h-6 w-6 text-red-500 opacity-0 group-hover/item:opacity-100 transition-all"
+                className="absolute top-2 right-2 h-6 w-6 text-red-500 opacity-0 group-hover/item:opacity-100 transition-all z-10"
              >
                 <Trash2 className="w-3 h-3" />
              </Button>
 
-             <div className="grid grid-cols-4 gap-3">
-                <div className="col-span-3">
-                  <Input 
-                    {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.lectureName`)}
-                    placeholder="Nama Mata Kuliah"
-                    className="h-8 text-xs font-bold border-none bg-gray-50/50"
-                  />
+             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-1">
+                <div className="sm:col-span-3 space-y-1">
+                   <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Mata Kuliah</label>
+                   <select
+                      className="w-full h-10 px-4 rounded-xl border-none bg-gray-50/50 font-bold text-xs focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
+                      value={control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.id || 0}
+                      onChange={(e) => handleCourseSelection(lectureIndex, e.target.value)}
+                   >
+                      <option value="0" disabled>Select Course...</option>
+                      {availableCourses.map(c => (
+                         <option key={c.id} value={c.id}>
+                            {c.courseName} ({c.credits} SKS)
+                         </option>
+                      ))}
+                   </select>
                 </div>
-                <div>
-                  <Input 
-                    type="number"
-                    {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.credits`)}
-                    placeholder="SKS"
-                    className="h-8 text-xs font-bold border-none bg-gray-50/50"
-                  />
+                <div className="space-y-1">
+                   <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">SKS Terdaftar</label>
+                   <div className="h-10 flex items-center px-4 bg-primary/5 rounded-xl font-black text-sm text-primary">
+                      {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.credits || 0}
+                   </div>
                 </div>
              </div>
-             <Textarea 
-               {...register(`lectureCategory.${categoryIndex}.lectures.${lectureIndex}.description`)}
-               placeholder="Deskripsi singkat mata kuliah..."
-               rows={2}
-               className="text-[10px] font-medium border-none bg-gray-50/50 p-2 min-h-[40px] resize-none"
-             />
+             
+             {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.description && (
+                <p className="text-[10px] font-medium text-gray-400 bg-gray-50 p-3 rounded-xl line-clamp-2 italic text-left">
+                   {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.description}
+                </p>
+             )}
           </div>
         ))}
         {fields.length === 0 && (

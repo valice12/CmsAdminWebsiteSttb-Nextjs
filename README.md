@@ -21,9 +21,9 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan CMS di komputer lokal Anda.
 2.  **Konfigurasi API & Network**:
     Buat file `.env.local` di folder utama (lihat `.env.local.example`):
     ```env
-    NEXT_PUBLIC_API_URL=http://[IPv4-ADDRESS]:5066/api/v1
+    NEXT_PUBLIC_API_URL=http://[IPv4-ADDRESS]:[PORT]/api/v1
     ```
-    - Ganti `[IPv4-ADDRESS]` dengan IP komputer Anda (contoh: `192.168.18.34`).
+    - Ganti `[IPv4-ADDRESS]` dengan IP komputer Anda.
     - Hal ini diperlukan agar CMS dapat diakses dari device lain (mobile) dalam satu network.
 3.  **Menjalankan Mode Pengembangan**:
     ```bash
