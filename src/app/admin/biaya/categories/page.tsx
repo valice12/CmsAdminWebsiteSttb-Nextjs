@@ -107,21 +107,27 @@ export default function CostCategoryPage() {
 
   const columns: ColumnDef<CostCategoryDTO>[] = [
     {
+      accessorKey: 'id',
+      header: 'ID Kategori',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 font-black text-[10px] border border-gray-100">
+            #{row.getValue('id')}
+          </div>
+        </div>
+      )
+    },
+    {
       accessorKey: 'categoryName',
       header: 'Nama Kategori',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
+        <div className="flex items-center gap-3 py-1">
+             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 shrink-0">
                 <Tag className="w-5 h-5" />
              </div>
              <span className="font-extrabold text-gray-900 tracking-tight">{row.getValue('categoryName')}</span>
         </div>
       )
-    },
-    {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ row }) => <code className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">ID-{row.getValue('id')}</code>
     },
     {
       id: 'actions',
@@ -191,7 +197,7 @@ export default function CostCategoryPage() {
              <DollarSign className="w-10 h-10" />
           </div>
           <div className="space-y-2">
-             <h3 className="text-xl font-black text-gray-900 uppercase">Pentingnya Kategorisasi</h3>
+             <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Pentingnya Kategorisasi</h3>
              <p className="text-sm text-amber-900/60 font-medium leading-relaxed">
                 Kategori biaya membantu dalam pelaporan keuangan dan memberikan kejelasan bagi calon mahasiswa mengenai rincian dana yang harus dibayarkan (misal: Biaya Pendaftaran, Biaya Semester, Uang Pangkal).
              </p>
@@ -200,7 +206,7 @@ export default function CostCategoryPage() {
 
       {/* CRUD Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] p-10 gap-8 border-none shadow-2xl">
+        <DialogContent className="sm:max-w-[450px] rounded-[3rem] p-10 gap-8 border-none shadow-2xl">
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-black text-navy tracking-tight leading-none">
               {selectedCategory?.id ? 'Edit Kategori' : 'Kategori Baru'}

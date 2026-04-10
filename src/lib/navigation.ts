@@ -53,7 +53,7 @@ export const MENU_STRUCTURE: NavItem[] = [
     permission: 'CanManageMedia',
     children: [
       { label: 'Kelola Media', path: '/admin/media' },
-      { label: 'Kelola Kategori Media', path: '/admin/media/category' },
+      { label: 'Kelola Kategori Media', path: '/admin/media/categories' },
     ]
   },
   {

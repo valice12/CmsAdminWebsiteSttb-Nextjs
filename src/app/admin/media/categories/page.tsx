@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { 
-  getAllNewsCategories, 
-  addNewsCategory, 
-  editNewsCategory, 
-  deleteNewsCategory 
+  getAllMediaCategories, 
+  addMediaCategory, 
+  editMediaCategory, 
+  deleteMediaCategory 
 } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { 
-  Newspaper, Plus, Trash2, Edit, 
-  MoreHorizontal, Search, Tag, Hash
+    Library, Plus, Trash2, Edit, 
+    MoreHorizontal, Search, FolderOpen, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -26,13 +26,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-interface NewsCategoryDTO {
+interface MediaCategoryDTO {
   id: number;
   categoryName: string;
 }
 
-export default function NewsCategoriesPage() {
-  const [categories, setCategories] = useState<NewsCategoryDTO[]>([]);
+export default function MediaCategoriesPage() {
+  const [categories, setCategories] = useState<MediaCategoryDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -42,7 +42,7 @@ export default function NewsCategoriesPage() {
   // Modal State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Partial<NewsCategoryDTO> | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Partial<MediaCategoryDTO> | null>(null);
 
   useEffect(() => {
     loadCategories();
@@ -51,21 +51,21 @@ export default function NewsCategoriesPage() {
   const loadCategories = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllNewsCategories(pageIndex, pageSize);
-      setCategories(data.items || data.Items || []);
-      setTotalItems(data.totalItems || data.TotalItems || 0);
+      const data = await getAllMediaCategories(pageIndex, pageSize);
+      setCategories(data.categories || data.Categories || data.items || []);
+      setTotalItems(data.totalMedia || data.TotalMedia || data.totalItems || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
-      toast.error('Gagal memuat kategori berita');
+      toast.error('Gagal memuat kategori media');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus kategori berita ini?')) {
+    if (confirm('Apakah Anda yakin ingin menghapus kategori media ini?')) {
       try {
-        await deleteNewsCategory(id);
+        await deleteMediaCategory(id);
         toast.success('Kategori berhasil dihapus');
         loadCategories();
       } catch (error) {
@@ -74,7 +74,7 @@ export default function NewsCategoriesPage() {
     }
   };
 
-  const handleOpenDialog = (category?: NewsCategoryDTO) => {
+  const handleOpenDialog = (category?: MediaCategoryDTO) => {
     setSelectedCategory(category || { categoryName: '' });
     setIsDialogOpen(true);
   };
@@ -88,10 +88,10 @@ export default function NewsCategoriesPage() {
     try {
       setIsSubmitting(true);
       if (selectedCategory.id) {
-        await editNewsCategory(selectedCategory.id, selectedCategory.categoryName);
+        await editMediaCategory(selectedCategory.id, selectedCategory.categoryName);
         toast.success('Kategori berhasil diperbarui');
       } else {
-        await addNewsCategory(selectedCategory.categoryName);
+        await addMediaCategory(selectedCategory.categoryName);
         toast.success('Kategori berhasil ditambahkan');
       }
       setIsDialogOpen(false);
@@ -103,7 +103,7 @@ export default function NewsCategoriesPage() {
     }
   };
 
-  const columns: ColumnDef<NewsCategoryDTO>[] = [
+  const columns: ColumnDef<MediaCategoryDTO>[] = [
     {
       accessorKey: 'id',
       header: 'ID Kategori',
@@ -119,9 +119,9 @@ export default function NewsCategoriesPage() {
       accessorKey: 'categoryName',
       header: 'Nama Kategori',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3 py-1">
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
-               <Tag className="w-5 h-5" />
+        <div className="flex items-center gap-3 py-1 text-left">
+            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 shrink-0">
+               <Layers className="w-5 h-5" />
             </div>
             <span className="font-extrabold text-gray-900 tracking-tight">{row.getValue('categoryName')}</span>
         </div>
@@ -136,7 +136,7 @@ export default function NewsCategoriesPage() {
             variant="ghost"
             size="icon"
             onClick={() => handleOpenDialog(row.original)}
-            className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+            className="h-9 w-9 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl transition-all"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -157,14 +157,14 @@ export default function NewsCategoriesPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-                <Newspaper className="w-7 h-7" />
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 leading-none">
+            <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
+                <Library className="w-7 h-7" />
             </div>
-            Kategori Berita
+            Kategori Media
           </h1>
           <p className="text-muted-foreground font-medium text-sm ml-1 mt-2">
-            Kelola klasifikasi berita dan artikel portal STTB.
+            Pusat klasifikasi jurnal, artikel, video, dan repositori STTB.
           </p>
         </div>
         <Button 
@@ -189,15 +189,15 @@ export default function NewsCategoriesPage() {
         />
       </div>
 
-      {/* Info Panel */}
-      <div className="bg-blue-50/50 rounded-[2.5rem] p-8 border border-blue-100 flex items-center gap-6 text-left">
-          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm shrink-0">
-             <Hash className="w-6 h-6 text-blue-600" />
+      {/* Info Card */}
+      <div className="bg-emerald-50/50 rounded-[2.5rem] p-10 border border-emerald-100 flex flex-col md:flex-row items-center gap-8 text-left">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm shrink-0">
+             <FolderOpen className="w-8 h-8 text-emerald-600" />
           </div>
-          <div>
-             <h4 className="font-black text-blue-900 uppercase tracking-tight text-sm">Konsistensi Konten</h4>
-             <p className="text-xs text-blue-800/60 font-medium leading-relaxed mt-1">
-                Gunakan kategori yang relevan untuk memudahkan pengunjung memfilter berita sesuai minat mereka. Kategori yang sudah digunakan oleh berita tidak disarankan untuk dihapus.
+          <div className="space-y-1">
+             <h4 className="font-black text-emerald-900 uppercase tracking-tight text-base">Arsip Terorganisir</h4>
+             <p className="text-sm text-emerald-800/60 font-medium leading-relaxed">
+                Kategori media digunakan untuk memisahkan topik penelitian, bidang keilmuan, atau seri video edukasi. Hal ini mempermudah sistem pencarian pada repositori digital STTB.
              </p>
           </div>
       </div>
@@ -210,17 +210,17 @@ export default function NewsCategoriesPage() {
               {selectedCategory?.id ? 'Edit Kategori' : 'Kategori Baru'}
             </DialogTitle>
             <DialogDescription className="text-gray-500 font-medium mt-2">
-              Berikan nama kategori yang unik dan deskriptif.
+              Berikan nama kategori yang mudah dimengerti oleh pengguna.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 text-left">
              <div className="space-y-2">
-                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori</Label>
+                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori Media</Label>
                 <Input 
                   value={selectedCategory?.categoryName || ''}
                   onChange={(e) => setSelectedCategory({ ...selectedCategory, categoryName: e.target.value })}
-                  placeholder="e.g. Akademik & Kampus"
+                  placeholder="e.g. Riset Keamanan Siber"
                   className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold shadow-inner focus:bg-white transition-all underline-offset-4"
                 />
              </div>
@@ -230,7 +230,7 @@ export default function NewsCategoriesPage() {
             <Button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black px-8 shadow-xl shadow-blue-500/20 flex-1 uppercase tracking-widest transition-all"
+              className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black px-8 shadow-xl shadow-emerald-500/20 flex-1 uppercase tracking-widest transition-all"
             >
               {isSubmitting ? 'Menyimpan...' : 'Simpan Kategori'}
             </Button>

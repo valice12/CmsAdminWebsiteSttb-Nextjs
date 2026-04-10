@@ -155,19 +155,19 @@ export async function getAllEventCategories(page = 1, pageSize = 10, fetchAll = 
   return response.json();
 }
 
-export async function addEventCategory(categoryName: string, slug: string) {
+export async function addEventCategory(categoryName: string) {
   const response = await cmsFetch(`${CMS_BASE_URL}/events/add-category`, {
     method: 'POST',
-    body: JSON.stringify({ CategoryName: categoryName, Slug: slug }),
+    body: JSON.stringify({ CategoryName: categoryName, Slug: categoryName }),
   });
   if (!response.ok) throw new Error('Failed to add event category');
   return response.json();
 }
 
-export async function editEventCategory(id: number, categoryName: string, slug: string) {
+export async function editEventCategory(id: number, categoryName: string) {
   const response = await cmsFetch(`${CMS_BASE_URL}/events/edit-category`, {
     method: 'PUT',
-    body: JSON.stringify({ Id: id, CategoryName: categoryName, Slug: slug }),
+    body: JSON.stringify({ Id: id, CategoryName: categoryName, Slug: categoryName }),
   });
   if (!response.ok) throw new Error('Failed to edit event category');
   return response.json();
@@ -357,7 +357,7 @@ export async function deleteAcademicProgram(id: number) {
 
 export async function getAllCourses(page?: number, pageSize?: number, fetchAll = false) {
   let url = `${CMS_BASE_URL}/academic-programs/get-all-courses?FetchAll=${fetchAll}`;
-  
+
   if (!fetchAll) {
     const p = page || 1;
     const ps = pageSize || 10;
@@ -658,9 +658,9 @@ export async function addRole(name: string, permissions: string[] = []) {
 }
 
 export async function updateRole(id: number, name: string, permissions: { id: number, name: string }[]) {
-  const rolePermissionsDTOs = permissions.map(p => ({ 
-    Id: p.id, 
-    PermissionName: p.name 
+  const rolePermissionsDTOs = permissions.map(p => ({
+    Id: p.id,
+    PermissionName: p.name
   }));
   const response = await cmsFetch(`${CMS_BASE_URL}/users/edit-role`, {
     method: 'PUT',

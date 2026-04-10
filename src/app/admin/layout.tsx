@@ -77,10 +77,25 @@ function SidebarNavItem({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  // Helper to check if a path is considered active given the current pathname
+  const isPathActive = (path: string, siblings?: MenuItem[]) => {
+    const isExact = pathname === path;
+    const isSubPath = pathname.startsWith(path + '/') && !path.includes('?');
+    
+    if (isExact) return true;
+    if (!isSubPath) return false;
+
+    // If it's a sub-path match, it should only be active if no other sibling is a "better" match
+    const isBetterMatchExist = siblings?.some(sibling => 
+      sibling.path !== path && 
+      (pathname === sibling.path || (pathname.startsWith(sibling.path + '/') && sibling.path.length > path.length))
+    );
+
+    return !isBetterMatchExist;
+  };
+
   // Detect if any child is active
-  const hasActiveChild = item.children?.some(child => {
-    return pathname === child.path || (pathname.startsWith(child.path + '/') && !child.path.includes('?'));
-  });
+  const hasActiveChild = item.children?.some(child => isPathActive(child.path, item.children));
 
   // Effect to auto-expand if child is active
   useEffect(() => {
@@ -98,7 +113,7 @@ function SidebarNavItem({
   if (itemTab) {
     isActive = pathname === itemUrl.pathname && currentTab === itemTab;
   } else if (!item.children) {
-    isActive = pathname === item.path || (pathname.startsWith(item.path + '/') && !item.path.includes('?'));
+    isActive = isPathActive(item.path);
   }
 
   // If item has children, it's a dropdown toggle (unless it's a direct link too)
@@ -123,7 +138,7 @@ function SidebarNavItem({
         {isExpanded && (
           <div className="pl-4 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-300">
             {item.children.map((child) => {
-              const childActive = pathname === child.path || (pathname.startsWith(child.path + '/') && !child.path.includes('?'));
+              const childActive = isPathActive(child.path, item.children);
               return (
                 <Link
                   key={child.path}

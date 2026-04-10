@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { 
-  getAllEventCategories, 
-  addEventCategory, 
-  editEventCategory, 
-  deleteEventCategory 
+import {
+  getAllEventCategories,
+  addEventCategory,
+  editEventCategory,
+  deleteEventCategory
 } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { 
-    CalendarRange, Plus, Trash2, Edit, 
-    Link as LinkIcon, Info, Sparkles
+import {
+  CalendarRange, Plus, Trash2, Edit,
+  Link as LinkIcon, Info, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -29,7 +29,6 @@ import { Label } from "@/components/ui/label";
 interface EventCategoryDTO {
   id: number;
   categoryName: string;
-  slug: string;
 }
 
 export default function EventCategoriesPage() {
@@ -39,7 +38,7 @@ export default function EventCategoriesPage() {
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [pageCount, setPageCount] = useState(0);
-  
+
   // Modal State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,36 +75,30 @@ export default function EventCategoriesPage() {
   };
 
   const handleOpenDialog = (category?: EventCategoryDTO) => {
-    setSelectedCategory(category || { categoryName: '', slug: '' });
+    setSelectedCategory(category || { categoryName: '' });
     setIsDialogOpen(true);
   };
 
   const handleNameChange = (name: string) => {
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    
-    setSelectedCategory({ 
-      ...selectedCategory, 
+    setSelectedCategory({
+      ...selectedCategory,
       categoryName: name,
-      slug: selectedCategory?.id ? selectedCategory.slug : slug // Only auto-slug for new ones
     });
   };
 
   const handleSave = async () => {
-    if (!selectedCategory?.categoryName || !selectedCategory?.slug) {
-      toast.error('Nama dan Slug wajib diisi');
+    if (!selectedCategory?.categoryName) {
+      toast.error('Nama wajib diisi');
       return;
     }
 
     try {
       setIsSubmitting(true);
       if (selectedCategory.id) {
-        await editEventCategory(selectedCategory.id, selectedCategory.categoryName, selectedCategory.slug);
+        await editEventCategory(selectedCategory.id, selectedCategory.categoryName);
         toast.success('Kategori berhasil diperbarui');
       } else {
-        await addEventCategory(selectedCategory.categoryName, selectedCategory.slug);
+        await addEventCategory(selectedCategory.categoryName);
         toast.success('Kategori berhasil ditambahkan');
       }
       setIsDialogOpen(false);
@@ -119,29 +112,27 @@ export default function EventCategoriesPage() {
 
   const columns: ColumnDef<EventCategoryDTO>[] = [
     {
-      accessorKey: 'categoryName',
-      header: 'Nama Kategori',
+      accessorKey: 'id',
+      header: 'ID Kategori',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3 py-1">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
-               <CalendarRange className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col text-left">
-                <span className="font-extrabold text-gray-900 tracking-tight">{row.getValue('categoryName')}</span>
-                <span className="text-[10px] text-gray-400 font-bold tracking-tighter uppercase">ID: #{row.original.id}</span>
-            </div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 font-black text-[10px] border border-gray-100">
+            #{row.getValue('id')}
+          </div>
         </div>
       )
     },
     {
-      accessorKey: 'slug',
-      header: 'URL Slug',
+      accessorKey: 'categoryName',
+      header: 'Nama Kategori',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-            <LinkIcon className="w-3 h-3 text-gray-400" />
-            <code className="text-[10px] font-black text-indigo-500 bg-indigo-50/50 px-2 py-1 rounded-lg">
-                /{row.getValue('slug')}
-            </code>
+        <div className="flex items-center gap-3 py-1">
+          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
+            <CalendarRange className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="font-extrabold text-gray-900 tracking-tight">{row.getValue('categoryName')}</span>
+          </div>
         </div>
       )
     },
@@ -177,7 +168,7 @@ export default function EventCategoriesPage() {
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
             <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
-                <CalendarRange className="w-7 h-7" />
+              <CalendarRange className="w-7 h-7" />
             </div>
             Kategori Kegiatan
           </h1>
@@ -185,7 +176,7 @@ export default function EventCategoriesPage() {
             Pengaturan pengelompokan event, seminar, dan workshop STTB.
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => handleOpenDialog()}
           className="bg-[#0B1B3D] hover:bg-[#152a5a] text-white rounded-[1.25rem] h-14 px-8 shadow-2xl shadow-navy/20 font-black uppercase tracking-widest flex items-center gap-3 transition-all active:scale-95 group"
         >
@@ -195,9 +186,9 @@ export default function EventCategoriesPage() {
       </div>
 
       <div className="bg-white rounded-[3rem] p-10 shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden relative">
-        <DataTable 
-          columns={columns} 
-          data={categories} 
+        <DataTable
+          columns={columns}
+          data={categories}
           isLoading={isLoading}
           totalItems={totalItems}
           pageCount={pageCount}
@@ -207,27 +198,26 @@ export default function EventCategoriesPage() {
         />
       </div>
 
-      {/* Suggestion Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-indigo-50/50 rounded-[2.5rem] p-8 border border-indigo-100 flex items-start gap-5 text-left">
-             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
-                <Sparkles className="w-6 h-6" />
-             </div>
-             <div>
-                <h4 className="font-black text-indigo-900 uppercase tracking-tight text-sm">Auto-Slug Feature</h4>
-                <p className="text-xs text-indigo-800/60 font-medium leading-relaxed mt-1">
-                   Sistem akan secara otomatis membuat slug yang ramah SEO berdasarkan nama kategori yang Anda ketikkan. Pastikan slug yang digunakan unik untuk setiap kategori agar routing tetap lancar.
-                </p>
-             </div>
+        <div className="bg-indigo-50/50 rounded-[2.5rem] p-8 border border-indigo-100 flex items-start gap-5 text-left">
+          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+            <Info className="w-6 h-6" />
           </div>
-          <div className="bg-white border-2 border-dashed border-gray-100 rounded-[2.5rem] p-8 flex items-center gap-5 text-left">
-             <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 shrink-0">
-                <Info className="w-6 h-6" />
-             </div>
-             <p className="text-xs text-gray-400 font-medium leading-relaxed">
-                Kategori membantu pemisahan antara Event Akademik, Seminar Nasional, dan Kegiatan Mahasiswa di portal publik STTB.
-             </p>
+          <div>
+            <h4 className="font-black text-indigo-900 uppercase tracking-tight text-sm">Informasi Kategori</h4>
+            <p className="text-xs text-indigo-800/60 font-medium leading-relaxed mt-1">
+              Gunakan kategori untuk mengelompokkan berbagai jenis kegiatan akademik maupun non-akademik di STTB agar memudahkan pencarian oleh audiens.
+            </p>
           </div>
+        </div>
+        <div className="bg-white border-2 border-dashed border-gray-100 rounded-[2.5rem] p-8 flex items-center gap-5 text-left">
+          <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 shrink-0">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <p className="text-xs text-gray-400 font-medium leading-relaxed">
+            Kategori membantu pemisahan antara Event Akademik, Seminar Nasional, dan Kegiatan Mahasiswa di portal publik STTB.
+          </p>
+        </div>
       </div>
 
       {/* CRUD Dialog */}
@@ -243,31 +233,15 @@ export default function EventCategoriesPage() {
           </DialogHeader>
 
           <div className="space-y-6 text-left">
-             <div className="space-y-2">
-                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori</Label>
-                <Input 
-                  value={selectedCategory?.categoryName || ''}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="e.g. Workshop Teknologi"
-                  className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold shadow-inner focus:bg-white transition-all underline-offset-4"
-                />
-             </div>
-
-             <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">URL Slug</Label>
-                    <span className="text-[9px] font-bold text-indigo-400 uppercase bg-indigo-50 px-2 py-0.5 rounded-full">SEO Friendly</span>
-                </div>
-                <div className="relative">
-                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input 
-                        value={selectedCategory?.slug || ''}
-                        onChange={(e) => setSelectedCategory({ ...selectedCategory, slug: e.target.value })}
-                        placeholder="workshop-teknologi"
-                        className="h-14 pl-12 bg-gray-50/50 border-none rounded-2xl font-black text-indigo-600 shadow-inner focus:bg-white transition-all italic"
-                    />
-                </div>
-             </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nama Kategori</Label>
+              <Input
+                value={selectedCategory?.categoryName || ''}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="e.g. Workshop Teknologi"
+                className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold shadow-inner focus:bg-white transition-all underline-offset-4"
+              />
+            </div>
           </div>
 
           <DialogFooter className="gap-3 sm:justify-start">
