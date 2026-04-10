@@ -195,9 +195,9 @@ export default function KegiatanPage() {
        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 text-left">
          <AlertCircle className="w-6 h-6 text-blue-600 mt-1 shrink-0" />
          <div>
-            <h3 className="font-bold text-blue-900">Manajemen Event Live</h3>
+            <h3 className="font-bold text-blue-900">Sinkronisasi Agenda Kampus</h3>
             <p className="text-sm text-blue-700 mt-1 leading-relaxed">
-               Halaman ini terhubung langsung ke API Backend. Gunakan tombol aksi untuk mengelola agenda kegiatan kampus.
+               Halaman ini mengelola seluruh agenda dan kegiatan kampus yang ditampilkan secara publik. Seluruh data dirilis secara real-time.
             </p>
          </div>
       </div>
@@ -231,7 +231,7 @@ export default function KegiatanPage() {
                 <DialogDescription className="font-medium text-gray-500 pt-2">
                   Apakah Anda yakin ingin menghapus agenda <span className="text-red-600 font-bold">"{selectedEvent?.eventTitle}"</span>? <br/><br/>
                   <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
-                     <AlertCircle className="w-3 h-3" /> Endpoint Delete Belum Tersedia di Backend
+                     <AlertCircle className="w-3 h-3" /> Tindakan ini tidak dapat dibatalkan
                   </span>
                 </DialogDescription>
               </DialogHeader>

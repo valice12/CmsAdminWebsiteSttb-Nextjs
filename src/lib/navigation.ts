@@ -76,7 +76,6 @@ export const MENU_STRUCTURE: NavItem[] = [
     ]
   },
   { label: 'Halaman', path: '/admin/halaman', permission: 'CanManagePages' },
-  { label: 'API Status', path: '/admin/status', permission: 'CanManageUsers' },
 ];
 
 /**

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray, Control } from 'react-hook-form';
+import { useForm, useFieldArray, Control, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -128,6 +128,31 @@ export function AkademikForm({ id }: AkademikFormProps) {
       form.setValue('totalCredits', programTotal, { shouldValidate: true });
     }
   }, [watchedCategories]);
+
+  // Automate Default SKS & Duration based on Degree
+  const watchedDegree = form.watch('degree');
+  useEffect(() => {
+    if (isEdit) return; // Don't overwrite existing data on edit
+    
+    switch (watchedDegree) {
+      case 'S1':
+        form.setValue('totalCredits', 144);
+        form.setValue('duration', 8);
+        break;
+      case 'S2':
+        form.setValue('totalCredits', 36);
+        form.setValue('duration', 4);
+        break;
+      case 'S3':
+        form.setValue('totalCredits', 42);
+        form.setValue('duration', 6);
+        break;
+      case 'D3':
+        form.setValue('totalCredits', 110);
+        form.setValue('duration', 6);
+        break;
+    }
+  }, [watchedDegree, isEdit]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -496,6 +521,11 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
     name: `courseCategory.${categoryIndex}.courses`
   });
 
+  const watchedCourses = useWatch({
+    control,
+    name: `courseCategory.${categoryIndex}.courses`
+  });
+
   const handleCourseSelection = (lectureIndex: number, courseId: string) => {
      const courseIdNum = Number(courseId);
      const course = availableCourses.find(c => c.id === courseIdNum);
@@ -539,7 +569,7 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
                    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Mata Kuliah</label>
                    <select
                       className="w-full h-10 px-4 rounded-xl border-none bg-gray-50/50 font-bold text-xs focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
-                      value={control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.id || 0}
+                      value={watchedCourses?.[lectureIndex]?.id || 0}
                       onChange={(e) => handleCourseSelection(lectureIndex, e.target.value)}
                    >
                       <option value="0" disabled>Select Course...</option>
@@ -553,14 +583,14 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
                 <div className="space-y-1">
                    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">SKS Terdaftar</label>
                    <div className="h-10 flex items-center px-4 bg-primary/5 rounded-xl font-black text-sm text-primary">
-                      {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.credits || 0}
+                      {watchedCourses?.[lectureIndex]?.credits || 0}
                    </div>
                 </div>
              </div>
              
-             {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.description && (
+             {watchedCourses?.[lectureIndex]?.description && (
                 <p className="text-[10px] font-medium text-gray-400 bg-gray-50 p-3 rounded-xl line-clamp-2 italic text-left">
-                   {control._formValues.courseCategory?.[categoryIndex]?.courses?.[lectureIndex]?.description}
+                   {watchedCourses[lectureIndex].description}
                 </p>
              )}
           </div>

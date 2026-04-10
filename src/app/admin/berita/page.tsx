@@ -163,7 +163,7 @@ export default function BeritaPage() {
             Manajemen Berita (Live Data)
           </h1>
           <p className="text-muted-foreground font-medium text-sm">
-            Menampilkan data berita langsung dari Backend STTB.
+            Menampilkan data berita yang disinkronkan secara real-time.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -192,7 +192,7 @@ export default function BeritaPage() {
          <div>
             <h3 className="font-bold text-amber-900">Manajemen Berita Live</h3>
              <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-                Halaman ini terhubung ke <code>api/v1/cms/news/get-all-news</code>. Data disinkronkan secara real-time.
+                Halaman ini disinkronkan langsung dengan pusat data. Seluruh perubahan akan tercermin secara real-time di website utama.
              </p>
          </div>
       </div>

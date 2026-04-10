@@ -82,7 +82,7 @@ export default function AkademikPage() {
             Pusat Data Akademik (Live)
           </h1>
           <p className="text-muted-foreground font-medium text-sm">
-            Manajemen program studi dan kurikulum sinkron dengan backend.
+            Manajemen program studi dan kurikulum yang disinkronkan secara real-time.
           </p>
         </div>
         <Button 
@@ -98,10 +98,10 @@ export default function AkademikPage() {
        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex items-start gap-4 text-left">
          <AlertCircle className="w-6 h-6 text-amber-600 mt-1 shrink-0" />
          <div>
-            <h3 className="font-bold text-amber-900">Catatan Integrasi Backend</h3>
-            <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-               Halaman ini menggunakan <code>api/v1/cms/academic-programs/get-all-academic-programs</code>. Data disinkronkan secara real-time.
-            </p>
+            <h3 className="font-bold text-amber-900">Pusat Data Akademik</h3>
+             <p className="text-sm text-amber-700 mt-1 leading-relaxed">
+               Halaman ini menampilkan seluruh program studi dan kurikulum yang aktif. Seluruh data disinkronkan secara real-time.
+             </p>
          </div>
       </div>
 

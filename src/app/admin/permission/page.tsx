@@ -173,10 +173,10 @@ export default function PermissionPage() {
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase flex items-center gap-3">
             <Key className="w-10 h-10 text-amber-500" />
-            Permission Keys
+            Akses Fungsional
           </h1>
           <p className="text-muted-foreground font-medium text-lg ml-1">
-            Daftar kunci akses fungsional sistem yang terdaftar di backend.
+            Daftar kunci akses fungsional sistem yang telah terverifikasi.
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function PermissionPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari permission key..."
+              placeholder="Cari kunci akses..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-amber-600/20"
@@ -208,9 +208,9 @@ export default function PermissionPage() {
               <Database className="w-6 h-6" />
           </div>
           <div className="relative z-10">
-              <h3 className="text-xl font-black tracking-tight text-amber-900">System Functional Keys</h3>
+              <h3 className="text-xl font-black tracking-tight text-amber-900">Keamanan Akses Fungsional</h3>
               <p className="text-sm mt-1 font-medium leading-relaxed max-w-2xl text-amber-900/70">
-                  Daftar kunci akses fungsional yang digunakan di backend untuk validasi otorisasi data dan fitur.
+                  Daftar kunci akses fungsional yang digunakan untuk validasi otorisasi data dan fitur sistem secara terpadu.
               </p>
           </div>
       </div>

@@ -290,8 +290,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                 className="w-full h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-700 appearance-none focus-visible:outline-none focus:bg-white transition-all cursor-pointer"
               >
                 <option value="" className="font-bold">Pilih Kategori...</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat} className="font-bold">{cat}</option>
+                {categories.map((cat: any) => (
+                  <option key={cat.id || cat} value={cat.categoryName || cat} className="font-bold">
+                    {cat.categoryName || cat}
+                  </option>
                 ))}
               </select>
               {form.formState.errors.category && (

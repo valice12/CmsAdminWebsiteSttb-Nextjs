@@ -20,7 +20,8 @@ import {
   FileText,
   BookOpen,
   Book,
-  Mail
+  Mail,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,7 @@ export default function DashboardPage() {
     news: 0,
     events: 0,
     programs: 0,
+    courses: 0,
     foundation: 0,
     lecturers: 0,
     video: 0,
@@ -62,6 +64,7 @@ export default function DashboardPage() {
         news: dashboardData.totalNews || 0,
         events: dashboardData.totalEvent || 0,
         programs: dashboardData.totalAcademicProgram || 0,
+        courses: dashboardData.totalCourse || dashboardData.totalCourses || 0,
         foundation: dashboardData.totalAdministrator || 0,
         lecturers: dashboardData.totalLecturer || 0,
         video: dashboardData.totalVideo || 0,
@@ -79,20 +82,20 @@ export default function DashboardPage() {
 
   const primaryStats: StatCardProps[] = [
     {
-      label: 'Total Berita',
+      label: 'Berita & Info',
       value: stats.news,
       icon: Newspaper,
       color: 'bg-blue-600',
       path: '/admin/berita',
-      description: 'Artikel berita rilis'
+      description: 'Update berita kampus'
     },
     {
-      label: 'Event Aktif',
+      label: 'Agenda Kegiatan',
       value: stats.events,
       icon: Calendar,
       color: 'bg-emerald-600',
       path: '/admin/kegiatan',
-      description: 'Kegiatan mendatang'
+      description: 'Seminar & event'
     },
     {
       label: 'Program Studi',
@@ -103,20 +106,20 @@ export default function DashboardPage() {
       description: 'Pusat data akademik'
     },
     {
-      label: 'Pengurus Yayasan',
-      value: stats.foundation,
-      icon: Shield,
-      color: 'bg-indigo-600',
-      path: '/admin/pengurus-yayasan',
-      description: 'Struktural Yayasan'
+       label: 'Mata Kuliah',
+       value: stats.courses,
+       icon: BookOpen,
+       color: 'bg-indigo-600',
+       path: '/admin/akademik/mata-kuliah',
+       description: 'Database kurikulum'
     },
     {
-      label: 'Dosen / Pengajar',
+      label: 'Tenaga Pengajar',
       value: stats.lecturers,
       icon: Users,
-      color: 'bg-emerald-600',
+      color: 'bg-rose-600',
       path: '/admin/dosen',
-      description: 'Tenaga Pendidik'
+      description: 'Daftar dosen tetap'
     },
   ];
 
@@ -174,7 +177,7 @@ export default function DashboardPage() {
         
         <div className="flex items-center gap-2 bg-gray-100/50 p-2 rounded-2xl">
            <Badge variant="outline" className="bg-white px-4 py-2 font-black text-[10px] uppercase tracking-widest border-gray-100 shadow-sm">
-              <Activity className="w-3 h-3 mr-2 text-green-500" /> Host: {process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).host : 'localhost:5066'}
+              <Activity className="w-3 h-3 mr-2 text-green-500" /> Synchronize secara real-time
            </Badge>
         </div>
       </div>
@@ -260,39 +263,19 @@ export default function DashboardPage() {
         {/* System Sidebar */}
         <div className="flex flex-col">
            {/* Detailed Breakdown */}
-           <div className="bg-[#0B1B3D] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy/20 relative overflow-hidden group h-full flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-12 flex items-center gap-2">
-                   <Shield className="w-4 h-4" /> Keamanan Sistem
-                </h3>
-                
-                <div className="space-y-10 relative z-10 px-2">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white/50">Database Sync</span>
-                      <span className="text-xl font-black text-[#D4AF37] tracking-tight">100%</span>
-                    </div>
-                    <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
-                       <div className="bg-[#D4AF37] h-full shadow-[0_0_15px_rgba(212,175,55,0.5)]" style={{ width: '100%' }} />
-                    </div>
-                  </div>
- 
-                  <div className="space-y-4 pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white/50">Server Health</span>
-                      <span className="text-xl font-black text-white tracking-tight">Optimal</span>
-                    </div>
-                    <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
-                       <div className="bg-white h-full shadow-[0_0_15px_rgba(255,255,255,0.2)]" style={{ width: '100%' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
+           <div className="bg-[#0B1B3D] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy/20 relative overflow-hidden group h-full flex flex-col justify-center items-center text-center">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50" />
+              <Shield className="w-16 h-16 text-[#D4AF37]/20 mb-6" />
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-2">
+                 Fitur Keamanan
+              </h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                 Modul ini sedang dalam pengembangan <br/> untuk versi selanjutnya.
+              </p>
               
-              <div className="mt-14 p-7 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md">
-                 <p className="text-[11px] font-bold text-gray-400 italic leading-relaxed">
-                    Sistem dalam kondisi optimal. <br/> Terhubung ke backend portal <br/> melalui port <span className="text-white font-black non-italic ml-1">5066</span>.
+              <div className="mt-8 px-6 py-3 rounded-xl bg-white/5 border border-white/5 backdrop-blur-md">
+                 <p className="text-[9px] font-bold text-gray-400 italic uppercase tracking-tighter">
+                    Placeholder for System Logs & Security Metrics
                  </p>
               </div>
            </div>

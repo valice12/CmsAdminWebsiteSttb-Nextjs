@@ -53,7 +53,6 @@ const iconMap: Record<string, React.ReactNode> = {
   '/admin/personalia': <Users className="w-5 h-5 text-emerald-500" />,
   '/admin/keamanan': <ShieldCheck className="w-5 h-5 text-indigo-600" />,
   '/admin/halaman': <FileText className="w-5 h-5" />,
-  '/admin/status': <Activity className="w-5 h-5 text-amber-500" />,
 };
 
 const mapNavItemToMenuItem = (item: any): MenuItem => ({
@@ -356,20 +355,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Search & Actions */}
+            {/* Actions Placeholder */}
             <div className="flex items-center gap-4">
-              <div className="hidden sm:block relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Cari fitur..."
-                  className="pl-10 w-64 h-9 bg-gray-50 border-gray-100 text-sm focus:bg-white transition-all font-medium"
-                />
+              <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-2">
+                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[#092C74]">System Synchronized</span>
               </div>
-              <button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative group">
-                <Bell className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-              </button>
             </div>
           </div>
         </header>

@@ -47,7 +47,7 @@ export function BiayaForm({ id }: BiayaFormProps) {
           getAllCostCategories(),
           getAllAcademicPrograms(1, 100)
         ]);
-        setCategories(catData || []);
+        setCategories(catData.items || catData.Items || (Array.isArray(catData) ? catData : []));
         setPrograms(progData.items || []);
       } catch (error) {
         console.error('Error fetching form data:', error);
@@ -125,8 +125,10 @@ export function BiayaForm({ id }: BiayaFormProps) {
                     className="w-full h-14 pl-12 pr-10 rounded-2xl bg-gray-50/50 border-none text-base font-bold appearance-none outline-none focus:ring-2 focus:ring-amber-500/20 transition-all cursor-pointer"
                   >
                     <option value="">-- Pilih Kategori --</option>
-                    {categories.map((cat: any) => (
-                      <option key={cat.id} value={cat.categoryName}>{cat.categoryName}</option>
+                    {Array.isArray(categories) && categories.map((cat: any) => (
+                      <option key={cat.id || cat} value={cat.categoryName || cat.name || cat}>
+                        {cat.categoryName || cat.name || cat}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />

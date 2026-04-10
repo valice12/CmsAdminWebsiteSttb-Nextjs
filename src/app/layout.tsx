@@ -5,7 +5,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { initializeAuth } from "@/lib/auth";
-import { initializeStorage } from "@/lib/storage";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -23,7 +22,6 @@ export default function RootLayout({
 }>) {
   useEffect(() => {
     initializeAuth();
-    initializeStorage();
   }, []);
 
   return (

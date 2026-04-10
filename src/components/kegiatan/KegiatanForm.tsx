@@ -314,8 +314,10 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
                 className="w-full h-11 rounded-xl border border-white/10 bg-white/5 text-white px-4 text-xs font-bold focus:bg-white/10 transition-all cursor-pointer"
               >
                 <option value="" className="bg-[#0B1B3D]">Pilih Kategori...</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat} className="bg-[#0B1B3D] text-white">{cat}</option>
+                {categories.map((cat: any) => (
+                  <option key={cat.id || cat} value={cat.categoryName || cat} className="bg-[#0B1B3D] text-white">
+                    {cat.categoryName || cat}
+                  </option>
                 ))}
               </select>
             </div>

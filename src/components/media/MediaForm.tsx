@@ -84,7 +84,7 @@ export function MediaForm({ id }: MediaFormProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getMediaCategories();
+        const data = await getMediaCategories(true);
         // Backend returns: { categories: [ "Cat A", "Cat B" ] }
         const catList = data.categories || data.items || (Array.isArray(data) ? data : []);
         setCategories(catList);

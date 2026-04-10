@@ -88,7 +88,7 @@ export default function MediaPage() {
             Media Library (Live)
           </h1>
           <p className="text-muted-foreground font-medium text-sm">
-            Manajemen multi-format konten media langsung dari database utama.
+            Manajemen multi-format konten media yang disinkronkan dari pusat data terpadu.
           </p>
         </div>
         <div className="flex items-center gap-3">

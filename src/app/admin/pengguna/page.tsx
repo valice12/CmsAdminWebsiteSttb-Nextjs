@@ -311,9 +311,9 @@ function PenggunaContent() {
             <h3 className={`text-xl font-black tracking-tight ${activeTab === 'foundation' ? 'text-amber-900' : 'text-emerald-900'}`}>
                Sinkronisasi Data {activeTab === 'foundation' ? 'Struktural Yayasan' : 'Akademik Dosen'}
             </h3>
-            <p className={`text-sm mt-1 font-medium leading-relaxed max-w-2xl ${activeTab === 'foundation' ? 'text-amber-700/80' : 'text-emerald-700/80'}`}>
-               Data ditarik secara real-time dari portal utama. Perubahan pada database backend akan langsung tercermin di sini.
-            </p>
+             <p className={`text-sm mt-1 font-medium leading-relaxed max-w-2xl ${activeTab === 'foundation' ? 'text-amber-700/80' : 'text-emerald-700/80'}`}>
+                Data ditarik secara real-time dari portal utama. Seluruh perubahan pada pusat data akan langsung tercermin di sini.
+             </p>
          </div>
       </div>
 

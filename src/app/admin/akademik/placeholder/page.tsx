@@ -42,7 +42,7 @@ export default function AcademicPlaceholderPage() {
           </div>
           <p className="text-primary font-bold text-sm uppercase tracking-widest">Under Construction</p>
           <p className="text-gray-600 text-sm font-medium">
-            Fitur ini akan diaktifkan secara otomatis setelah struktur database akademik di sisi backend diperluas.
+            Fitur ini akan diaktifkan secara otomatis setelah struktur katalog data akademik diperluas.
           </p>
         </div>
       </div>

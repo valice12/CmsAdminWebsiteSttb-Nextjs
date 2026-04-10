@@ -53,8 +53,10 @@ export default function MataKuliahPage() {
       setIsLoading(true);
       const data = await getAllCourses(pageIndex, pageSize);
       setCourses(data.items || data.Items || []);
-      setTotalItems(data.totalItems || data.TotalItems || 0);
-      setPageCount(data.totalPages || data.TotalPages || 0);
+      // Robustly map total items from API (support totalCount, totalItems, etc.)
+      const total = data.totalItems ?? data.TotalItems ?? data.totalCount ?? data.TotalCount ?? (Array.isArray(data.items) ? data.items.length : 0);
+      setTotalItems(total);
+      setPageCount(data.totalPages || data.TotalPages || Math.ceil(total / pageSize) || 0);
     } catch (error) {
       toast.error('Gagal memuat data mata kuliah');
     } finally {
