@@ -127,6 +127,11 @@ export function BeritaForm({ id }: BeritaFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -162,7 +167,7 @@ export function BeritaForm({ id }: BeritaFormProps) {
       </div>
 
       {/* Form */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content - 2 columns */}
         <div className="lg:col-span-2 space-y-6">
           {/* Content Card */}

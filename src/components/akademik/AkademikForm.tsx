@@ -246,6 +246,11 @@ export function AkademikForm({ id }: AkademikFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   const degrees = ['S1', 'S2', 'S3', 'D3', 'D4'];
 
   return (
@@ -273,7 +278,7 @@ export function AkademikForm({ id }: AkademikFormProps) {
       </div>
 
       {/* Form Content */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
         {/* Main Section */}
         <div className="lg:col-span-2 space-y-6">
           {/* Base Info Card */}

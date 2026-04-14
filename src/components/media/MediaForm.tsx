@@ -105,7 +105,7 @@ export function MediaForm({ id }: MediaFormProps) {
       mediaContent: '',
       authors: '',
       publicationDate: new Date().toISOString().slice(0, 10),
-      category: 'General',
+      category: '',
       isPublished: true,
       videoUrl: '',
       price: '',
@@ -291,6 +291,11 @@ export function MediaForm({ id }: MediaFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -329,7 +334,7 @@ export function MediaForm({ id }: MediaFormProps) {
         </div>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 space-y-8">
             {!isEdit && (
@@ -491,11 +496,17 @@ export function MediaForm({ id }: MediaFormProps) {
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori Media</label>
               
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {form.watch('category').split(',').map(s => s.trim()).filter(s => s.length > 0).map((cat, i) => (
-                  <Badge key={i} variant="outline" className="bg-white/10 text-white hover:bg-white/20 border-none px-2 py-0 text-[10px] h-5">
-                    {cat}
-                  </Badge>
-                ))}
+                {form.watch('category').split(',').map(s => s.trim()).filter(s => s.length > 0).length > 0 ? (
+                  form.watch('category').split(',').map(s => s.trim()).filter(s => s.length > 0).map((cat, i) => (
+                    <Badge key={i} variant="outline" className="bg-white/10 text-white hover:bg-white/20 border-none px-2 py-0 text-[10px] h-5">
+                      {cat}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest italic py-1">
+                    [ Belum ada kategori dipilih ]
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-2">

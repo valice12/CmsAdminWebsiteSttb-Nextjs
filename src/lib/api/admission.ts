@@ -44,13 +44,21 @@ export async function deleteCost(id: number) {
   }
 }
 
-export async function getAllCostCategories(page = 1, pageSize = 10, fetchAll = false) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/get-all?PageNumber=${page}&PageSize=${pageSize}&FetchAll=${fetchAll}`);
+export async function getAllCostCategories(page = 1, pageSize = 10) {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/get-all?FetchAll=true`);
   if (!response.ok) {
     throw new Error('Failed to fetch cost categories');
   }
   const data = await response.json();
   return data;
+}
+
+export async function getCostCategoriesList() {
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/categories/get-all?FetchAll=true`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch cost categories list');
+  }
+  return response.json();
 }
 
 export async function getCostCategoryById(id: number) {

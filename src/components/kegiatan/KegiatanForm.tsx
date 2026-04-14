@@ -61,7 +61,7 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
       location: '',
       startsAtDate: new Date().toISOString().slice(0, 16),
       endsAtDate: new Date().toISOString().slice(0, 16),
-      category: 'Umum',
+      category: '',
       isPublished: false,
     },
   });
@@ -137,6 +137,11 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -172,7 +177,7 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
       </div>
 
       {/* Form Body */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
            {/* Detailed Information */}

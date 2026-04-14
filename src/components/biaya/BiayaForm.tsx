@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getCostById, addCost, editCost, getAllCostCategories, getAllAcademicPrograms } from '@/lib/api';
+import { getCostById, addCost, editCost, getCostCategoriesList, getAllAcademicPrograms } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, DollarSign, Tag, GraduationCap, FileSpreadsheet, ChevronDown } from 'lucide-react';
@@ -44,7 +44,7 @@ export function BiayaForm({ id }: BiayaFormProps) {
     const fetchSelectData = async () => {
       try {
         const [catData, progData] = await Promise.all([
-          getAllCostCategories(),
+          getCostCategoriesList(),
           getAllAcademicPrograms(1, 100)
         ]);
         setCategories(catData.items || catData.Items || (Array.isArray(catData) ? catData : []));

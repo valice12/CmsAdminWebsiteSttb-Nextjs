@@ -196,6 +196,11 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center gap-4">
@@ -216,8 +221,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
       <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 max-w-4xl mx-auto">
         <form 
           onSubmit={
-            activeType === 'foundation' ? adminForm.handleSubmit(onSubmit) : 
-            (activeType === 'lecturer' ? lecturerForm.handleSubmit(onSubmit) : userForm.handleSubmit(onSubmit))
+            activeType === 'foundation' ? adminForm.handleSubmit(onSubmit, onInvalid) : 
+            (activeType === 'lecturer' ? lecturerForm.handleSubmit(onSubmit, onInvalid) : userForm.handleSubmit(onSubmit, onInvalid))
           } 
           className="space-y-8 text-left"
         >
