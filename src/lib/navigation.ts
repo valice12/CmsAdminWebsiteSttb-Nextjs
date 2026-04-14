@@ -75,7 +75,6 @@ export const MENU_STRUCTURE: NavItem[] = [
       { label: 'Kelola Permission', path: '/admin/permission' },
     ]
   },
-  { label: 'Halaman', path: '/admin/halaman', permission: 'CanManagePages' },
 ];
 
 /**

@@ -220,7 +220,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 text-left items-stretch">
         {/* Media Repository Overview */}
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-9 shadow-2xl shadow-gray-200/50 border border-gray-100 flex flex-col justify-between">
+        <div className="lg:col-span-3 bg-white rounded-[2.5rem] p-9 shadow-2xl shadow-gray-200/50 border border-gray-100 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -258,27 +258,6 @@ export default function DashboardPage() {
                Browse Library <ArrowRight className="ml-3 w-4 h-4" />
             </Button>
           </div>
-        </div>
- 
-        {/* System Sidebar */}
-        <div className="flex flex-col">
-           {/* Detailed Breakdown */}
-           <div className="bg-[#0B1B3D] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy/20 relative overflow-hidden group h-full flex flex-col justify-center items-center text-center">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50" />
-              <Shield className="w-16 h-16 text-[#D4AF37]/20 mb-6" />
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-2">
-                 Fitur Keamanan
-              </h3>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                 Modul ini sedang dalam pengembangan <br/> untuk versi selanjutnya.
-              </p>
-              
-              <div className="mt-8 px-6 py-3 rounded-xl bg-white/5 border border-white/5 backdrop-blur-md">
-                 <p className="text-[9px] font-bold text-gray-400 italic uppercase tracking-tighter">
-                    Placeholder for System Logs & Security Metrics
-                 </p>
-              </div>
-           </div>
         </div>
       </div>
     </div>

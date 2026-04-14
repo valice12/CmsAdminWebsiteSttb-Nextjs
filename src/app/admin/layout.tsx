@@ -52,7 +52,6 @@ const iconMap: Record<string, React.ReactNode> = {
   '/admin/media': <ImageIcon className="w-5 h-5" />,
   '/admin/personalia': <Users className="w-5 h-5 text-emerald-500" />,
   '/admin/keamanan': <ShieldCheck className="w-5 h-5 text-indigo-600" />,
-  '/admin/halaman': <FileText className="w-5 h-5" />,
 };
 
 const mapNavItemToMenuItem = (item: any): MenuItem => ({
@@ -355,13 +354,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Actions Placeholder */}
-            <div className="flex items-center gap-4">
-              <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-2">
-                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-[#092C74]">System Synchronized</span>
-              </div>
-            </div>
           </div>
         </header>
 
