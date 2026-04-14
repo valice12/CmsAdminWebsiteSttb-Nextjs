@@ -100,7 +100,7 @@ export default function BeritaPage() {
             {row.original.title}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1 font-medium flex items-center gap-1">
-             <span className="uppercase tracking-wider">SLUG: {row.original.slug}</span>
+            <span className="uppercase tracking-wider">SLUG: {row.original.slug}</span>
           </p>
         </div>
       ),
@@ -160,7 +160,7 @@ export default function BeritaPage() {
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
             <Newspaper className="w-8 h-8 text-primary" />
-            Manajemen Berita (Live Data)
+            Manajemen Berita (Live)
           </h1>
           <p className="text-muted-foreground font-medium text-sm">
             Menampilkan data berita yang disinkronkan secara real-time.
@@ -176,7 +176,7 @@ export default function BeritaPage() {
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
             />
           </div>
-          <Button 
+          <Button
             onClick={() => router.push("/admin/berita/create")}
             className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-2xl px-6 h-11 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
           >
@@ -188,13 +188,13 @@ export default function BeritaPage() {
 
       {/* Backend Integration Note */}
       <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex items-start gap-4 text-left">
-         <AlertCircle className="w-6 h-6 text-amber-600 mt-1 shrink-0" />
-         <div>
-            <h3 className="font-bold text-amber-900">Manajemen Berita Live</h3>
-             <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-                Halaman ini disinkronkan langsung dengan pusat data. Seluruh perubahan akan tercermin secara real-time di website utama.
-             </p>
-         </div>
+        <AlertCircle className="w-6 h-6 text-amber-600 mt-1 shrink-0" />
+        <div>
+          <h3 className="font-bold text-amber-900">Manajemen Berita Live</h3>
+          <p className="text-sm text-amber-700 mt-1 leading-relaxed">
+            Halaman ini disinkronkan langsung dengan pusat data. Seluruh perubahan akan tercermin secara real-time di website utama.
+          </p>
+        </div>
       </div>
 
       {/* Data Table */}
@@ -238,10 +238,10 @@ export default function BeritaPage() {
               <Button
                 variant="destructive"
                 onClick={async () => {
-                    if (selectedNews) {
-                      await handleDelete(selectedNews.id);
-                      setDeleteDialogOpen(false);
-                    }
+                  if (selectedNews) {
+                    await handleDelete(selectedNews.id);
+                    setDeleteDialogOpen(false);
+                  }
                 }}
                 className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200"
               >
