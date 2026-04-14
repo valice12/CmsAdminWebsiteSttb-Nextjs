@@ -28,10 +28,11 @@ export default function MediaPage() {
     loadMedia();
   }, [pageIndex, pageSize]);
 
-  const loadMedia = async () => {
+  const loadMedia = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllMedia(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchQuery;
+      const data = await getAllMedia(pageIndex, pageSize, search);
       setMedia(data.items || data.Items || []);
       setTotalItems(data.totalMedia || data.TotalMedia || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
@@ -40,6 +41,13 @@ export default function MediaPage() {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadMedia(searchQuery);
     }
   };
 
@@ -79,7 +87,7 @@ export default function MediaPage() {
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1 text-left">
@@ -92,21 +100,22 @@ export default function MediaPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative w-64">
+          <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari media..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
             />
           </div>
           <Button 
             onClick={() => router.push('/admin/media/create')} 
-            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
           >
-            <Plus className="w-4 h-4" />
-            Tambah Media Baru
+            <Plus className="w-5 h-5" />
+            <span className="font-bold">Tambah Media</span>
           </Button>
         </div>
       </div>
@@ -128,8 +137,6 @@ export default function MediaPage() {
           columns={columns}
           data={media}
           isLoading={isLoading}
-          globalFilter={searchQuery}
-          onGlobalFilterChange={setSearchQuery}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

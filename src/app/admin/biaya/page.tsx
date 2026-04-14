@@ -11,6 +11,7 @@ import {
     GraduationCap, FileSpreadsheet, Search 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Input } from "@/components/ui/input";
 
 interface CostDTO {
   id: number;
@@ -24,6 +25,7 @@ export default function BiayaPage() {
   const router = useRouter();
   const [costs, setCosts] = useState<CostDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
@@ -33,10 +35,11 @@ export default function BiayaPage() {
     loadCosts();
   }, [pageIndex, pageSize]);
 
-  const loadCosts = async () => {
+  const loadCosts = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllCosts(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const data = await getAllCosts(pageIndex, pageSize, search);
       setCosts(data.items || data.Items || []);
       setTotalItems(data.totalItems || data.TotalItems || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
@@ -44,6 +47,13 @@ export default function BiayaPage() {
       toast.error('Gagal memuat data biaya');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadCosts(searchTerm);
     }
   };
 
@@ -126,7 +136,7 @@ export default function BiayaPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
@@ -137,16 +147,28 @@ export default function BiayaPage() {
             Administrasi daftar tarif biaya pendidikan dan pendaftaran mahasiswa.
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/admin/biaya/create')}
-          className="bg-amber-500 hover:bg-amber-600 text-white rounded-2xl h-12 px-8 shadow-xl shadow-amber-500/20 font-black uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          Tambah Biaya Baru
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tekan Enter untuk cari..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-amber-500/20"
+            />
+          </div>
+          <Button 
+            onClick={() => router.push('/admin/biaya/create')}
+            className="bg-amber-500 hover:bg-amber-600 text-white rounded-2xl h-11 px-8 shadow-xl shadow-amber-500/20 font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-bold">Tambah Biaya</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-100">
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-100 text-left">
         <DataTable 
           columns={columns} 
           data={costs} 

@@ -11,6 +11,7 @@ import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { UserCircle, Users, GraduationCap, Briefcase, Trash2, Star, Shield, ExternalLink, Activity, Info, CheckCircle, Plus, Mail, Phone, MapPin, User, ChevronRight, Search, FileText, Layout, Edit, MoreVertical, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDateTime, getImageUrl } from '@/lib/utils';
+import { Input } from "@/components/ui/input";
 
 interface AdministratorDTO {
   id: number;
@@ -47,6 +48,13 @@ function PenggunaContent() {
   const [foundationItems, setFoundationItems] = useState<AdministratorDTO[]>([]);
   const [lecturers, setLecturers] = useState<LecturerDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Pagination
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     if (tabParam === 'lecturer' || tabParam === 'foundation') {
@@ -56,24 +64,36 @@ function PenggunaContent() {
 
   useEffect(() => {
     loadData();
-  }, [activeTab]);
+  }, [activeTab, pageIndex, pageSize]);
 
-  const loadData = async () => {
+  const loadData = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      
       if (activeTab === 'foundation') {
-        const data = await getAllAdministrators();
-        // Now treating all "Administrators" from API as "Pengurus Yayasan" based on user request
-        setFoundationItems(data.items);
+        const data = await getAllAdministrators(pageIndex, pageSize, search);
+        setFoundationItems(data.items || data.Items || []);
+        setTotalItems(data.totalItems || data.TotalItems || 0);
+        setPageCount(data.totalPages || data.TotalPages || 0);
       } else {
-        const data = await getAllLecturers();
-        setLecturers(data.items);
+        const data = await getAllLecturers(pageIndex, pageSize, search);
+        setLecturers(data.items || data.Items || []);
+        setTotalItems(data.totalItems || data.TotalItems || 0);
+        setPageCount(data.totalPages || data.TotalPages || 0);
       }
     } catch (error) {
       toast.error(`Gagal mengambil data ${activeTab === 'foundation' ? 'Pengurus' : 'Dosen'}`);
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadData(searchTerm);
     }
   };
 
@@ -245,7 +265,7 @@ function PenggunaContent() {
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
@@ -258,13 +278,23 @@ function PenggunaContent() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tekan Enter untuk cari..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className={`pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-${activeTab === 'foundation' ? 'amber' : 'emerald'}-500/20`}
+            />
+          </div>
            <Button 
              onClick={() => router.push(`/admin/pengguna/create?type=${activeTab}`)} 
-             className={`rounded-2xl h-12 px-8 shadow-xl flex items-center gap-3 transition-all font-black uppercase tracking-widest ${
+             className={`rounded-2xl h-11 px-8 shadow-xl flex items-center gap-3 transition-all font-black uppercase tracking-widest ${
                activeTab === 'foundation' 
                ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' 
                : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
-             } text-white`}
+             } text-white hover:scale-105 active:scale-95`}
            >
              <Plus className="w-5 h-5" />
              Tambah {activeTab === 'foundation' ? 'Pengurus' : 'Dosen'}
@@ -277,6 +307,7 @@ function PenggunaContent() {
           <button
             onClick={() => {
                 setActiveTab('foundation');
+                setPageIndex(1);
                 router.push('/admin/pengguna?tab=foundation');
             }}
             className={`flex items-center gap-3 px-8 h-12 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -291,6 +322,7 @@ function PenggunaContent() {
           <button
             onClick={() => {
                 setActiveTab('lecturer');
+                setPageIndex(1);
                 router.push('/admin/pengguna?tab=lecturer');
             }}
             className={`flex items-center gap-3 px-8 h-12 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -324,13 +356,16 @@ function PenggunaContent() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-2">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-left p-8">
         <DataTable
           columns={(activeTab === 'lecturer' ? lecturerColumns : foundationColumns) as any}
           data={(activeTab === 'lecturer' ? lecturers : foundationItems) as any}
           isLoading={isLoading}
-          searchKey={activeTab === 'lecturer' ? 'lecturerName' : 'name'}
-          searchPlaceholder={`Cari ${activeTab === 'foundation' ? 'pengurus' : 'dosen'}...`}
+          totalItems={totalItems}
+          pageCount={pageCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(page) => setPageIndex(page)}
         />
       </div>
     </div>

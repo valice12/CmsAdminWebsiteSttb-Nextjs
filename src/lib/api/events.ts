@@ -1,7 +1,14 @@
 import { cmsFetch, CMS_BASE_URL } from './base';
 
-export async function getAllEvents(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/events/get-all-events?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllEvents(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('EventName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/events/get-all-events?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch events');
   }

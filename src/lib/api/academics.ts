@@ -1,7 +1,14 @@
 import { cmsFetch, CMS_BASE_URL } from './base';
 
-export async function getAllAcademicPrograms(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/get-all-academic-programs?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllAcademicPrograms(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('AcademicProgramName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/get-all-academic-programs?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch academic programs');
   }
@@ -46,16 +53,22 @@ export async function deleteAcademicProgram(id: number) {
 
 // ─── Academic Courses ──────────────────────────────────────────────────────────
 
-export async function getAllCourses(page?: number, pageSize?: number, fetchAll = false) {
-  let url = `${CMS_BASE_URL}/academic-programs/get-all-courses?FetchAll=${fetchAll}`;
+export async function getAllCourses(page = 1, pageSize = 10, search = '', fetchAll = false) {
+  const query = new URLSearchParams();
 
-  if (!fetchAll) {
-    const p = page || 1;
-    const ps = pageSize || 10;
-    url += `&PageNumber=${p}&PageSize=${ps}`;
+  if (fetchAll) {
+    query.append('FetchAll', 'true');
+  } else {
+    query.append('FetchAll', 'false');
+    query.append('PageNumber', page.toString());
+    query.append('PageSize', pageSize.toString());
   }
 
-  const response = await cmsFetch(url);
+  if (search) {
+    query.append('CourseName', search);
+  }
+
+  const response = await cmsFetch(`${CMS_BASE_URL}/academic-programs/get-all-courses?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch courses');
   }

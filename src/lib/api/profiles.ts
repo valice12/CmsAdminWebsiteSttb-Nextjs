@@ -1,15 +1,29 @@
 import { cmsFetch, CMS_BASE_URL } from './base';
 
-export async function getAllAdministrators(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllAdministrators(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('AdministratorName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/administrators/get-all-administrators?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch administrators');
   }
   return response.json();
 }
 
-export async function getAllLecturers(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllLecturers(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('LecturerName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/lecturers/get-all-lecturers?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch lecturers');
   }

@@ -59,10 +59,13 @@ export default function BeritaPage() {
     loadNews();
   }, [pageIndex, pageSize]);
 
-  const loadNews = async () => {
+  const loadNews = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllNews(pageIndex, pageSize);
+      // Use override (from Enter key) or current searchTerm if we want to support it, 
+      // but the requirement is "only on Enter".
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const data = await getAllNews(pageIndex, pageSize, search);
       setNews(data.items || data.Items || []);
       setTotalItems(data.totalNews || data.TotalNews || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
@@ -74,7 +77,15 @@ export default function BeritaPage() {
     }
   };
 
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadNews(searchTerm);
+    }
+  };
+
   const columns: ColumnDef<NewsDTO>[] = [
+    // ... columns remain the same
     {
       accessorKey: 'imagePath',
       header: 'Thumbnail',
@@ -154,7 +165,7 @@ export default function BeritaPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 font-primary animate-in fade-in duration-700">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1 text-left">
@@ -170,9 +181,10 @@ export default function BeritaPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari berita..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
             />
           </div>
@@ -203,8 +215,6 @@ export default function BeritaPage() {
           columns={columns}
           data={news}
           isLoading={isLoading}
-          globalFilter={searchTerm}
-          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}
@@ -213,13 +223,13 @@ export default function BeritaPage() {
         />
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog - same as before */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-md">
+        <DialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-md text-left">
           <div className="bg-red-500 h-2 w-full" />
           <div className="p-8">
             <DialogHeader className="text-left space-y-4">
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto sm:mx-0">
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
                 <Trash2 className="w-8 h-8" />
               </div>
               <DialogTitle className="text-2xl font-extrabold text-gray-900">Hapus Berita?</DialogTitle>

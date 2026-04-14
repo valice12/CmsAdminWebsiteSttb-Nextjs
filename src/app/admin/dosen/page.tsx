@@ -24,10 +24,11 @@ export default function DosenPage() {
     loadData();
   }, [pageIndex, pageSize]);
 
-  const loadData = async () => {
+  const loadData = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const response = await getAllLecturers(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const response = await getAllLecturers(pageIndex, pageSize, search);
       setData(response.items || response.Items || []);
       setTotalItems(response.totalItems || response.TotalItems || 0);
       setPageCount(response.totalPages || response.TotalPages || 0);
@@ -36,6 +37,13 @@ export default function DosenPage() {
       toast.error('Gagal mengambil data Dosen');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadData(searchTerm);
     }
   };
 
@@ -61,7 +69,7 @@ export default function DosenPage() {
   });
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase flex items-center gap-3">
@@ -76,9 +84,10 @@ export default function DosenPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari dosen..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-emerald-500/20"
             />
           </div>
@@ -112,8 +121,6 @@ export default function DosenPage() {
           columns={columns}
           data={data}
           isLoading={isLoading}
-          globalFilter={searchTerm}
-          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

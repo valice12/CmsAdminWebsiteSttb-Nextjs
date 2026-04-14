@@ -32,7 +32,7 @@ export default function UserPage() {
     isActive: true
   });
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(99);
+  const [pageSize, setPageSize] = useState(10); // Changed to 10 for pagination if needed
   const [totalItems, setTotalItems] = useState(0);
   const [pageCount, setPageCount] = useState(0);
 
@@ -41,10 +41,11 @@ export default function UserPage() {
     fetchRolesAndPermissions();
   }, [pageIndex, pageSize]);
 
-  const loadUsers = async () => {
+  const loadUsers = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllUsers(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const data = await getAllUsers(pageIndex, pageSize, search);
       const rawUsers = data.items || data.Items || [];
       
       const mappedUsers: CMSUserDTO[] = rawUsers.map((u: any) => ({
@@ -69,20 +70,24 @@ export default function UserPage() {
     }
   };
 
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadUsers(searchTerm);
+    }
+  };
+
   const fetchRolesAndPermissions = async () => {
+    // ... same as before
     try {
       const data = await getAllRoles();
       const rolesList = data.items || data.Items || data;
       if (Array.isArray(rolesList)) {
         setRoles(rolesList.map((r: any) => typeof r === 'string' ? r : (r.name || r.roleName)));
-        
-        // Map role name to its permissions
-        const map: Record<string, string[]> = { ...ROLE_PERMISSIONS }; // Use hardcoded as base
+        const map: Record<string, string[]> = { ...ROLE_PERMISSIONS };
         rolesList.forEach((r: any) => {
           const name = typeof r === 'string' ? r : (r.name || r.roleName);
           const perms = r.rolePermissions || r.Permissions || [];
-          
-          // Merge API perms with hardcoded perms (API wins/augments)
           map[name] = Array.from(new Set([...(map[name] || []), ...perms]));
         });
         setRolePermissionsMap(map);
@@ -168,9 +173,10 @@ export default function UserPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari user system..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-600/20"
             />
           </div>
@@ -205,8 +211,6 @@ export default function UserPage() {
           columns={columns}
           data={users}
           isLoading={isLoading}
-          globalFilter={searchTerm}
-          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}

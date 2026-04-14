@@ -61,10 +61,11 @@ export default function KegiatanPage() {
     loadEvents();
   }, [pageIndex, pageSize]);
 
-  const loadEvents = async () => {
+  const loadEvents = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllEvents(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const data = await getAllEvents(pageIndex, pageSize, search);
       setEvents(data.items || data.Items || []);
       setTotalItems(data.totalEvents || data.TotalEvents || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
@@ -73,6 +74,13 @@ export default function KegiatanPage() {
        console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadEvents(searchTerm);
     }
   };
 
@@ -159,7 +167,7 @@ export default function KegiatanPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1 text-left">
@@ -175,9 +183,10 @@ export default function KegiatanPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari data kegiatan..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
             />
           </div>
@@ -208,8 +217,6 @@ export default function KegiatanPage() {
           columns={columns}
           data={events}
           isLoading={isLoading}
-          globalFilter={searchTerm}
-          onGlobalFilterChange={setSearchTerm}
           totalItems={totalItems}
           pageCount={pageCount}
           pageIndex={pageIndex}
@@ -222,13 +229,13 @@ export default function KegiatanPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="rounded-3xl border-none shadow-2xl p-0 overflow-hidden max-w-md">
            <div className="bg-red-500 h-2 w-full" />
-           <div className="p-8 space-y-6 text-left">
+            <div className="p-8 space-y-6 text-left">
               <DialogHeader className="space-y-4">
                 <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-100">
                   <Trash2 className="w-8 h-8" />
                 </div>
                 <DialogTitle className="text-2xl font-extrabold text-gray-900 tracking-tight">Hapus Agenda?</DialogTitle>
-                <DialogDescription className="font-medium text-gray-500 pt-2">
+                <DialogDescription className="font-medium text-gray-500 pt-2 text-left">
                   Apakah Anda yakin ingin menghapus agenda <span className="text-red-600 font-bold">"{selectedEvent?.eventTitle}"</span>? <br/><br/>
                   <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
                      <AlertCircle className="w-3 h-3" /> Tindakan ini tidak dapat dibatalkan

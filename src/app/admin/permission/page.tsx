@@ -50,7 +50,7 @@ export default function PermissionPage() {
 
   // Pagination
   const [permPage, setPermPage] = useState(1);
-  const [permPageSize, setPermPageSize] = useState(99);
+  const [permPageSize, setPermPageSize] = useState(10);
   const [permTotal, setPermTotal] = useState(0);
   const [permPageCount, setPermPageCount] = useState(0);
 
@@ -71,10 +71,11 @@ export default function PermissionPage() {
     }
   }, [permPage, permPageSize]);
 
-  const loadPermissions = async () => {
+  const loadPermissions = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const permsData = await getAllPermissions(permPage, permPageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const permsData = await getAllPermissions(permPage, permPageSize, search);
       
       const rawPerms = permsData.items || permsData.Items || [];
       setPermissions(rawPerms.map((p: any) => ({
@@ -89,6 +90,13 @@ export default function PermissionPage() {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPermPage(1);
+      loadPermissions(searchTerm);
     }
   };
 
@@ -144,7 +152,7 @@ export default function PermissionPage() {
 
   if (isAuthorized === false) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 font-primary">
         <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl shadow-red-100">
           <ShieldAlert className="w-12 h-12" />
         </div>
@@ -184,9 +192,10 @@ export default function PermissionPage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari kunci akses..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-amber-600/20"
             />
           </div>
@@ -200,7 +209,7 @@ export default function PermissionPage() {
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-100 rounded-[2.5rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
+      <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-amber-900">
               <Database className="w-full h-full" />
           </div>
@@ -220,8 +229,6 @@ export default function PermissionPage() {
               columns={permColumns}
               data={permissions}
               isLoading={isLoading}
-              globalFilter={searchTerm}
-              onGlobalFilterChange={setSearchTerm}
               totalItems={permTotal}
               pageCount={permPageCount}
               pageIndex={permPage}
@@ -239,11 +246,11 @@ export default function PermissionPage() {
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0 max-w-md">
+        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0 max-w-md text-left">
           <div className="bg-red-500 h-3 w-full" />
           <div className="p-10">
             <DialogHeader className="text-left space-y-6">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto sm:mx-0 shadow-inner">
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center shadow-inner">
                 <Trash2 className="w-10 h-10" />
               </div>
               <div>

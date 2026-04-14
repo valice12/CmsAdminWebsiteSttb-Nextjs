@@ -1,7 +1,14 @@
 import { cmsFetch, CMS_BASE_URL } from './base';
 
-export async function getAllCosts(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-costs?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllCosts(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('CostName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/costs/get-all-costs?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch admission costs');
   }
@@ -99,8 +106,15 @@ export async function deleteCostCategory(id: number) {
 
 // ─── Admission Deadlines ───────────────────────────────────────────────────────
 
-export async function getAllAdmissionDeadlines(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-all-batch-deadlines?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllAdmissionDeadlines(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('SearchBatch', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/admission-deadlines/get-all-batch-deadlines?${query.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch admission deadlines');
   }

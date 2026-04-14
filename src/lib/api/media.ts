@@ -1,7 +1,14 @@
 import { cmsFetch, CMS_BASE_URL } from './base';
 
-export async function getAllMedia(page = 1, pageSize = 100) {
-  const response = await cmsFetch(`${CMS_BASE_URL}/media/get-all?PageNumber=${page}&PageSize=${pageSize}`);
+export async function getAllMedia(page = 1, pageSize = 100, search = '') {
+  const query = new URLSearchParams({
+    PageNumber: page.toString(),
+    PageSize: pageSize.toString(),
+  });
+  if (search) {
+    query.append('MediaName', search);
+  }
+  const response = await cmsFetch(`${CMS_BASE_URL}/media/get-all?${query.toString()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch media`);
   }

@@ -34,6 +34,7 @@ export default function MataKuliahPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<CourseDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
@@ -48,12 +49,12 @@ export default function MataKuliahPage() {
     loadCourses();
   }, [pageIndex, pageSize]);
 
-  const loadCourses = async () => {
+  const loadCourses = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const data = await getAllCourses(pageIndex, pageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const data = await getAllCourses(pageIndex, pageSize, search);
       setCourses(data.items || data.Items || []);
-      // Robustly map total items from API (support totalCount, totalItems, etc.)
       const total = data.totalItems ?? data.TotalItems ?? data.totalCount ?? data.TotalCount ?? (Array.isArray(data.items) ? data.items.length : 0);
       setTotalItems(total);
       setPageCount(data.totalPages || data.TotalPages || Math.ceil(total / pageSize) || 0);
@@ -61,6 +62,13 @@ export default function MataKuliahPage() {
       toast.error('Gagal memuat data mata kuliah');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setPageIndex(1);
+      loadCourses(searchTerm);
     }
   };
 
@@ -89,7 +97,6 @@ export default function MataKuliahPage() {
 
     try {
       setIsSubmitting(true);
-      // Ensure we send correct property names to backend
       const payload = {
          Id: selectedCourse.id,
          CourseName: selectedCourse.courseName,
@@ -123,7 +130,7 @@ export default function MataKuliahPage() {
                <BookOpen className="w-5 h-5" />
             </div>
             <div className="flex flex-col text-left">
-                <span className="font-extrabold text-gray-900 text-sm tracking-tight tracking-tight leading-none mb-1">{row.getValue('courseName')}</span>
+                <span className="font-extrabold text-gray-900 text-sm tracking-tight leading-none mb-1">{row.getValue('courseName')}</span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Code ID: #{row.original.id}</span>
             </div>
         </div>
@@ -176,7 +183,7 @@ export default function MataKuliahPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 font-primary">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 leading-none">
@@ -189,13 +196,25 @@ export default function MataKuliahPage() {
             Pusat database kurikulum dan mata kuliah mandiri STTB.
           </p>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90 text-white rounded-[1.25rem] h-14 px-8 shadow-2xl shadow-primary/20 font-black uppercase tracking-widest flex items-center gap-3 transition-all active:scale-95 group"
-        >
-          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          Tambah Matkul Baru
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64 text-left">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tekan Enter untuk cari..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
+            />
+          </div>
+          <Button
+            onClick={() => handleOpenDialog()}
+            className="bg-primary hover:bg-primary/90 text-white rounded-[1.25rem] h-11 px-8 shadow-2xl shadow-primary/20 font-black uppercase tracking-widest flex items-center gap-3 transition-all active:scale-95 group"
+          >
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            Tambah Matkul
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white rounded-[3rem] p-10 shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden relative">

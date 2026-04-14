@@ -120,7 +120,7 @@ export function AkademikForm({ id }: AkademikFormProps) {
   const fetchCourses = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllCourses(undefined, undefined, true);
+      const data = await getAllCourses(1, 100, '', true);
       setAvailableCourses(data.items || data.Items || []);
     } catch (error) {
       console.error('Failed to fetch courses', error);

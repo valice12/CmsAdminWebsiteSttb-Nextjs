@@ -57,7 +57,7 @@ export default function RolePage() {
 
   // Pagination for Roles
   const [rolePage, setRolePage] = useState(1);
-  const [rolePageSize, setRolePageSize] = useState(100);
+  const [rolePageSize, setRolePageSize] = useState(10);
   const [roleTotal, setRoleTotal] = useState(0);
   const [rolePageCount, setRolePageCount] = useState(0);
 
@@ -79,10 +79,11 @@ export default function RolePage() {
     }
   }, [rolePage, rolePageSize]);
 
-  const loadRoles = async () => {
+  const loadRoles = async (searchOverride?: string) => {
     try {
       setIsLoading(true);
-      const rolesData = await getAllRoles(rolePage, rolePageSize);
+      const search = searchOverride !== undefined ? searchOverride : searchTerm;
+      const rolesData = await getAllRoles(rolePage, rolePageSize, search);
       
       const rawRoles = rolesData.items || rolesData.Items || [];
       setRoles(rawRoles.map((r: any) => ({
@@ -103,7 +104,15 @@ export default function RolePage() {
     }
   };
 
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setRolePage(1);
+      loadRoles(searchTerm);
+    }
+  };
+
   const loadPermissionsOnly = async () => {
+    // ... same as before
     try {
       const permsData = await getAllPermissions(1, 99);
       const rawPerms = permsData.items || permsData.Items || [];
@@ -207,7 +216,7 @@ export default function RolePage() {
 
   if (isAuthorized === false) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 font-primary">
         <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl shadow-red-100">
           <ShieldAlert className="w-12 h-12" />
         </div>
@@ -247,9 +256,10 @@ export default function RolePage() {
           <div className="relative w-64 text-left">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Cari role..."
+              placeholder="Tekan Enter untuk cari..."
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-600/20"
             />
           </div>
@@ -274,7 +284,7 @@ export default function RolePage() {
         </div>
       </div>
 
-      <div className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
+      <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-indigo-900">
               <Shield className="w-full h-full" />
           </div>
@@ -289,20 +299,18 @@ export default function RolePage() {
           </div>
       </div>
 
-            <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
-                <DataTable
-                    columns={roleColumns}
-                    data={roles}
-                    isLoading={isLoading}
-                    globalFilter={searchTerm}
-                    onGlobalFilterChange={setSearchTerm}
-                    totalItems={roleTotal}
-                    pageCount={rolePageCount}
-                    pageIndex={rolePage}
-                    pageSize={rolePageSize}
-                    onPageChange={(page) => setRolePage(page)}
-                />
-            </div>
+      <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
+          <DataTable
+              columns={roleColumns}
+              data={roles}
+              isLoading={isLoading}
+              totalItems={roleTotal}
+              pageCount={rolePageCount}
+              pageIndex={rolePage}
+              pageSize={rolePageSize}
+              onPageChange={(page) => setRolePage(page)}
+          />
+      </div>
 
       <RoleDialog 
         open={isRoleDialogOpen}
@@ -317,11 +325,11 @@ export default function RolePage() {
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0 max-w-md">
+        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0 max-w-md text-left">
           <div className="bg-red-500 h-3 w-full" />
           <div className="p-10">
             <DialogHeader className="text-left space-y-6">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto sm:mx-0 shadow-inner">
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center shadow-inner">
                 <Trash2 className="w-10 h-10" />
               </div>
               <div>
