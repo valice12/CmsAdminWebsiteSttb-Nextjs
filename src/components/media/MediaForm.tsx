@@ -218,14 +218,14 @@ export function MediaForm({ id }: MediaFormProps) {
 
       // 2. Description/Content/Summary
       if (activeFormat === 'article' || activeFormat === 'artikel') {
-        formData.append('ArticleDescription', data.mediaDescription);
-        formData.append('ArticleContent', data.mediaContent || data.mediaDescription);
+        formData.append('ArticleDescription', data.mediaDescription || '');
+        formData.append('ArticleContent', data.mediaContent || data.mediaDescription || '');
       } else if (activeFormat === 'video') {
-        formData.append('VideoDescription', data.mediaDescription);
+        formData.append('VideoDescription', data.mediaDescription || '');
       } else if (activeFormat === 'monograf') {
-        formData.append('Synopsis', data.mediaDescription);
+        formData.append('Synopsis', data.mediaDescription || '');
       } else if (activeFormat === 'buletin') {
-        formData.append('Description', data.mediaDescription);
+        formData.append('Description', data.mediaDescription || '');
       }
 
       // 3. Categories (Standard multiple keys for primitive lists)
