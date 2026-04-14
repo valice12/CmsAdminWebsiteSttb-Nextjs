@@ -152,7 +152,7 @@ export default function UserPage() {
   });
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 font-primary">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">

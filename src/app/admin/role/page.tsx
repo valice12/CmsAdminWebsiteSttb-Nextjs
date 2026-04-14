@@ -230,7 +230,7 @@ export default function RolePage() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
@@ -266,29 +266,28 @@ export default function RolePage() {
                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Roles</span>
                   <span className="text-2xl font-black text-indigo-600 leading-none">{roles.length}</span>
                </div>
-               <div className="flex flex-col items-end border-l border-gray-200 pl-8">
-                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Access Keys</span>
-                  <span className="text-2xl font-black text-amber-500 leading-none">{permissions.length}</span>
-               </div>
+                <div className="flex flex-col items-end border-l border-gray-200 pl-8">
+                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Registered Permissions</span>
+                   <span className="text-2xl font-black text-amber-500 leading-none">{permissions.length}</span>
+                </div>
             </div>
         </div>
       </div>
 
-      <div className="animate-in slide-in-from-left-4 duration-500 m-0">
-            <div className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 mb-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-indigo-900">
-                    <Shield className="w-full h-full" />
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shrink-0">
-                    <Settings2 className="w-6 h-6" />
-                </div>
-                <div className="relative z-10">
-                    <h3 className="text-xl font-black tracking-tight text-indigo-900">User Role Groups</h3>
-                    <p className="text-sm mt-1 font-medium leading-relaxed max-w-2xl text-indigo-900/70">
-                        Kelompokkan permission ke dalam Role untuk mempermudah manajemen user. SuperAdmin memiliki akses penuh secara default.
-                    </p>
-                </div>
-            </div>
+      <div className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-indigo-900">
+              <Shield className="w-full h-full" />
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shrink-0">
+              <Settings2 className="w-6 h-6" />
+          </div>
+          <div className="relative z-10">
+              <h3 className="text-xl font-black tracking-tight text-indigo-900">User Role Groups</h3>
+              <p className="text-sm mt-1 font-medium leading-relaxed max-w-2xl text-indigo-900/70">
+                  Kelompokkan permission ke dalam Role untuk mempermudah manajemen user. SuperAdmin memiliki akses penuh secara default.
+              </p>
+          </div>
+      </div>
 
             <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-left">
                 <DataTable
@@ -304,7 +303,6 @@ export default function RolePage() {
                     onPageChange={(page) => setRolePage(page)}
                 />
             </div>
-        </div>
 
       <RoleDialog 
         open={isRoleDialogOpen}

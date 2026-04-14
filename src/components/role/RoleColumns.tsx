@@ -36,10 +36,10 @@ export const getRoleColumns = ({ onEditRole, onDeleteRole }: Pick<ColumnProps, '
     header: 'Role Name',
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm transition-all group-hover:scale-110">
-          <Shield className="w-5 h-5 text-indigo-500" />
+        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm transition-all group-hover:scale-110 shrink-0">
+          <Shield className="w-6 h-6 text-indigo-500" />
         </div>
-        <span className="font-bold text-gray-900">{row.original.name}</span>
+        <span className="font-bold text-gray-900 line-clamp-1">{row.original.name}</span>
       </div>
     ),
   },
@@ -68,22 +68,22 @@ export const getRoleColumns = ({ onEditRole, onDeleteRole }: Pick<ColumnProps, '
     id: 'actions',
     header: 'Actions',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <Button 
           size="icon" 
           variant="ghost" 
-          className="h-9 w-9 text-indigo-500 hover:bg-indigo-50"
+          className="h-8 w-8 text-indigo-500 hover:bg-indigo-50"
           onClick={() => onEditRole(row.original)}
         >
-          <Edit className="w-4.5 h-4.5" />
+          <Edit className="w-4 h-4" />
         </Button>
         <Button 
           size="icon" 
           variant="ghost" 
-          className="h-9 w-9 text-red-500 hover:bg-red-50"
+          className="h-8 w-8 text-red-500 hover:bg-red-50"
           onClick={() => onDeleteRole(row.original.id, row.original.name)}
         >
-          <Trash2 className="w-4.5 h-4.5" />
+          <Trash2 className="w-4 h-4" />
         </Button>
       </div>
     ),
@@ -96,8 +96,8 @@ export const getPermissionColumns = ({ onDeletePermission }: Pick<ColumnProps, '
     header: 'Permission Key',
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm transition-all group-hover:scale-110">
-          <Key className="w-5 h-5 text-amber-500" />
+        <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm transition-all group-hover:scale-110 shrink-0">
+          <Key className="w-6 h-6 text-amber-500" />
         </div>
         <code className="px-2 py-1 bg-gray-50 rounded-md font-mono text-sm font-bold text-gray-700">
           {row.original.name}
@@ -118,14 +118,14 @@ export const getPermissionColumns = ({ onDeletePermission }: Pick<ColumnProps, '
     id: 'actions',
     header: 'Actions',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <Button 
           size="icon" 
           variant="ghost" 
-          className="h-9 w-9 text-red-500 hover:bg-red-50"
+          className="h-8 w-8 text-red-500 hover:bg-red-50"
           onClick={() => onDeletePermission(row.original.id, row.original.name)}
         >
-          <Trash2 className="w-4.5 h-4.5" />
+          <Trash2 className="w-4 h-4" />
         </Button>
       </div>
     ),

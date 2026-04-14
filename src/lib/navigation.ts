@@ -57,7 +57,7 @@ export const MENU_STRUCTURE: NavItem[] = [
     ]
   },
   {
-    label: 'Manajemen Personalia',
+    label: 'Manajemen Person',
     path: '/admin/personalia',
     permission: 'CanManagePersonalia',
     children: [

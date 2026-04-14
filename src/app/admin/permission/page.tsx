@@ -167,7 +167,7 @@ export default function PermissionPage() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 font-primary">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-1 text-left">
@@ -200,7 +200,7 @@ export default function PermissionPage() {
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-100 rounded-[2.5rem] p-8 mb-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
+      <div className="bg-amber-50 border border-amber-100 rounded-[2.5rem] p-8 flex items-start gap-6 text-left shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.05] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000 text-amber-900">
               <Database className="w-full h-full" />
           </div>

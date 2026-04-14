@@ -120,7 +120,7 @@ function SidebarNavItem({
       <div className="space-y-1">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all duration-300 relative group/btn ${
+          className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition-all duration-300 relative group/btn ${
             hasActiveChild || isActive
               ? 'active-nav-gradient text-[#D4AF37] shadow-lg shadow-black/10 border border-white/5'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
@@ -151,7 +151,7 @@ function SidebarNavItem({
                   key={child.path}
                   href={child.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 group/child relative ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 group/child relative ${
                     childActive
                       ? 'text-[#D4AF37] bg-white/[0.03] shadow-inner shadow-black/20'
                       : 'text-gray-500 hover:text-white hover:bg-white/[0.02]'
@@ -174,7 +174,7 @@ function SidebarNavItem({
     <Link
       href={item.path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all duration-300 relative group/link ${
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition-all duration-300 relative group/link ${
         isActive
           ? 'active-nav-gradient text-[#D4AF37] shadow-lg shadow-black/10 border border-white/5'
           : 'text-gray-400 hover:bg-white/5 hover:text-white'
@@ -251,7 +251,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-[#0B1B3D] via-[#0B1B3D] to-[#040D21] text-white flex flex-col transform transition-transform duration-500 ease-in-out z-40 border-r border-white/5 shadow-2xl ${
+        className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-[#0B1B3D] via-[#0B1B3D] to-[#040D21] text-white flex flex-col transform transition-transform duration-500 ease-in-out z-40 border-r border-white/5 shadow-2xl ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
@@ -267,25 +267,25 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-[0.2em] mt-1.5 opacity-80">STT Bandung</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-xl">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* User Profile */}
-        <div className="p-8 border-b border-white/5">
-          <div className="glass-card p-5 rounded-[1.5rem] flex items-center gap-4 hover:bg-white/[0.05] transition-all duration-500 group cursor-default">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white ring-4 ring-[#D4AF37]/10 shadow-xl group-hover:rotate-6 transition-transform">
-              <span className="font-black text-xl">
+        <div className="p-6 border-b border-white/5">
+          <div className="glass-card p-4 rounded-[1.25rem] flex items-center gap-3 hover:bg-white/[0.05] transition-all duration-500 group cursor-default">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white ring-2 ring-[#D4AF37]/10 shadow-xl group-hover:rotate-6 transition-transform shrink-0">
+              <span className="font-black text-lg">
                 {user.fullName.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-black text-sm truncate tracking-tight">{user.fullName}</p>
+              <p className="font-bold text-[13px] truncate tracking-tight">{user.fullName}</p>
               <p className="text-[10px] text-gray-400 truncate mb-1.5 font-bold">{user.email}</p>
-              <div className="inline-flex px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 shadow-inner">
-                <ShieldCheck className="w-3 h-3 mr-1.5" />
-                {(user.roles?.[0] ?? 'Admin')}
+              <div className="inline-flex px-2 py-1 text-[8.5px] font-bold uppercase tracking-wider rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 shadow-inner max-w-full truncate">
+                <ShieldCheck className="w-3 h-3 mr-1.5 shrink-0" />
+                <span className="truncate">{(user.roles?.[0] ?? 'Admin')}</span>
               </div>
             </div>
           </div>
