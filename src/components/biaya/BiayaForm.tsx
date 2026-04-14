@@ -127,7 +127,11 @@ export function BiayaForm({ id }: BiayaFormProps) {
                   <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
                   <select 
                     {...form.register('categoryName')}
-                    className="w-full h-14 pl-12 pr-10 rounded-2xl bg-gray-50/50 border-none text-base font-bold appearance-none outline-none focus:ring-2 focus:ring-amber-500/20 transition-all cursor-pointer"
+                    className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${
+                      form.formState.errors.categoryName 
+                      ? 'border-red-500 bg-red-50/50' 
+                      : 'bg-gray-50/50 border-transparent focus:ring-2 focus:ring-amber-500/20'
+                    }`}
                   >
                     <option value="">-- Pilih Kategori --</option>
                     {Array.isArray(categories) && categories.map((cat: any) => (
@@ -147,10 +151,10 @@ export function BiayaForm({ id }: BiayaFormProps) {
                   <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
                   <select 
                     {...form.register('programName')}
-                    className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer ${
+                    className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${
                       form.formState.errors.programName 
                       ? 'border-red-500 bg-red-50/50' 
-                      : 'bg-gray-50/50 border-none focus:ring-2 focus:ring-amber-500/20'
+                      : 'bg-gray-50/50 border-transparent focus:ring-2 focus:ring-amber-500/20'
                     }`}
                   >
                     <option value="">-- Pilih Program --</option>
@@ -171,10 +175,10 @@ export function BiayaForm({ id }: BiayaFormProps) {
                   <Input 
                     {...form.register('costName')} 
                     placeholder="Contoh: Biaya Pendaftaran, SPP..." 
-                    className={`h-14 pl-12 rounded-2xl text-base font-bold transition-all shadow-sm ${
+                    className={`h-14 pl-12 rounded-2xl text-base font-bold transition-all shadow-sm border-2 ${
                       form.formState.errors.costName 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500' 
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                     }`} 
                   />
                 </div>
@@ -188,10 +192,10 @@ export function BiayaForm({ id }: BiayaFormProps) {
                   <Input 
                     type="number" 
                     {...form.register('cost')} 
-                    className={`h-14 pl-12 rounded-2xl text-lg font-black transition-all ${
+                    className={`h-14 pl-12 rounded-2xl text-lg font-black transition-all border-2 ${
                       form.formState.errors.cost 
-                      ? 'bg-red-50 border-red-500 text-red-900' 
-                      : 'bg-amber-50/30 border-none text-amber-600'
+                      ? 'bg-red-50/50 border-red-500 text-red-900' 
+                      : 'bg-amber-50/30 border-transparent text-amber-600'
                     }`} 
                   />
                 </div>

@@ -190,10 +190,10 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
                   <Input
                     {...form.register('eventTitle')}
                     placeholder="Masukkan nama kegiatan..."
-                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner ${
+                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner border-2 ${
                       form.formState.errors?.eventTitle 
                       ? 'border-red-500 bg-red-50/50' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                     }`}
                   />
                 </div>
@@ -217,10 +217,10 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
 
             <div className="space-y-2">
               <label className="text-xs font-extrabold text-gray-500 uppercase tracking-[0.2em] ml-1">Deskripsi Kegiatan</label>
-              <div className={`relative rounded-2xl overflow-hidden shadow-inner transition-all border ${
+              <div className={`relative rounded-2xl overflow-hidden shadow-inner transition-all border-2 ${
                 form.formState.errors?.description 
                 ? 'border-red-500 bg-red-50/50' 
-                : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+                : 'border-transparent bg-gray-50/50 focus-within:bg-white'
               }`}>
                 <Textarea
                   {...form.register('description')}
@@ -242,10 +242,10 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
                      <Input
                        {...form.register('organizerName')}
                        placeholder="e.g. BEM STTB"
-                       className={`pl-12 h-12 rounded-xl text-sm font-bold transition-all shadow-inner ${
+                       className={`pl-12 h-12 rounded-xl text-sm font-bold transition-all shadow-inner border-2 ${
                          form.formState.errors?.organizerName 
                          ? 'border-red-500 bg-red-50/50' 
-                         : 'bg-gray-50/50 border-none focus:bg-white'
+                         : 'bg-gray-50/50 border-transparent focus:bg-white'
                        }`}
                      />
                    </div>

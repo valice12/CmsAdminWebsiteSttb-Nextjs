@@ -298,10 +298,10 @@ export function AkademikForm({ id }: AkademikFormProps) {
                     <Input 
                        {...form.register('programName')} 
                        placeholder="e.g. Teknik Informatika" 
-                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all border-2 ${
                          form.formState.errors.programName 
                          ? 'border-red-500 bg-red-50/50' 
-                         : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                         : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
                        }`}
                     />
                   </div>
@@ -315,10 +315,10 @@ export function AkademikForm({ id }: AkademikFormProps) {
                     <Input 
                        {...form.register('motto')} 
                        placeholder="e.g. Innovating the Future" 
-                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all border-2 ${
                          form.formState.errors.motto 
                          ? 'border-red-500 bg-red-50/50' 
-                         : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                         : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
                        }`}
                     />
                   </div>
@@ -328,10 +328,10 @@ export function AkademikForm({ id }: AkademikFormProps) {
 
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Deskripsi & Profil Program</label>
-                <div className={`relative rounded-3xl overflow-hidden transition-all shadow-inner border ${
+                <div className={`relative rounded-3xl overflow-hidden transition-all shadow-inner border-2 ${
                   form.formState.errors.programDescription 
                   ? 'border-red-500 bg-red-50/50' 
-                  : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+                  : 'border-transparent bg-gray-50/50 focus-within:bg-white'
                 }`}>
                   <Textarea
                     {...form.register('programDescription')}

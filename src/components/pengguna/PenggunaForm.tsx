@@ -46,7 +46,8 @@ const adminSchema = z.object({
 
 const lecturerSchema = z.object({
   lecturerName: z.string().min(3, 'Nama minimal 3 karakter'),
-  organizationalRole: z.string().min(2, 'Spesialisasi wajib diisi'),
+  organizationalRole: z.string().min(2, 'Jabatan mengajar wajib diisi'),
+  joinedAt: z.string().min(1, 'Tanggal bergabung wajib diisi'),
   roles: z.string().min(3, 'Jabatan organisasi wajib diisi, pisahkan dengan koma'),
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
 });
@@ -72,7 +73,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
     fullName: z.string().min(3, 'Nama minimal 3 karakter'),
     email: z.string().email('Email tidak valid'),
     roleNames: z.array(z.string()).min(1, 'Role wajib diisi'),
-    password: isEdit 
+    password: isEdit
       ? z.string().optional().or(z.literal(''))
       : z.string().min(8, 'Password wajib diisi minimal 8 karakter'),
     confirmPassword: z.string().optional().or(z.literal('')),
@@ -93,7 +94,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
           path: ['confirmPassword'],
         });
       }
-    } 
+    }
     // For Edit: If password is provided, it must be min 8 and match confirm
     else if (password && password.length > 0) {
       if (password.length < 8) {
@@ -120,7 +121,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
 
   const lecturerForm = useForm<z.infer<typeof lecturerSchema>>({
     resolver: zodResolver(lecturerSchema),
-    defaultValues: { lecturerName: '', organizationalRole: '', roles: '', degrees: '' }
+    defaultValues: {
+      lecturerName: '',
+      organizationalRole: '',
+      joinedAt: new Date().toISOString().slice(0, 10),
+      roles: '',
+      degrees: ''
+    }
   });
 
   const userForm = useForm<z.infer<typeof userSchema>>({
@@ -163,6 +170,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
           lecturerForm.reset({
             lecturerName: data.lecturerName,
             organizationalRole: data.organizationalRole,
+            joinedAt: data.joinedAt ? new Date(data.joinedAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
             roles: data.roles?.join(', ') || '',
             degrees: data.degrees?.join(', ') || ''
           });
@@ -197,7 +205,11 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
         const formData = new FormData();
         if (isEdit) formData.append('Id', id!);
         formData.append('LecturerName', data.lecturerName);
-        formData.append('OrganizationalRole', data.organizationalRole);
+        // Multi-value array for OrganizationalRole
+        const teachingRoles = data.organizationalRole.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+        teachingRoles.forEach((role: string) => formData.append('OrganizationalRole', role));
+
+        formData.append('JoinedAt', new Date(data.joinedAt).toISOString());
         data.roles.split(',').forEach((r: string) => formData.append('Roles', r.trim()));
         data.degrees.split(',').forEach((d: string) => formData.append('Degrees', d.trim()));
         if (selectedFile) formData.append('LecturerImage', selectedFile);
@@ -211,7 +223,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
             Id: parseInt(id!),
             FullName: data.fullName,
             Email: data.email,
-            IsActive: true, 
+            IsActive: true,
             NewPassword: data.password || undefined,
             Roles: data.roleNames,
             Permissions: []
@@ -224,11 +236,11 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
         }
       }
       toast.success('Data berhasil disimpan');
-      
+
       if (activeType === 'foundation') router.push('/admin/pengurus-yayasan');
       else if (activeType === 'lecturer') router.push('/admin/dosen');
       else router.push('/admin/user');
-      
+
     } catch (error) {
       toast.error('Gagal menyimpan data');
       console.error(error);
@@ -258,11 +270,11 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
       </div>
 
       <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 max-w-4xl mx-auto">
-        <form 
+        <form
           onSubmit={
-            activeType === 'foundation' ? adminForm.handleSubmit(onSubmit, onInvalid) : 
-            (activeType === 'lecturer' ? lecturerForm.handleSubmit(onSubmit, onInvalid) : userForm.handleSubmit(onSubmit, onInvalid))
-          } 
+            activeType === 'foundation' ? adminForm.handleSubmit(onSubmit, onInvalid) :
+              (activeType === 'lecturer' ? lecturerForm.handleSubmit(onSubmit, onInvalid) : userForm.handleSubmit(onSubmit, onInvalid))
+          }
           className="space-y-8 text-left"
         >
           {activeType === 'foundation' ? (
@@ -270,14 +282,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
                 <div className="relative group">
-                  <Input 
-                    {...adminForm.register('name')} 
+                  <Input
+                    {...adminForm.register('name')}
                     placeholder="Masukkan nama lengkap..."
-                    className={`h-14 pl-12 rounded-2xl bg-gray-50 border text-lg font-bold shadow-sm transition-all ${
-                      adminForm.formState.errors.name 
-                      ? 'border-red-500 bg-red-50/30' 
-                      : 'border-gray-100 focus:bg-white focus:border-amber-200'
-                    }`} 
+                    className={`h-14 pl-12 rounded-2xl bg-gray-50 border-2 text-lg font-bold shadow-sm transition-all ${adminForm.formState.errors.name
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'border-transparent bg-gray-50/50 focus:bg-white focus:border-amber-200 shadow-inner'
+                      }`}
                   />
                 </div>
                 {adminForm.formState.errors.name && (
@@ -290,15 +301,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Divisi / Unit</label>
                 <div className="relative group">
                   <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10 group-focus-within:text-amber-500 transition-colors" />
-                  <Select 
-                    onValueChange={(val) => adminForm.setValue('division', val)} 
+                  <Select
+                    onValueChange={(val) => adminForm.setValue('division', val)}
                     value={adminForm.watch('division')}
                   >
-                    <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-sm transition-all ${
-                      adminForm.formState.errors.division 
-                      ? 'bg-red-50/30 border-red-500' 
-                      : 'bg-gray-50 border-gray-100 focus:ring-amber-500/20 focus:border-amber-200 focus:bg-white'
-                    }`}>
+                    <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-sm transition-all border-2 ${adminForm.formState.errors.division
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-gray-50 border-transparent focus:ring-amber-500/20 focus:border-amber-200 focus:bg-white'
+                      }`}>
                       <SelectValue placeholder="Pilih Divisi" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
@@ -320,15 +330,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   <label className="text-xs font-black text-amber-600 uppercase tracking-widest ml-1">Jabatan (Role)</label>
                   <div className="relative group">
                     <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500 z-10 group-focus-within:scale-110 transition-transform" />
-                    <Select 
-                      onValueChange={(val) => adminForm.setValue('role', val)} 
+                    <Select
+                      onValueChange={(val) => adminForm.setValue('role', val)}
                       value={adminForm.watch('role')}
                     >
-                      <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-md transition-all text-amber-900 ${
-                        adminForm.formState.errors.role 
-                        ? 'bg-red-50 border-red-500' 
-                        : 'bg-amber-50 border-2 border-amber-100/50 focus:ring-amber-500/20 focus:bg-white'
-                      }`}>
+                      <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-md transition-all text-amber-900 border-2 ${adminForm.formState.errors.role
+                          ? 'border-red-500 bg-red-50/50'
+                          : 'bg-amber-50 border-amber-100/50 focus:ring-amber-500/20 focus:bg-white'
+                        }`}>
                         <SelectValue placeholder="Pilih Jabatan" />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl border-amber-100 shadow-2xl">
@@ -352,42 +361,54 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
               <div className="space-y-6 md:col-span-1">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Dosen</label>
-                  <Input 
-                    {...lecturerForm.register('lecturerName')} 
-                    className={`h-14 rounded-2xl font-bold transition-all ${
-                      lecturerForm.formState.errors.lecturerName 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
-                    }`} 
+                  <Input
+                    {...lecturerForm.register('lecturerName')}
+                    className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.lecturerName
+                        ? 'bg-red-50/50 border-red-500'
+                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      }`}
                   />
                   {lecturerForm.formState.errors.lecturerName && (
                     <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.lecturerName.message as string}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Spesialisasi</label>
-                  <Input 
-                    {...lecturerForm.register('organizationalRole')} 
-                    className={`h-14 rounded-2xl font-bold transition-all ${
-                      lecturerForm.formState.errors.organizationalRole 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
-                    }`} 
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Mengajar (Pisahkan koma)</label>
+                  <Input
+                    {...lecturerForm.register('organizationalRole')}
+                    placeholder="e.g. Dosen Matematika, Dosen Fisika"
+                    className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.organizationalRole
+                        ? 'bg-red-50/50 border-red-500'
+                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      }`}
                   />
                   {lecturerForm.formState.errors.organizationalRole && (
                     <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.organizationalRole.message as string}</p>
                   )}
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Tanggal Bergabung</label>
+                  <Input
+                    type="date"
+                    {...lecturerForm.register('joinedAt')}
+                    className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.joinedAt
+                        ? 'bg-red-50/50 border-red-500'
+                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      }`}
+                  />
+                  {lecturerForm.formState.errors.joinedAt && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.joinedAt.message as string}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Gelar (Pisahkan koma)</label>
-                  <Input 
-                    {...lecturerForm.register('degrees')} 
-                    placeholder="S.Kom, M.T" 
-                    className={`h-14 rounded-2xl font-bold transition-all ${
-                      lecturerForm.formState.errors.degrees 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
-                    }`} 
+                  <Input
+                    {...lecturerForm.register('degrees')}
+                    placeholder="S.Kom, M.T"
+                    className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.degrees
+                        ? 'bg-red-50/50 border-red-500'
+                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      }`}
                   />
                   {lecturerForm.formState.errors.degrees && (
                     <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.degrees.message as string}</p>
@@ -395,14 +416,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Organisasi (Pisahkan koma)</label>
-                  <Input 
-                    {...lecturerForm.register('roles')} 
-                    placeholder="Ketua, Kaprodi, Dosen Tetap" 
-                    className={`h-14 rounded-2xl font-bold transition-all ${
-                      lecturerForm.formState.errors.roles 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
-                    }`} 
+                  <Input
+                    {...lecturerForm.register('roles')}
+                    placeholder="Ketua, Kaprodi, Dosen Tetap"
+                    className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.roles
+                        ? 'bg-red-50/50 border-red-500'
+                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      }`}
                   />
                   {lecturerForm.formState.errors.roles && (
                     <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.roles.message as string}</p>
@@ -436,14 +456,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap Pengguna</label>
                 <div className="relative">
                   <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input 
-                    {...userForm.register('fullName')} 
-                    placeholder="Masukkan nama lengkap..." 
-                    className={`h-14 pl-12 rounded-2xl text-lg font-bold transition-all ${
-                      userForm.formState.errors.fullName 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
-                    }`} 
+                  <Input
+                    {...userForm.register('fullName')}
+                    placeholder="Masukkan nama lengkap..."
+                    className={`h-14 pl-12 rounded-2xl text-lg font-bold transition-all border-2 ${userForm.formState.errors.fullName
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      }`}
                   />
                 </div>
                 {userForm.formState.errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.fullName.message as string}</p>}
@@ -452,15 +471,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email User</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input 
-                    type="email" 
-                    {...userForm.register('email')} 
-                    placeholder="email@sttb.ac.id" 
-                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
-                      userForm.formState.errors.email 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
-                    }`} 
+                  <Input
+                    type="email"
+                    {...userForm.register('email')}
+                    placeholder="email@sttb.ac.id"
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.email
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      }`}
                   />
                 </div>
                 {userForm.formState.errors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.email.message as string}</p>}
@@ -471,15 +489,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password Baru</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input 
-                    type="password" 
-                    {...userForm.register('password')} 
-                    placeholder="Min. 8 karakter" 
-                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
-                      userForm.formState.errors.password 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
-                    }`} 
+                  <Input
+                    type="password"
+                    {...userForm.register('password')}
+                    placeholder="Min. 8 karakter"
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.password
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      }`}
                   />
                 </div>
                 {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message as string}</p>}
@@ -488,15 +505,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Ulangi Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input 
-                    type="password" 
-                    {...userForm.register('confirmPassword')} 
-                    placeholder="Konfirmasi password..." 
-                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
-                      userForm.formState.errors.confirmPassword 
-                      ? 'bg-red-50 border-red-500' 
-                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
-                    }`} 
+                  <Input
+                    type="password"
+                    {...userForm.register('confirmPassword')}
+                    placeholder="Konfirmasi password..."
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.confirmPassword
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      }`}
                   />
                 </div>
                 {userForm.formState.errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.confirmPassword.message as string}</p>}
@@ -504,51 +520,49 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
 
               {/* Roles Section */}
               <div className="space-y-4 md:col-span-2">
-                 <div className="flex items-center justify-between ml-1">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Role / Hak Akses Utama</label>
-                    <Badge variant="outline" className="bg-indigo-50 text-indigo-600 border-indigo-100 font-black text-[9px] uppercase tracking-tighter">Pilih Satu</Badge>
-                 </div>
-                 <ScrollArea className="h-[250px] border border-gray-200/50 rounded-2xl p-6 bg-white shadow-inner">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {roles.map((role) => {
-                        const isSelected = userForm.watch('roleNames').includes(role);
-                        return (
-                          <label 
-                            key={role} 
-                            htmlFor={`form-role-${role}`}
-                            className={`flex items-center space-x-3 p-2.5 px-5 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${
-                              isSelected
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Role / Hak Akses Utama</label>
+                  <Badge variant="outline" className="bg-indigo-50 text-indigo-600 border-indigo-100 font-black text-[9px] uppercase tracking-tighter">Pilih Satu</Badge>
+                </div>
+                <ScrollArea className="h-[250px] border border-gray-200/50 rounded-2xl p-6 bg-white shadow-inner">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {roles.map((role) => {
+                      const isSelected = userForm.watch('roleNames').includes(role);
+                      return (
+                        <label
+                          key={role}
+                          htmlFor={`form-role-${role}`}
+                          className={`flex items-center space-x-3 p-2.5 px-5 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${isSelected
                               ? 'bg-indigo-50/20 border-indigo-600 shadow-sm ring-1 ring-indigo-500/10'
                               : 'bg-white border-gray-100 hover:border-indigo-200 shadow-sm'
                             }`}
-                          >
-                            <Checkbox 
-                              id={`form-role-${role}`} 
-                              checked={isSelected} 
-                              onCheckedChange={() => {
-                                userForm.setValue('roleNames', [role]);
-                              }}
-                              className={`h-5 w-5 border-2 rounded-xl transition-all shrink-0 ${
-                                isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'
+                        >
+                          <Checkbox
+                            id={`form-role-${role}`}
+                            checked={isSelected}
+                            onCheckedChange={() => {
+                              userForm.setValue('roleNames', [role]);
+                            }}
+                            className={`h-5 w-5 border-2 rounded-xl transition-all shrink-0 ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'
                               }`}
-                            />
-                            <div className="flex flex-col grow">
-                               <span className={`text-[10px] font-black uppercase tracking-tight transition-colors ${isSelected ? 'text-indigo-600' : 'text-gray-600'}`}>
-                                 {role}
-                               </span>
-                               <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Level Fungsional</span>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                 </ScrollArea>
-                 {userForm.formState.errors.roleNames && (
-                    <div className="flex items-center gap-2 text-red-500 ml-1">
-                       <AlertCircle className="w-3 h-3" />
-                       <p className="text-[10px] font-bold uppercase tracking-wider">{userForm.formState.errors.roleNames.message}</p>
-                    </div>
-                 )}
+                          />
+                          <div className="flex flex-col grow">
+                            <span className={`text-[10px] font-black uppercase tracking-tight transition-colors ${isSelected ? 'text-indigo-600' : 'text-gray-600'}`}>
+                              {role}
+                            </span>
+                            <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Level Fungsional</span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+                {userForm.formState.errors.roleNames && (
+                  <div className="flex items-center gap-2 text-red-500 ml-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <p className="text-[10px] font-bold uppercase tracking-wider">{userForm.formState.errors.roleNames.message}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

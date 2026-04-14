@@ -363,10 +363,10 @@ export function MediaForm({ id }: MediaFormProps) {
                   <Input 
                     {...form.register('mediaTitle')} 
                     placeholder="Judul konten..." 
-                    className={`h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                    className={`h-14 rounded-2xl text-base font-bold shadow-inner transition-all border-2 ${
                       form.formState.errors.mediaTitle 
                       ? 'border-red-500 bg-red-50/50' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                     }`} 
                   />
                 </div>
@@ -403,10 +403,10 @@ export function MediaForm({ id }: MediaFormProps) {
                 <Textarea 
                   {...form.register('mediaDescription')} 
                   rows={3} 
-                  className={`rounded-3xl p-6 text-sm font-medium leading-relaxed shadow-inner transition-all ${
+                  className={`rounded-3xl p-6 text-sm font-medium leading-relaxed shadow-inner transition-all border-2 ${
                     form.formState.errors.mediaDescription 
                     ? 'border-red-500 bg-red-50/50' 
-                    : 'bg-gray-50/50 border-none focus:bg-white'
+                    : 'bg-gray-50/50 border-transparent focus:bg-white'
                   }`} 
                   placeholder="Tuliskan ringkasan singkat..." 
                 />
@@ -421,10 +421,10 @@ export function MediaForm({ id }: MediaFormProps) {
                 <Textarea 
                   {...form.register('mediaContent')} 
                   rows={12} 
-                  className={`rounded-[2rem] shadow-inner p-8 text-sm font-medium leading-relaxed min-h-[300px] transition-all ${
+                  className={`rounded-[2rem] shadow-inner p-8 text-sm font-medium leading-relaxed min-h-[300px] transition-all border-2 ${
                     form.formState.errors.mediaContent 
                     ? 'border-red-500 bg-red-50/50' 
-                    : 'bg-gray-50/50 border-none focus:bg-white'
+                    : 'bg-gray-50/50 border-transparent focus:bg-white'
                   }`} 
                   placeholder="Tuliskan isi artikel selengkapnya di sini..." 
                 />

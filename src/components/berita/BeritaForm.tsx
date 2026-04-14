@@ -180,10 +180,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('title')}
                     placeholder="Masukkan judul berita..."
-                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner ${
+                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner border-2 ${
                       form.formState.errors.title 
                       ? 'border-red-500 bg-red-50/50' 
-                      : 'bg-gray-50/50 border-none focus:bg-white'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                     }`}
                   />
                 </div>
@@ -201,10 +201,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('slug')}
                     placeholder="judul-berita-anda"
-                    className={`pl-12 h-14 rounded-2xl text-base font-bold transition-all shadow-inner ${
+                    className={`pl-12 h-14 rounded-2xl text-base font-bold transition-all shadow-inner border-2 ${
                       form.formState.errors.slug 
                       ? 'border-red-500 bg-red-50/50 text-red-900' 
-                      : 'bg-gray-50/50 border-none focus:bg-white text-gray-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-500'
                     }`}
                   />
                 </div>
@@ -218,10 +218,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
 
             {/* Content Editor Placeholder */}
             <div className="space-y-2">
-              <div className={`relative rounded-2xl overflow-hidden transition-all shadow-inner ${
+              <div className={`relative rounded-2xl overflow-hidden transition-all shadow-inner border-2 ${
                 form.formState.errors.content 
                 ? 'border-red-500 bg-red-50/50' 
-                : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+                : 'border-transparent bg-gray-50/50 focus-within:bg-white'
               }`}>
                 <Textarea
                   {...form.register('content')}

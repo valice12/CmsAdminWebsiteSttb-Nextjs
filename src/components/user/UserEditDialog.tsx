@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useState } from 'react';
 import { Key, UserCircle, Mail } from 'lucide-react';
 
 interface CMSUserDTO {
@@ -50,6 +51,15 @@ export function UserEditDialog({
   isLoading,
   onSave,
 }: UserEditDialogProps) {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const errors = {
+    fullName: isSubmitted && !editData.fullName.trim(),
+    email: isSubmitted && !editData.email.trim(),
+    role: isSubmitted && editData.selectedRoles.length === 0,
+    passwordMatch: editData.confirmNewPassword && editData.newPassword !== editData.confirmNewPassword
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -66,11 +76,15 @@ export function UserEditDialog({
                 <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Nama Lengkap</Label>
                 <div className="relative group">
                   <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
-                  <Input 
+                   <Input 
                     value={editData.fullName}
                     onChange={(e) => setEditData({...editData, fullName: e.target.value})}
                     placeholder="Nama lengkap user..."
-                    className="pl-10 h-11 bg-gray-50/50 border-gray-100 rounded-xl font-bold focus:bg-white transition-all shadow-inner"
+                    className={`pl-10 h-11 border-2 font-bold transition-all shadow-inner ${
+                      errors.fullName 
+                      ? 'bg-red-50/50 border-red-500' 
+                      : 'bg-gray-50/50 border-gray-100 focus:bg-white'
+                    }`}
                   />
                 </div>
              </div>
@@ -78,11 +92,15 @@ export function UserEditDialog({
                 <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email / Akun Login</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
-                  <Input 
+                   <Input 
                     value={editData.email}
                     onChange={(e) => setEditData({...editData, email: e.target.value})}
                     placeholder="email@sttb.ac.id"
-                    className="pl-10 h-11 bg-gray-50/50 border-gray-100 rounded-xl font-bold focus:bg-white transition-all shadow-inner"
+                    className={`pl-10 h-11 border-2 font-bold transition-all shadow-inner ${
+                      errors.email 
+                      ? 'bg-red-50/50 border-red-500' 
+                      : 'bg-gray-50/50 border-gray-100 focus:bg-white'
+                    }`}
                   />
                 </div>
              </div>
@@ -90,7 +108,11 @@ export function UserEditDialog({
 
           <div className="space-y-4 text-left">
             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Role / Hak Akses Utama</Label>
-            <ScrollArea className="h-[200px] border rounded-2xl p-4 bg-gray-50/50 shadow-inner">
+             <ScrollArea className={`h-[200px] border-2 rounded-2xl p-4 shadow-inner transition-all ${
+              errors.role 
+              ? 'bg-red-50/30 border-red-500' 
+              : 'bg-gray-50/50 border-gray-100'
+            }`}>
               <div className="space-y-3">
                 {roles.map((role) => (
                   <label 
@@ -181,6 +203,7 @@ export function UserEditDialog({
         <DialogFooter className="gap-2 sm:justify-start">
           <Button 
             onClick={() => {
+               setIsSubmitted(true);
                if (!editData.fullName.trim() || !editData.email.trim()) {
                  toast.error('Nama dan Email wajib diisi');
                  return;

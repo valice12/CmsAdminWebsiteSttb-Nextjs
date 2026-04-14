@@ -53,7 +53,7 @@ export const getLecturerColumns = ({
     },
     {
       accessorKey: 'organizationalRole',
-      header: 'Spesialisasi',
+      header: 'Jabatan Mengajar',
       cell: ({ row }) => (
         <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm">
           {row.original.organizationalRole || '-'}
@@ -80,20 +80,6 @@ export const getLecturerColumns = ({
       header: 'Aksi',
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              if (row.original.lecturerImagePath) {
-                window.open(getImageUrl(row.original.lecturerImagePath, 'lecturers'), '_blank');
-              } else {
-                toast.info("Gambar tidak tersedia");
-              }
-            }}
-            className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </Button>
           <Button
             variant="ghost"
             size="icon"

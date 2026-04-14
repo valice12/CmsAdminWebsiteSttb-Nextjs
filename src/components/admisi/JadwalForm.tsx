@@ -174,10 +174,10 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                 <Input
                                     {...form.register('academicYear')}
                                     placeholder="Contoh: 2026-2027"
-                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all ${
+                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all border-2 ${
                                         form.formState.errors.academicYear 
                                         ? 'border-red-500 bg-red-50/50' 
-                                        : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                        : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
                                     }`}
                                 />
                                 {form.formState.errors.academicYear && (
@@ -189,10 +189,10 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                 <Input
                                     type="number"
                                     {...form.register('batchOrder')}
-                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all ${
+                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all border-2 ${
                                         form.formState.errors.batchOrder 
                                         ? 'border-red-500 bg-red-50/50' 
-                                        : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                        : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
                                     }`}
                                 />
                                 {form.formState.errors.batchOrder && (
@@ -242,10 +242,10 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('batchDeadlineAt')}
-                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all ${
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all border-2 ${
                                                 form.formState.errors.batchDeadlineAt 
                                                 ? 'border-red-500 bg-red-50/50' 
-                                                : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                                : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
                                             }`}
                                         />
                                     </div>
@@ -262,7 +262,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('formReturnDeadlineAt')}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all border-2 ${
+                                                form.formState.errors.formReturnDeadlineAt 
+                                                ? 'border-red-500 bg-red-50/50' 
+                                                : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
+                                            }`}
                                         />
                                     </div>
                                     {form.formState.errors.formReturnDeadlineAt && (
@@ -277,7 +281,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('documentSelectionDeadlineAt')}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all border-2 ${
+                                                form.formState.errors.documentSelectionDeadlineAt 
+                                                ? 'border-red-500 bg-red-50/50' 
+                                                : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
+                                            }`}
                                         />
                                     </div>
                                     {form.formState.errors.documentSelectionDeadlineAt && (
@@ -292,7 +300,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('participantCallAt')}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all border-2 ${
+                                                form.formState.errors.participantCallAt 
+                                                ? 'border-red-500 bg-red-50/50' 
+                                                : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
+                                            }`}
                                         />
                                     </div>
                                     {form.formState.errors.participantCallAt && (
@@ -309,7 +321,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('resultBroadcastAt')}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all border-2 ${
+                                                form.formState.errors.resultBroadcastAt 
+                                                ? 'border-red-500 bg-red-50/50' 
+                                                : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-700'
+                                            }`}
                                         />
                                     </div>
                                     {form.formState.errors.resultBroadcastAt && (

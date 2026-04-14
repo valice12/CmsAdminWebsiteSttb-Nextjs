@@ -42,14 +42,17 @@ export function GenericCategoryDialog({
   colorTheme = "blue",
 }: GenericCategoryDialogProps) {
   const [name, setName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setName(selectedCategory?.categoryName || "");
+      setIsSubmitted(false);
     }
   }, [isOpen, selectedCategory]);
 
   const handleSave = async () => {
+    setIsSubmitted(true);
     if (!name.trim()) {
       toast.error('Nama wajib diisi');
       return;
@@ -83,7 +86,11 @@ export function GenericCategoryDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Akademik & Kampus"
-              className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold shadow-inner focus:bg-white transition-all underline-offset-4"
+              className={`h-14 rounded-2xl font-bold shadow-inner focus:bg-white transition-all underline-offset-4 border-2 ${
+                isSubmitted && !name.trim() 
+                ? 'bg-red-50/50 border-red-500' 
+                : 'bg-gray-50/50 border-transparent'
+              }`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSave();
