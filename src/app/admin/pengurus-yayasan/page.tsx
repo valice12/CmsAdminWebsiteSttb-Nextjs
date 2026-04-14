@@ -67,10 +67,14 @@ export default function PengurusYayasanPage() {
       accessorKey: 'role',
       header: 'Jabatan / Role',
       cell: ({ row }) => (
-        <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-amber-50 text-amber-700 border-amber-100 shadow-sm">
-          <Shield className="w-3 h-3 mr-1.5" />
-          {row.original.role}
-        </Badge>
+        row.original.role ? (
+          <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-amber-50 text-amber-700 border-amber-100 shadow-sm">
+            <Shield className="w-3 h-3 mr-1.5" />
+            {row.original.role}
+          </Badge>
+        ) : (
+          <span className="text-sm font-bold text-gray-400 ml-4">-</span>
+        )
       ),
     },
     {
@@ -79,7 +83,7 @@ export default function PengurusYayasanPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
            <Briefcase className="w-4 h-4 text-gray-400" />
-           {row.original.division}
+           {row.original.division || '-'}
         </div>
       ),
     },

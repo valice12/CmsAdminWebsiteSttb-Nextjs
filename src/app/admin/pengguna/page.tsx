@@ -97,10 +97,14 @@ function PenggunaContent() {
       accessorKey: 'role',
       header: 'Jabatan / Role',
       cell: ({ row }) => (
-        <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-amber-50 text-amber-700 border-amber-100 shadow-sm">
-          <Shield className="w-3 h-3 mr-1.5" />
-          {row.original.role}
-        </Badge>
+        row.original.role ? (
+          <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-amber-50 text-amber-700 border-amber-100 shadow-sm">
+            <Shield className="w-3 h-3 mr-1.5" />
+            {row.original.role}
+          </Badge>
+        ) : (
+          <span className="text-sm font-bold text-gray-400 ml-4">-</span>
+        )
       ),
     },
     {
@@ -109,7 +113,7 @@ function PenggunaContent() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
            <Briefcase className="w-4 h-4 text-gray-400" />
-           {row.original.division}
+           {row.original.division || '-'}
         </div>
       ),
     },
@@ -176,7 +180,7 @@ function PenggunaContent() {
       header: 'Spesialisasi',
       cell: ({ row }) => (
         <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm">
-           {row.original.organizationalRole}
+           {row.original.organizationalRole || '-'}
         </Badge>
       ),
     },
@@ -185,11 +189,13 @@ function PenggunaContent() {
        header: 'Jabatan Organisasi',
        cell: ({ row }) => (
           <div className="flex flex-wrap gap-1 max-w-[200px]">
-             {row.original.roles.map((r, i) => (
+             {row.original.roles && row.original.roles.length > 0 ? row.original.roles.map((r, i) => (
                 <Badge key={i} variant="outline" className="text-[8px] font-black px-1.5 py-0 border-gray-100 text-gray-500 uppercase">
                    {r}
                 </Badge>
-             ))}
+             )) : (
+                <span className="text-sm font-black text-gray-900">-</span>
+             )}
           </div>
        )
     },
