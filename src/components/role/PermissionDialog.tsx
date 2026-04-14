@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface PermissionDialogProps {
   open: boolean;
@@ -30,6 +32,23 @@ export function PermissionDialog({
   setPermFormData,
   onSave,
 }: PermissionDialogProps) {
+  const [triedToSave, setTriedToSave] = useState(false);
+
+  useEffect(() => {
+    if (open) setTriedToSave(false);
+  }, [open]);
+
+  const handleSave = () => {
+    setTriedToSave(true);
+    if (!permFormData.name.trim()) {
+      toast.error('Nama permission harus diisi');
+      return;
+    }
+    onSave();
+  };
+
+  const isNameEmpty = triedToSave && !permFormData.name.trim();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
@@ -40,15 +59,23 @@ export function PermissionDialog({
             Daftarkan functional access key baru ke dalam sistem.
           </DialogDescription>
         </DialogHeader>
-        <div className="p-10">
+        <div className="p-10 text-left">
            <div className="space-y-4">
              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Permission Key Name (PascalCase)</Label>
              <Input 
                value={permFormData.name}
-               onChange={(e) => setPermFormData({ name: e.target.value })}
+               onChange={(e) => {
+                 setPermFormData({ name: e.target.value });
+                 if (triedToSave) setTriedToSave(false);
+               }}
                placeholder="Misal: CanManageInventory"
-               className="h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-amber-500 text-lg"
+               className={`h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-amber-500 text-lg transition-all ${
+                 isNameEmpty ? 'border-red-500 bg-red-50/30' : ''
+               }`}
              />
+             {isNameEmpty && (
+               <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">Nama permission wajib diisi</p>
+             )}
              <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-lg flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Gunakan format PascalCase untuk konsistensi di Backend.
@@ -64,8 +91,8 @@ export function PermissionDialog({
             Batal
           </Button>
            <Button 
-              onClick={onSave} 
-              className="h-14 px-10 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-amber-200 transition-all active:scale-95"
+              onClick={handleSave} 
+              className="h-14 px-10 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-amber-200 transition-all active:scale-105"
            >
               Save Key
            </Button>

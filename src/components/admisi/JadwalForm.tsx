@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +16,19 @@ import {
 import { toast } from "sonner";
 import { editAdmissionDeadline, getAdmissionDeadlineById } from "@/lib/api";
 
+const admissionSchema = z.object({
+    academicYear: z.string().min(4, "Tahun akademik wajib diisi"),
+    batchOrder: z.coerce.number().min(1, "Nomor gelombang minimal 1"),
+    batchDeadlineAt: z.string().min(1, "Batas pendaftaran wajib diisi"),
+    formReturnDeadlineAt: z.string().min(1, "Batas pengembalian formulir wajib diisi"),
+    documentSelectionDeadlineAt: z.string().min(1, "Batas seleksi dokumen wajib diisi"),
+    resultBroadcastAt: z.string().min(1, "Tanggal pengumuman wajib diisi"),
+    participantCallAt: z.string().min(1, "Tanggal panggilan peserta wajib diisi"),
+    isActive: z.boolean(),
+});
+
+type AdmissionFormData = z.infer<typeof admissionSchema>;
+
 interface JadwalFormProps {
     id?: string;
 }
@@ -21,17 +37,19 @@ export default function JadwalForm({ id }: JadwalFormProps) {
     const router = useRouter();
     const isEdit = !!id;
     const [isLoading, setIsLoading] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
-    const [formData, setFormData] = useState({
-        academicYear: "",
-        batchOrder: 1,
-        batchDeadlineAt: "",
-        formReturnDeadlineAt: "",
-        documentSelectionDeadlineAt: "",
-        resultBroadcastAt: "",
-        participantCallAt: "",
-        isActive: true,
+    const form = useForm<AdmissionFormData>({
+        resolver: zodResolver(admissionSchema),
+        defaultValues: {
+            academicYear: "",
+            batchOrder: 1,
+            batchDeadlineAt: "",
+            formReturnDeadlineAt: "",
+            documentSelectionDeadlineAt: "",
+            resultBroadcastAt: "",
+            participantCallAt: "",
+            isActive: true,
+        },
     });
 
     useEffect(() => {
@@ -45,7 +63,7 @@ export default function JadwalForm({ id }: JadwalFormProps) {
             setIsLoading(true);
             const data = await getAdmissionDeadlineById(Number(id));
             if (data) {
-                setFormData({
+                form.reset({
                     academicYear: data.academicYear || "",
                     batchOrder: data.batchOrder || 1,
                     batchDeadlineAt: data.batchDeadlineAt ? new Date(data.batchDeadlineAt).toISOString().split('T')[0] : "",
@@ -63,20 +81,17 @@ export default function JadwalForm({ id }: JadwalFormProps) {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const onSubmit = async (data: AdmissionFormData) => {
         try {
-            setIsSaving(true);
             const payload = {
                 id: Number(id),
-                ...formData,
-                batchOrder: Number(formData.batchOrder),
-                // Backend expects DateTime, ISO string is usually fine for JSON
-                batchDeadlineAt: new Date(formData.batchDeadlineAt).toISOString(),
-                formReturnDeadlineAt: new Date(formData.formReturnDeadlineAt).toISOString(),
-                documentSelectionDeadlineAt: new Date(formData.documentSelectionDeadlineAt).toISOString(),
-                resultBroadcastAt: new Date(formData.resultBroadcastAt).toISOString(),
-                participantCallAt: new Date(formData.participantCallAt).toISOString(),
+                ...data,
+                // Backend expects DateTime, ISO string is fine
+                batchDeadlineAt: new Date(data.batchDeadlineAt).toISOString(),
+                formReturnDeadlineAt: new Date(data.formReturnDeadlineAt).toISOString(),
+                documentSelectionDeadlineAt: new Date(data.documentSelectionDeadlineAt).toISOString(),
+                resultBroadcastAt: new Date(data.resultBroadcastAt).toISOString(),
+                participantCallAt: new Date(data.participantCallAt).toISOString(),
             };
 
             await editAdmissionDeadline(payload);
@@ -86,9 +101,12 @@ export default function JadwalForm({ id }: JadwalFormProps) {
         } catch (error) {
             toast.error("Gagal menyimpan perubahan");
             console.error(error);
-        } finally {
-            setIsSaving(false);
         }
+    };
+
+    const onInvalid = (errors: any) => {
+        console.dir(errors);
+        toast.error("Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.");
     };
 
     if (isLoading) {
@@ -101,8 +119,8 @@ export default function JadwalForm({ id }: JadwalFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-10 max-w-5xl mx-auto pb-20">
-            {/* Header section remains the same */}
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-10 max-w-5xl mx-auto pb-20">
+            {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100">
                 <div className="flex items-center gap-5">
                     <div className="w-14 h-14 bg-indigo-500 rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -113,7 +131,7 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                             Edit Jadwal Admisi
                         </h1>
                         <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest mt-1 flex items-center gap-2">
-                             <Hash className="w-3 h-3" /> Gelombang {formData.batchOrder} • {formData.academicYear}
+                             <Hash className="w-3 h-3" /> Gelombang {form.watch('batchOrder')} • {form.watch('academicYear')}
                         </p>
                     </div>
                 </div>
@@ -128,10 +146,10 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                     </Button>
                     <Button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={form.formState.isSubmitting}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-8 shadow-xl shadow-indigo-600/20 font-black uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95"
                     >
-                        {isSaving ? (
+                        {form.formState.isSubmitting ? (
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                             <Save className="w-5 h-5" />
@@ -141,7 +159,7 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
                 {/* Left Column: General Info */}
                 <div className="lg:col-span-1 space-y-6">
                     <Card className="rounded-[2rem] border-none shadow-xl shadow-gray-100 overflow-hidden">
@@ -154,29 +172,30 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                             <div className="space-y-2">
                                 <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Tahun Akademik</Label>
                                 <Input
-                                    required
-                                    value={formData.academicYear}
-                                    onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                                    {...form.register('academicYear')}
                                     placeholder="Contoh: 2026-2027"
-                                    className="h-12 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                    className="h-12 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                 />
+                                {form.formState.errors.academicYear && (
+                                    <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{form.formState.errors.academicYear.message}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Nomor Gelombang</Label>
                                 <Input
-                                    required
                                     type="number"
-                                    value={formData.batchOrder}
-                                    onChange={(e) => setFormData({ ...formData, batchOrder: Number(e.target.value) })}
-                                    className="h-12 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                    {...form.register('batchOrder')}
+                                    className="h-12 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                 />
+                                {form.formState.errors.batchOrder && (
+                                    <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{form.formState.errors.batchOrder.message}</p>
+                                )}
                             </div>
                             <div className="flex items-center space-x-2 pt-4">
                                 <input
                                     type="checkbox"
                                     id="isActive"
-                                    checked={formData.isActive}
-                                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                    {...form.register('isActive')}
                                     className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <Label htmlFor="isActive" className="text-sm font-bold text-gray-700 cursor-pointer">Jadwal Aktif</Label>
@@ -208,64 +227,68 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                         </div>
                         <CardContent className="p-10">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                                <div className="space-y-2">
+                                <div className="space-y-2 text-left">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Batas Akhir Pendaftaran</Label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <Input
                                             type="date"
-                                            required
-                                            value={formData.batchDeadlineAt}
-                                            onChange={(e) => setFormData({ ...formData, batchDeadlineAt: e.target.value })}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                            {...form.register('batchDeadlineAt')}
+                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                         />
                                     </div>
+                                    {form.formState.errors.batchDeadlineAt && (
+                                        <p className="text-[9px] text-red-500 font-black uppercase tracking-tighter mt-1">{form.formState.errors.batchDeadlineAt.message}</p>
+                                    )}
                                     <p className="text-[10px] text-gray-400 italic">Tanggal penutupan akses formulir online.</p>
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 text-left">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Batas Pengembalian Formulir</Label>
                                     <div className="relative">
                                         <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <Input
                                             type="date"
-                                            required
-                                            value={formData.formReturnDeadlineAt}
-                                            onChange={(e) => setFormData({ ...formData, formReturnDeadlineAt: e.target.value })}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                            {...form.register('formReturnDeadlineAt')}
+                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                         />
                                     </div>
+                                    {form.formState.errors.formReturnDeadlineAt && (
+                                        <p className="text-[9px] text-red-500 font-black uppercase tracking-tighter mt-1">{form.formState.errors.formReturnDeadlineAt.message}</p>
+                                    )}
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 text-left">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Seleksi Dokumen</Label>
                                     <div className="relative">
                                         <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <Input
                                             type="date"
-                                            required
-                                            value={formData.documentSelectionDeadlineAt}
-                                            onChange={(e) => setFormData({ ...formData, documentSelectionDeadlineAt: e.target.value })}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                            {...form.register('documentSelectionDeadlineAt')}
+                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                         />
                                     </div>
+                                    {form.formState.errors.documentSelectionDeadlineAt && (
+                                        <p className="text-[9px] text-red-500 font-black uppercase tracking-tighter mt-1">{form.formState.errors.documentSelectionDeadlineAt.message}</p>
+                                    )}
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 text-left">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Panggilan Peserta (Batch)</Label>
                                     <div className="relative">
                                         <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <Input
                                             type="date"
-                                            required
-                                            value={formData.participantCallAt}
-                                            onChange={(e) => setFormData({ ...formData, participantCallAt: e.target.value })}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                            {...form.register('participantCallAt')}
+                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                         />
                                     </div>
+                                    {form.formState.errors.participantCallAt && (
+                                        <p className="text-[9px] text-red-500 font-black uppercase tracking-tighter mt-1">{form.formState.errors.participantCallAt.message}</p>
+                                    )}
                                 </div>
 
-                                <div className="space-y-2 md:col-span-2 pt-4 border-t border-gray-50">
+                                <div className="space-y-2 md:col-span-2 pt-4 border-t border-gray-50 text-left">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Pengumuman Hasil Seleksi</Label>
                                     <div className="relative">
                                         <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 flex items-center justify-center">
@@ -273,12 +296,13 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         </div>
                                         <Input
                                             type="date"
-                                            required
-                                            value={formData.resultBroadcastAt}
-                                            onChange={(e) => setFormData({ ...formData, resultBroadcastAt: e.target.value })}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-gray-100 font-bold focus:bg-white transition-all"
+                                            {...form.register('resultBroadcastAt')}
+                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
                                         />
                                     </div>
+                                    {form.formState.errors.resultBroadcastAt && (
+                                        <p className="text-[9px] text-red-500 font-black uppercase tracking-tighter mt-1">{form.formState.errors.resultBroadcastAt.message}</p>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
@@ -288,4 +312,3 @@ export default function JadwalForm({ id }: JadwalFormProps) {
         </form>
     );
 }
-

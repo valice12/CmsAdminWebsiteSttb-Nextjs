@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, Save, User, Shield, Briefcase,
   GraduationCap, BookOpen, Upload, Layout, Star,
-  Mail, Lock, UserPlus, ShieldCheck
+  Mail, Lock, UserPlus, ShieldCheck, CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import {
   Select,
@@ -50,13 +51,6 @@ const lecturerSchema = z.object({
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
 });
 
-const userSchema = z.object({
-  fullName: z.string().min(3, 'Nama minimal 3 karakter'),
-  email: z.string().email('Email tidak valid'),
-  roleNames: z.array(z.string()).min(1, 'Role wajib diisi'),
-  password: z.string().optional().or(z.literal('')),
-});
-
 interface PenggunaFormProps {
   id?: string;
   type?: string;
@@ -73,6 +67,52 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>(['SuperAdmin', 'Admin', 'Staff', 'Editor', 'Lecturer']);
 
+  // Dynamic user schema for password validation
+  const userSchema = useMemo(() => z.object({
+    fullName: z.string().min(3, 'Nama minimal 3 karakter'),
+    email: z.string().email('Email tidak valid'),
+    roleNames: z.array(z.string()).min(1, 'Role wajib diisi'),
+    password: isEdit 
+      ? z.string().optional().or(z.literal(''))
+      : z.string().min(8, 'Password wajib diisi minimal 8 karakter'),
+    confirmPassword: z.string().optional().or(z.literal('')),
+  }).superRefine(({ password, confirmPassword }, ctx) => {
+    // For Create: Password is required and must match
+    if (!isEdit) {
+      if (!password || password.length < 8) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Password wajib diisi minimal 8 karakter',
+          path: ['password'],
+        });
+      }
+      if (password !== confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Konfirmasi password tidak cocok',
+          path: ['confirmPassword'],
+        });
+      }
+    } 
+    // For Edit: If password is provided, it must be min 8 and match confirm
+    else if (password && password.length > 0) {
+      if (password.length < 8) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Password minimal 8 karakter',
+          path: ['password'],
+        });
+      }
+      if (password !== confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Konfirmasi password tidak cocok',
+          path: ['confirmPassword'],
+        });
+      }
+    }
+  }), [isEdit]);
+
   const adminForm = useForm<z.infer<typeof adminSchema>>({
     resolver: zodResolver(adminSchema),
     defaultValues: { name: '', division: '', role: '' }
@@ -85,7 +125,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
 
   const userForm = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    defaultValues: { fullName: '', email: '', roleNames: ['Admin'], password: '' }
+    defaultValues: { fullName: '', email: '', roleNames: ['Admin'], password: '', confirmPassword: '' }
   });
 
   useEffect(() => {
@@ -135,7 +175,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
             fullName: data.fullName,
             email: data.email,
             roleNames: data.roles || ['Admin'],
-            password: ''
+            password: '',
+            confirmPassword: ''
           });
         }
       }
@@ -174,18 +215,14 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
             Permissions: []
           });
         } else {
-          // Map roleNames to roleName for compatibility if register endpoint is still singular
-          // or if it now takes an array, registerUser in api.ts should be updated.
-          // For now, let's assume registerUser takes the same data structure.
           await registerUser({
             ...data,
-            roleName: data.roleNames[0] // Fallback for registration if needed
+            roleName: data.roleNames[0]
           });
         }
       }
       toast.success('Data berhasil disimpan');
       
-      // Redirect to appropriate page
       if (activeType === 'foundation') router.push('/admin/pengurus-yayasan');
       else if (activeType === 'lecturer') router.push('/admin/dosen');
       else router.push('/admin/user');
@@ -202,7 +239,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 font-primary">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push(activeType === 'foundation' ? '/admin/pengurus-yayasan' : '/admin/dosen')} className="rounded-full shadow-sm">
           <ArrowLeft className="w-5 h-5" />
@@ -301,7 +338,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 </div>
                 {userForm.formState.errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.fullName.message}</p>}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2 sm:col-span-1">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email User</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
@@ -309,58 +346,81 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 </div>
                 {userForm.formState.errors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.email.message}</p>}
               </div>
+
+              {/* Password Section */}
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password Baru</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input type="password" {...userForm.register('password')} placeholder="Min. 6 karakter" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                  <Input type="password" {...userForm.register('password')} placeholder="Min. 8 karakter" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
                 </div>
                 {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message}</p>}
               </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Ulangi Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
+                  <Input type="password" {...userForm.register('confirmPassword')} placeholder="Konfirmasi password..." className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                </div>
+                {userForm.formState.errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.confirmPassword.message}</p>}
+              </div>
+
+              {/* Roles Section */}
               <div className="space-y-4 md:col-span-2">
-                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Role / Hak Akses Utama</label>
-                 <ScrollArea className="h-[200px] border rounded-2xl p-6 bg-indigo-50/20 shadow-inner">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {roles.map((role) => (
-                        <label 
-                          key={role} 
-                          htmlFor={`form-role-${role}`}
-                          className={`flex items-center space-x-3 p-4 rounded-2xl border-2 transition-all cursor-pointer group hover:scale-[1.02] active:scale-95 ${
-                            userForm.watch('roleNames').includes(role)
-                            ? 'bg-white border-indigo-200 shadow-md ring-1 ring-indigo-50'
-                            : 'bg-transparent border-transparent hover:bg-white/50 hover:border-indigo-100'
-                          }`}
-                        >
-                          <Checkbox 
-                            id={`form-role-${role}`} 
-                            checked={userForm.watch('roleNames').includes(role)} 
-                            onCheckedChange={() => {
-                              // Force single selection: just set to current role
-                              userForm.setValue('roleNames', [role]);
-                            }}
-                            className="h-5 w-5 border-2 rounded-md data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 shadow-sm"
-                          />
-                          <span 
-                            className={`text-[10px] font-black leading-none cursor-pointer grow transition-colors ${
-                              userForm.watch('roleNames').includes(role) ? 'text-indigo-600' : 'text-gray-500'
+                 <div className="flex items-center justify-between ml-1">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Role / Hak Akses Utama</label>
+                    <Badge variant="outline" className="bg-indigo-50 text-indigo-600 border-indigo-100 font-black text-[9px] uppercase tracking-tighter">Pilih Satu</Badge>
+                 </div>
+                 <ScrollArea className="h-[250px] border border-gray-200/50 rounded-2xl p-6 bg-white shadow-inner">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {roles.map((role) => {
+                        const isSelected = userForm.watch('roleNames').includes(role);
+                        return (
+                          <label 
+                            key={role} 
+                            htmlFor={`form-role-${role}`}
+                            className={`flex items-center space-x-3 p-2.5 px-5 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${
+                              isSelected
+                              ? 'bg-indigo-50/20 border-indigo-600 shadow-sm ring-1 ring-indigo-500/10'
+                              : 'bg-white border-gray-100 hover:border-indigo-200 shadow-sm'
                             }`}
                           >
-                            {role}
-                          </span>
-                        </label>
-                      ))}
+                            <Checkbox 
+                              id={`form-role-${role}`} 
+                              checked={isSelected} 
+                              onCheckedChange={() => {
+                                userForm.setValue('roleNames', [role]);
+                              }}
+                              className={`h-5 w-5 border-2 rounded-xl transition-all shrink-0 ${
+                                isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'
+                              }`}
+                            />
+                            <div className="flex flex-col grow">
+                               <span className={`text-[10px] font-black uppercase tracking-tight transition-colors ${isSelected ? 'text-indigo-600' : 'text-gray-600'}`}>
+                                 {role}
+                               </span>
+                               <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Level Fungsional</span>
+                            </div>
+                          </label>
+                        );
+                      })}
                     </div>
                  </ScrollArea>
-                 {userForm.formState.errors.roleNames && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.roleNames.message}</p>}
+                 {userForm.formState.errors.roleNames && (
+                    <div className="flex items-center gap-2 text-red-500 ml-1">
+                       <AlertCircle className="w-3 h-3" />
+                       <p className="text-[10px] font-bold uppercase tracking-wider">{userForm.formState.errors.roleNames.message}</p>
+                    </div>
+                 )}
               </div>
             </div>
           )}
 
-          <div className="pt-6 flex justify-end gap-3 border-t border-gray-50">
-            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl px-8 h-12 font-bold text-gray-400">Batalkan</Button>
-            <Button type="submit" isLoading={activeType === 'foundation' ? adminForm.formState.isSubmitting : (activeType === 'lecturer' ? lecturerForm.formState.isSubmitting : userForm.formState.isSubmitting)} className="rounded-xl px-12 h-12 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-3">
+          <div className="pt-8 flex justify-end gap-3 border-t border-gray-100">
+            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-2xl px-8 h-12 font-bold text-gray-500 hover:bg-gray-50 border-gray-200 transition-all uppercase tracking-widest text-[11px]">Batalkan</Button>
+            <Button type="submit" isLoading={activeType === 'foundation' ? adminForm.formState.isSubmitting : (activeType === 'lecturer' ? lecturerForm.formState.isSubmitting : userForm.formState.isSubmitting)} className="rounded-2xl px-12 h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-600/20 flex items-center gap-3 transition-all hover:scale-105 active:scale-95 text-[11px]">
               <Save className="w-5 h-5" />
-              Simpan {activeType === 'user' ? 'Akun' : 'Profil'}
+              Simpan {activeType === 'user' ? 'Akun Pengguna' : 'Profil'}
             </Button>
           </div>
         </form>

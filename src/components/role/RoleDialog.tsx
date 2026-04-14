@@ -51,6 +51,23 @@ export function RoleDialog({
   onSave,
   togglePermissionInRole,
 }: RoleDialogProps) {
+  const [triedToSave, setTriedToSave] = useState(false);
+
+  useEffect(() => {
+    if (open) setTriedToSave(false);
+  }, [open]);
+
+  const handleSave = () => {
+    setTriedToSave(true);
+    if (!roleFormData.name.trim()) {
+      toast.error('Nama role harus diisi');
+      return;
+    }
+    onSave();
+  };
+
+  const isNameEmpty = triedToSave && !roleFormData.name.trim();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
@@ -68,10 +85,18 @@ export function RoleDialog({
             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nama Role</Label>
             <Input 
               value={roleFormData.name}
-              onChange={(e) => setRoleFormData({...roleFormData, name: e.target.value})}
+              onChange={(e) => {
+                setRoleFormData({...roleFormData, name: e.target.value});
+                if (triedToSave) setTriedToSave(false);
+              }}
               placeholder="Misal: Marketing Senior"
-              className="h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 transition-all text-lg"
+              className={`h-14 bg-gray-50 border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 transition-all text-lg ${
+                isNameEmpty ? 'border-red-500 bg-red-50/30' : ''
+              }`}
             />
+            {isNameEmpty && (
+              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">Nama role wajib diisi</p>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -134,7 +159,7 @@ export function RoleDialog({
             Batal
           </Button>
           <Button 
-            onClick={onSave} 
+            onClick={handleSave} 
             disabled={isLoading}
             className="h-14 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-indigo-200 grow sm:grow-0 transition-all active:scale-95"
           >
