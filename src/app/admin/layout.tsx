@@ -120,21 +120,30 @@ function SidebarNavItem({
       <div className="space-y-1">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-[13px] font-bold transition-all ${
+          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all duration-300 relative group/btn ${
             hasActiveChild || isActive
-              ? 'bg-[#1E3A5F] text-[#D4AF37] shadow-lg shadow-black/20'
-              : 'text-gray-400 hover:bg-[#1E3A5F] hover:text-white'
+              ? 'active-nav-gradient text-[#D4AF37] shadow-lg shadow-black/10 border border-white/5'
+              : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="shrink-0">{item.icon}</div>
+          {/* Active Accent Bar */}
+          {(hasActiveChild || isActive) && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#D4AF37] rounded-r-full shadow-[2px_0_8px_rgba(212,175,55,0.4)]" />
+          )}
+
+          <div className="flex items-center gap-3 min-w-0 relative z-10">
+            <div className={`shrink-0 transition-transform duration-300 ${hasActiveChild || isActive ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
+              {item.icon}
+            </div>
             <span className="truncate">{item.label}</span>
           </div>
-          <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-500 ${isExpanded ? 'rotate-180 text-[#D4AF37]' : 'text-gray-500'}`} />
         </button>
         
         {isExpanded && (
-          <div className="pl-4 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-300">
+          <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-500 relative">
+             {/* Sub-menu Connector Thread */}
+             <div className="absolute left-3 top-0 bottom-3 w-px bg-gradient-to-b from-white/10 via-white/5 to-transparent" />
             {item.children.map((child) => {
               const childActive = isPathActive(child.path, item.children);
               return (
@@ -142,13 +151,15 @@ function SidebarNavItem({
                   key={child.path}
                   href={child.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg text-[13px] font-bold transition-all ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 group/child relative ${
                     childActive
-                      ? 'text-[#D4AF37] bg-white/5'
-                      : 'text-gray-500 hover:text-white hover:bg-white/5'
+                      ? 'text-[#D4AF37] bg-white/[0.03] shadow-inner shadow-black/20'
+                      : 'text-gray-500 hover:text-white hover:bg-white/[0.02]'
                   }`}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-current opacity-40 shrink-0" />
+                  <div className={`w-1.5 h-1.5 rounded-full ring-2 transition-all duration-300 ${
+                    childActive ? 'bg-[#D4AF37] ring-[#D4AF37]/20 scale-125' : 'bg-gray-600 ring-transparent group-hover/child:bg-gray-400'
+                  }`} />
                   <span className="truncate">{child.label}</span>
                 </Link>
               );
@@ -163,14 +174,21 @@ function SidebarNavItem({
     <Link
       href={item.path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-[13px] font-bold transition-all ${
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all duration-300 relative group/link ${
         isActive
-          ? 'bg-[#1E3A5F] text-[#D4AF37] shadow-lg shadow-black/20'
-          : 'text-gray-400 hover:bg-[#1E3A5F] hover:text-white'
+          ? 'active-nav-gradient text-[#D4AF37] shadow-lg shadow-black/10 border border-white/5'
+          : 'text-gray-400 hover:bg-white/5 hover:text-white'
       }`}
     >
-      <div className="shrink-0">{item.icon}</div>
-      <span className="truncate">{item.label}</span>
+      {/* Active Accent Bar */}
+      {isActive && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#D4AF37] rounded-r-full shadow-[2px_0_8px_rgba(212,175,55,0.4)]" />
+      )}
+
+      <div className={`shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover/link:scale-110'}`}>
+        {item.icon}
+      </div>
+      <span className="truncate relative z-10">{item.label}</span>
     </Link>
   );
 }
@@ -233,46 +251,48 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[#0B1B3D] text-white transform transition-transform duration-300 z-40 ${
+        className={`fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-[#0B1B3D] via-[#0B1B3D] to-[#040D21] text-white flex flex-col transform transition-transform duration-500 ease-in-out z-40 border-r border-white/5 shadow-2xl ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
         {/* Logo & Close Button */}
-        <div className="flex items-center justify-between p-6 border-b border-[#1E3A5F]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#D4AF37] flex items-center justify-center">
+        <div className="flex items-center justify-between p-8 border-b border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#B8962D] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20 ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-500">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold text-sm">CMS Portal</h2>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">STT Bandung</p>
+              <h2 className="font-black text-sm tracking-tight uppercase leading-none">CMS Portal</h2>
+              <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-[0.2em] mt-1.5 opacity-80">STT Bandung</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* User Profile */}
-        <div className="p-6 border-b border-[#1E3A5F]">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-white ring-2 ring-[#D4AF37]/20 shadow-lg shadow-gold/20">
-              <span className="font-bold text-lg">
+        <div className="p-8 border-b border-white/5">
+          <div className="glass-card p-5 rounded-[1.5rem] flex items-center gap-4 hover:bg-white/[0.05] transition-all duration-500 group cursor-default">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white ring-4 ring-[#D4AF37]/10 shadow-xl group-hover:rotate-6 transition-transform">
+              <span className="font-black text-xl">
                 {user.fullName.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm truncate">{user.fullName}</p>
-              <p className="text-[11px] text-gray-400 truncate mb-1">{user.email}</p>
-              <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30">
+              <p className="font-black text-sm truncate tracking-tight">{user.fullName}</p>
+              <p className="text-[10px] text-gray-400 truncate mb-1.5 font-bold">{user.email}</p>
+              <div className="inline-flex px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 shadow-inner">
+                <ShieldCheck className="w-3 h-3 mr-1.5" />
                 {(user.roles?.[0] ?? 'Admin')}
-              </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
+        <nav className="p-6 space-y-2 flex-1 overflow-y-auto sidebar-scrollbar">
           {(() => {
             const userRoles = user?.roles || [];
             
@@ -309,12 +329,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t border-[#1E3A5F]">
+        <div className="p-6 border-t border-white/5 bg-black/20">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-red-400 transition-all font-bold text-sm group"
+            className="w-full flex items-center gap-3 px-5 py-3.5 rounded-xl text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 font-black text-[11px] uppercase tracking-widest group"
           >
-            <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Sign Out</span>
           </button>
         </div>
@@ -335,15 +355,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               </button>
 
               {/* Breadcrumbs */}
-              <div className="hidden md:flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+              <div className="hidden md:flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em]">
                 {getBreadcrumbs().map((crumb, index) => (
-                  <div key={crumb.path} className="flex items-center gap-2">
-                    {index > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
+                  <div key={crumb.path} className="flex items-center gap-3">
+                    {index > 0 && <div className="w-1 h-1 rounded-full bg-gray-300" />}
                     <Link
                       href={crumb.path}
-                      className={`hover:text-primary transition-colors ${
+                      className={`transition-all duration-300 hover:text-[#D4AF37] ${
                         index === getBreadcrumbs().length - 1
-                          ? 'text-gray-900'
+                          ? 'text-gray-900 border-b-2 border-[#D4AF37]/30 pb-0.5'
                           : 'text-gray-400'
                       }`}
                     >

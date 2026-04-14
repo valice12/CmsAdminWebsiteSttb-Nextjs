@@ -129,3 +129,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 20px;
+  }
+
+  .sidebar-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .active-nav-gradient {
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%);
+  }
+}
