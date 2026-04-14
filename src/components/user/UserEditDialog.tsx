@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 interface CMSUserDTO {
   id: number;
@@ -104,7 +105,13 @@ export function UserEditDialog({
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
           <Button 
-            onClick={onSave} 
+            onClick={() => {
+               if (editData.selectedRoles.length === 0) {
+                 toast.error('Setidaknya satu role harus dipilih');
+                 return;
+               }
+               onSave();
+            }} 
             disabled={isLoading}
             className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >

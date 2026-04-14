@@ -96,6 +96,11 @@ export function BiayaForm({ id }: BiayaFormProps) {
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.dir(errors);
+    toast.error('Penyimpanan gagal. Harap lengkapi semua bidang yang wajib diisi.');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center gap-4 text-left">
@@ -114,7 +119,7 @@ export function BiayaForm({ id }: BiayaFormProps) {
       </div>
 
       <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 max-w-2xl mx-auto">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 text-left">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8 text-left">
            <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Kategori Biaya</label>
