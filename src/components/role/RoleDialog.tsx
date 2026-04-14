@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Shield, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

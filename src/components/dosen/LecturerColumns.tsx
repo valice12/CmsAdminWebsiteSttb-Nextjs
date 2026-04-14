@@ -95,7 +95,7 @@ export const getLecturerColumns = ({
       header: 'Status',
       cell: ({ row }) => (
         <Badge
-          variant={row.original.isActive ? "default" : "secondary"}
+          variant={row.original.isActive ? "default" : "outline"}
           className={`font-black text-[9px] uppercase tracking-widest px-2 ${row.original.isActive
             ? 'bg-green-50 text-green-700 border-green-200'
             : 'bg-gray-100 text-gray-400 border-gray-200'

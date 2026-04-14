@@ -50,7 +50,7 @@ const lecturerSchema = z.object({
   joinedAt: z.string().min(1, 'Tanggal bergabung wajib diisi'),
   roles: z.string().min(3, 'Jabatan organisasi wajib diisi, pisahkan dengan koma'),
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 interface PenggunaFormProps {
@@ -290,8 +290,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...adminForm.register('name')}
                     placeholder="Masukkan nama lengkap..."
                     className={`h-14 pl-12 rounded-2xl bg-gray-50 border-2 text-lg font-bold shadow-sm transition-all ${adminForm.formState.errors.name
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'border-transparent bg-gray-50/50 focus:bg-white focus:border-amber-200 shadow-inner'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'border-transparent bg-gray-50/50 focus:bg-white focus:border-amber-200 shadow-inner'
                       }`}
                   />
                 </div>
@@ -310,8 +310,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     value={adminForm.watch('division')}
                   >
                     <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-sm transition-all border-2 ${adminForm.formState.errors.division
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'bg-gray-50 border-transparent focus:ring-amber-500/20 focus:border-amber-200 focus:bg-white'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'bg-gray-50 border-transparent focus:ring-amber-500/20 focus:border-amber-200 focus:bg-white'
                       }`}>
                       <SelectValue placeholder="Pilih Divisi" />
                     </SelectTrigger>
@@ -339,8 +339,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                       value={adminForm.watch('role')}
                     >
                       <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-md transition-all text-amber-900 border-2 ${adminForm.formState.errors.role
-                          ? 'border-red-500 bg-red-50/50'
-                          : 'bg-amber-50 border-amber-100/50 focus:ring-amber-500/20 focus:bg-white'
+                        ? 'border-red-500 bg-red-50/50'
+                        : 'bg-amber-50 border-amber-100/50 focus:ring-amber-500/20 focus:bg-white'
                         }`}>
                         <SelectValue placeholder="Pilih Jabatan" />
                       </SelectTrigger>
@@ -368,8 +368,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   <Input
                     {...lecturerForm.register('lecturerName')}
                     className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.lecturerName
-                        ? 'bg-red-50/50 border-red-500'
-                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                       }`}
                   />
                   {lecturerForm.formState.errors.lecturerName && (
@@ -377,13 +377,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Mengajar (Pisahkan koma)</label>
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Organizational Role (Pisahkan koma)</label>
                   <Input
                     {...lecturerForm.register('organizationalRole')}
                     placeholder="e.g. Dosen Matematika, Dosen Fisika"
                     className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.organizationalRole
-                        ? 'bg-red-50/50 border-red-500'
-                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                       }`}
                   />
                   {lecturerForm.formState.errors.organizationalRole && (
@@ -396,8 +396,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     type="date"
                     {...lecturerForm.register('joinedAt')}
                     className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.joinedAt
-                        ? 'bg-red-50/50 border-red-500'
-                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                       }`}
                   />
                   {lecturerForm.formState.errors.joinedAt && (
@@ -410,8 +410,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...lecturerForm.register('degrees')}
                     placeholder="S.Kom, M.T"
                     className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.degrees
-                        ? 'bg-red-50/50 border-red-500'
-                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                       }`}
                   />
                   {lecturerForm.formState.errors.degrees && (
@@ -419,13 +419,13 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Organisasi (Pisahkan koma)</label>
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Roles (Pisahkan koma)</label>
                   <Input
                     {...lecturerForm.register('roles')}
                     placeholder="Ketua, Kaprodi, Dosen Tetap"
                     className={`h-14 rounded-2xl font-bold transition-all border-2 ${lecturerForm.formState.errors.roles
-                        ? 'bg-red-50/50 border-red-500'
-                        : 'bg-gray-50/50 border-transparent focus:bg-white'
+                      ? 'bg-red-50/50 border-red-500'
+                      : 'bg-gray-50/50 border-transparent focus:bg-white'
                       }`}
                   />
                   {lecturerForm.formState.errors.roles && (
@@ -433,8 +433,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   )}
                 </div>
                 <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus-within:border-indigo-100 transition-all">
-                  <Checkbox 
-                    id="is-active" 
+                  <Checkbox
+                    id="is-active"
                     checked={lecturerForm.watch('isActive')}
                     onCheckedChange={(val) => lecturerForm.setValue('isActive', !!val)}
                     className="h-5 w-5 border-2 rounded-xl"
@@ -476,8 +476,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...userForm.register('fullName')}
                     placeholder="Masukkan nama lengkap..."
                     className={`h-14 pl-12 rounded-2xl text-lg font-bold transition-all border-2 ${userForm.formState.errors.fullName
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
                       }`}
                   />
                 </div>
@@ -492,8 +492,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...userForm.register('email')}
                     placeholder="email@sttb.ac.id"
                     className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.email
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
                       }`}
                   />
                 </div>
@@ -510,8 +510,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...userForm.register('password')}
                     placeholder="Min. 8 karakter"
                     className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.password
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
                       }`}
                   />
                 </div>
@@ -526,8 +526,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     {...userForm.register('confirmPassword')}
                     placeholder="Konfirmasi password..."
                     className={`h-14 pl-12 rounded-2xl font-bold transition-all border-2 ${userForm.formState.errors.confirmPassword
-                        ? 'border-red-500 bg-red-50/50'
-                        : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
+                      ? 'border-red-500 bg-red-50/50'
+                      : 'bg-indigo-50/30 border-transparent focus:bg-white shadow-inner'
                       }`}
                   />
                 </div>
@@ -549,8 +549,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                           key={role}
                           htmlFor={`form-role-${role}`}
                           className={`flex items-center space-x-3 p-2.5 px-5 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${isSelected
-                              ? 'bg-indigo-50/20 border-indigo-600 shadow-sm ring-1 ring-indigo-500/10'
-                              : 'bg-white border-gray-100 hover:border-indigo-200 shadow-sm'
+                            ? 'bg-indigo-50/20 border-indigo-600 shadow-sm ring-1 ring-indigo-500/10'
+                            : 'bg-white border-gray-100 hover:border-indigo-200 shadow-sm'
                             }`}
                         >
                           <Checkbox
