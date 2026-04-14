@@ -21,6 +21,27 @@ import {
   getAllCourses
 } from '@/lib/api';
 import { toast } from 'sonner';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { cn } from '@/components/ui/utils';
 
 const lectureSchema = z.object({
   id: z.coerce.number(), // This is the Course ID (from database)
@@ -516,6 +537,7 @@ interface LectureFieldsProps {
 }
 
 function LectureFields({ categoryIndex, control, register, availableCourses, setValue }: LectureFieldsProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { fields, append, remove } = useFieldArray({
     control,
     name: `courseCategory.${categoryIndex}.courses`
@@ -537,6 +559,20 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
      }
   };
 
+  const handleAddNewCourse = (courseId: string) => {
+    const courseIdNum = Number(courseId);
+    const course = availableCourses.find(c => c.id === courseIdNum);
+    if (course) {
+      append({
+        id: course.id,
+        courseName: course.courseName,
+        credits: course.credits,
+        description: course.description
+      });
+      setIsDialogOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-3 pl-4 border-l-2 border-primary/20 mt-4">
       <div className="flex items-center justify-between">
@@ -544,12 +580,52 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
         <Button 
           type="button" 
           size="sm"
-          onClick={() => append({ id: 0, courseName: '', credits: 0, description: '' })}
+          onClick={() => setIsDialogOpen(true)}
           className="h-7 text-[8px] font-black uppercase bg-primary/10 text-primary hover:bg-primary/20 rounded-lg px-3"
         >
           <Plus className="w-3 h-3 mr-1" /> Tambah MK
         </Button>
       </div>
+
+      {/* Course Selection Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="p-8 bg-primary/5 border-b border-primary/10 text-left">
+            <DialogTitle className="text-xl font-black text-gray-900 tracking-tight">Pilih Mata Kuliah</DialogTitle>
+            <DialogDescription className="text-xs font-medium text-gray-500 mt-1">
+              Cari dan pilih mata kuliah untuk ditambahkan ke kategori ini.
+            </DialogDescription>
+          </div>
+          
+          <Command className="rounded-none border-none">
+            <CommandInput placeholder="Cari berdasarkan nama mata kuliah..." className="h-14 px-6 text-sm font-bold" />
+            <CommandList className="max-h-[350px] p-2">
+              <CommandEmpty className="py-10 text-sm italic font-medium text-gray-400">Mata kuliah tidak ditemukan.</CommandEmpty>
+              <CommandGroup>
+                {availableCourses.map((c) => (
+                  <CommandItem
+                    key={c.id}
+                    value={c.courseName}
+                    onSelect={() => handleAddNewCourse(c.id.toString())}
+                    className="flex items-center gap-4 p-4 rounded-xl cursor-pointer hover:bg-primary/5 transition-all group"
+                  >
+                    <div className="w-10 h-10 bg-white shadow-sm border border-gray-100 rounded-lg flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:text-primary transition-all">
+                      <BookMarked className="w-5 h-5 opacity-40 group-hover:opacity-100" />
+                    </div>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="text-sm font-bold text-gray-700 truncate">{c.courseName}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">{c.credits} SKS</span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-gray-50 group-hover:bg-primary group-hover:text-white transition-all">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-3">
         {fields.map((lecture, lectureIndex) => (
@@ -567,18 +643,11 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-1">
                 <div className="sm:col-span-3 space-y-1">
                    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Mata Kuliah</label>
-                   <select
-                      className="w-full h-10 px-4 rounded-xl border-none bg-gray-50/50 font-bold text-xs focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
-                      value={watchedCourses?.[lectureIndex]?.id || 0}
-                      onChange={(e) => handleCourseSelection(lectureIndex, e.target.value)}
-                   >
-                      <option value="0" disabled>Select Course...</option>
-                      {availableCourses.map(c => (
-                         <option key={c.id} value={c.id}>
-                            {c.courseName} ({c.credits} SKS)
-                         </option>
-                      ))}
-                   </select>
+                    <CoursePicker 
+                      availableCourses={availableCourses}
+                      selectedId={watchedCourses?.[lectureIndex]?.id}
+                      onSelect={(courseId) => handleCourseSelection(lectureIndex, courseId)}
+                    />
                 </div>
                 <div className="space-y-1">
                    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">SKS Terdaftar</label>
@@ -602,5 +671,68 @@ function LectureFields({ categoryIndex, control, register, availableCourses, set
         )}
       </div>
     </div>
+  );
+}
+
+interface CoursePickerProps {
+  availableCourses: any[];
+  selectedId: number | undefined;
+  onSelect: (courseId: string) => void;
+}
+
+function CoursePicker({ availableCourses, selectedId, onSelect }: CoursePickerProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full h-10 px-4 rounded-xl border-none bg-gray-50/50 font-bold text-xs justify-between transition-all hover:bg-gray-100/80",
+            !selectedId && "text-muted-foreground"
+          )}
+        >
+          {selectedId
+            ? availableCourses.find((c) => c.id === selectedId)?.courseName
+            : "Pilih Mata Kuliah..."}
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Cari mata kuliah..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>Mata kuliah tidak ditemukan.</CommandEmpty>
+            <CommandGroup>
+              {availableCourses.map((c) => (
+                <CommandItem
+                  key={c.id}
+                  value={c.courseName}
+                  onSelect={() => {
+                    onSelect(c.id.toString());
+                    setOpen(false);
+                  }}
+                  className="text-xs font-semibold py-3"
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedId === c.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="flex flex-col">
+                    <span>{c.courseName}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">{c.credits} SKS</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
