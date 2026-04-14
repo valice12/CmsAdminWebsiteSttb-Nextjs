@@ -41,7 +41,7 @@ import { getImageUrl } from '@/lib/utils';
 const adminSchema = z.object({
   name: z.string().min(3, 'Nama minimal 3 karakter'),
   division: z.string().min(2, 'Divisi wajib diisi'),
-  role: z.string().min(3, 'Jabatan wajib diisi'),
+  role: z.string().optional(),
 });
 
 const lecturerSchema = z.object({
@@ -188,7 +188,9 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
   const onSubmit = async (data: any) => {
     try {
       if (activeType === 'foundation') {
-        const payload = { ...data, id: isEdit ? parseInt(id!) : undefined };
+        // If not Dewan Pengurus, role is defaulted to division name or "Anggota"
+        const finalRole = data.division === 'Dewan Pengurus' ? (data.role || 'Anggota') : data.division;
+        const payload = { ...data, role: finalRole, id: isEdit ? parseInt(id!) : undefined };
         if (isEdit) await editAdministrator(payload);
         else await addAdministrator(payload);
       } else if (activeType === 'lecturer') {
@@ -275,17 +277,45 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Divisi / Unit</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input {...adminForm.register('division')} className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold" />
+                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
+                  <Select 
+                    onValueChange={(val) => adminForm.setValue('division', val)} 
+                    value={adminForm.watch('division')}
+                  >
+                    <SelectTrigger className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold text-left focus:ring-amber-500/20">
+                      <SelectValue placeholder="Pilih Divisi" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                      <SelectItem value="Dewan Pengurus" className="font-bold py-3 px-4 focus:bg-amber-50 focus:text-amber-700 rounded-xl cursor-pointer">Dewan Pengurus</SelectItem>
+                      <SelectItem value="Dewan Pembina" className="font-bold py-3 px-4 focus:bg-amber-50 focus:text-amber-700 rounded-xl cursor-pointer">Dewan Pembina</SelectItem>
+                      <SelectItem value="Anggota" className="font-bold py-3 px-4 focus:bg-amber-50 focus:text-amber-700 rounded-xl cursor-pointer">Anggota</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan</label>
-                <div className="relative">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input {...adminForm.register('role')} className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold" />
+
+              {adminForm.watch('division') === 'Dewan Pengurus' && (
+                <div className="space-y-2 animate-in zoom-in-95 duration-300">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-amber-600">Jabatan (Role)</label>
+                  <div className="relative">
+                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400 z-10" />
+                    <Select 
+                      onValueChange={(val) => adminForm.setValue('role', val)} 
+                      value={adminForm.watch('role')}
+                    >
+                      <SelectTrigger className="h-14 pl-12 rounded-2xl bg-amber-50/50 border-none font-bold text-left ring-2 ring-amber-100/50 focus:ring-amber-500/20">
+                        <SelectValue placeholder="Pilih Jabatan" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-amber-100 shadow-2xl">
+                        <SelectItem value="Ketua" className="font-bold py-3 px-4 focus:bg-amber-600 focus:text-white rounded-xl cursor-pointer">Ketua</SelectItem>
+                        <SelectItem value="Wakil Ketua" className="font-bold py-3 px-4 focus:bg-amber-600 focus:text-white rounded-xl cursor-pointer">Wakil Ketua</SelectItem>
+                        <SelectItem value="Sekretaris" className="font-bold py-3 px-4 focus:bg-amber-600 focus:text-white rounded-xl cursor-pointer">Sekretaris</SelectItem>
+                        <SelectItem value="Bendahara" className="font-bold py-3 px-4 focus:bg-amber-600 focus:text-white rounded-xl cursor-pointer">Bendahara</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : activeType === 'lecturer' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
