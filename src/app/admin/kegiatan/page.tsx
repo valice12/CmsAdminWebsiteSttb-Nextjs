@@ -70,8 +70,8 @@ export default function KegiatanPage() {
       setTotalItems(data.totalEvents || data.TotalEvents || 0);
       setPageCount(data.totalPages || data.TotalPages || 0);
     } catch (error) {
-       toast.error('Gagal mengambil data event dari backend');
-       console.error(error);
+      toast.error('Gagal mengambil data event dari backend');
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -103,14 +103,14 @@ export default function KegiatanPage() {
     },
     {
       accessorKey: 'eventTitle',
-      header: 'Event & Penyelenggara',
+      header: 'Kegiatan & Penyelenggara',
       cell: ({ row }) => (
         <div className="max-w-md text-left">
           <p className="font-bold text-gray-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => router.push(`/admin/kegiatan/${row.original.id}`)}>
             {row.original.eventTitle}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1 font-medium flex items-center gap-1">
-             <span className="uppercase tracking-wider">{row.original.organizerName}</span>
+            <span className="uppercase tracking-wider">{row.original.organizerName}</span>
           </p>
         </div>
       ),
@@ -121,9 +121,9 @@ export default function KegiatanPage() {
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.category?.map((cat, i) => (
-             <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm bg-blue-50 text-blue-600 border-blue-100">
-               {cat}
-             </Badge>
+            <Badge key={i} variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-2 shadow-sm bg-blue-50 text-blue-600 border-blue-100">
+              {cat}
+            </Badge>
           ))}
         </div>
       ),
@@ -173,7 +173,7 @@ export default function KegiatanPage() {
         <div className="flex flex-col gap-1 text-left">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
             <Calendar className="w-8 h-8 text-primary" />
-            Kegiatan & Event (Live)
+            Kegiatan (Live)
           </h1>
           <p className="text-muted-foreground font-medium text-sm">
             Sinkronisasi data kegiatan kampus langsung dari pusat server.
@@ -190,25 +190,25 @@ export default function KegiatanPage() {
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-primary/20"
             />
           </div>
-          <Button 
+          <Button
             onClick={() => router.push("/admin/kegiatan/create")}
             className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-2xl px-6 h-11 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
           >
             <Plus className="w-5 h-5" />
-            <span className="font-bold">Entry Event Baru</span>
+            <span className="font-bold">Entry Kegiatan Baru</span>
           </Button>
         </div>
       </div>
 
-       {/* Backend Integration Note */}
-       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 text-left">
-         <AlertCircle className="w-6 h-6 text-blue-600 mt-1 shrink-0" />
-         <div>
-            <h3 className="font-bold text-blue-900">Sinkronisasi Agenda Kampus</h3>
-            <p className="text-sm text-blue-700 mt-1 leading-relaxed">
-               Halaman ini mengelola seluruh agenda dan kegiatan kampus yang ditampilkan secara publik. Seluruh data dirilis secara real-time.
-            </p>
-         </div>
+      {/* Backend Integration Note */}
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 text-left">
+        <AlertCircle className="w-6 h-6 text-blue-600 mt-1 shrink-0" />
+        <div>
+          <h3 className="font-bold text-blue-900">Sinkronisasi Agenda Kampus</h3>
+          <p className="text-sm text-blue-700 mt-1 leading-relaxed">
+            Halaman ini mengelola seluruh agenda dan kegiatan kampus yang ditampilkan secara publik. Seluruh data dirilis secara real-time.
+          </p>
+        </div>
       </div>
 
       {/* Data Table */}
@@ -228,43 +228,43 @@ export default function KegiatanPage() {
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="rounded-3xl border-none shadow-2xl p-0 overflow-hidden max-w-md">
-           <div className="bg-red-500 h-2 w-full" />
-            <div className="p-8 space-y-6 text-left">
-              <DialogHeader className="space-y-4">
-                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-100">
-                  <Trash2 className="w-8 h-8" />
-                </div>
-                <DialogTitle className="text-2xl font-extrabold text-gray-900 tracking-tight">Hapus Agenda?</DialogTitle>
-                <DialogDescription className="font-medium text-gray-500 pt-2 text-left">
-                  Apakah Anda yakin ingin menghapus agenda <span className="text-red-600 font-bold">"{selectedEvent?.eventTitle}"</span>? <br/><br/>
-                  <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
-                     <AlertCircle className="w-3 h-3" /> Tindakan ini tidak dapat dibatalkan
-                  </span>
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="mt-8 flex flex-col sm:flex-row gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setDeleteDialogOpen(false)}
-                  className="flex-1 h-12 rounded-xl font-bold text-gray-500 border-none bg-gray-50 hover:bg-gray-100 transition-all uppercase tracking-widest text-[10px]"
-                >
-                  Batalkan
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                      if (selectedEvent) {
-                         const id = (selectedEvent as any).id;
-                         if (id) handleDelete(id);
-                         setDeleteDialogOpen(false);
-                      }
-                  }}
-                  className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200 transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-[10px]"
-                >
-                  Hapus Agenda
-                </Button>
-              </DialogFooter>
-           </div>
+          <div className="bg-red-500 h-2 w-full" />
+          <div className="p-8 space-y-6 text-left">
+            <DialogHeader className="space-y-4">
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-100">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <DialogTitle className="text-2xl font-extrabold text-gray-900 tracking-tight">Hapus Agenda?</DialogTitle>
+              <DialogDescription className="font-medium text-gray-500 pt-2 text-left">
+                Apakah Anda yakin ingin menghapus agenda <span className="text-red-600 font-bold">"{selectedEvent?.eventTitle}"</span>? <br /><br />
+                <span className="text-[10px] uppercase font-black text-red-400 tracking-widest italic flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> Tindakan ini tidak dapat dibatalkan
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-8 flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDialogOpen(false)}
+                className="flex-1 h-12 rounded-xl font-bold text-gray-500 border-none bg-gray-50 hover:bg-gray-100 transition-all uppercase tracking-widest text-[10px]"
+              >
+                Batalkan
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (selectedEvent) {
+                    const id = (selectedEvent as any).id;
+                    if (id) handleDelete(id);
+                    setDeleteDialogOpen(false);
+                  }
+                }}
+                className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200 transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-[10px]"
+              >
+                Hapus Agenda
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

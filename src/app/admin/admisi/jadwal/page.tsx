@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
-import { getAllAdmissionDeadlines, deleteAdmissionDeadline } from '@/lib/api';
+import { getAllAdmissionDeadlines } from '@/lib/api';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { 
-    Calendar, Trash2, Edit, Info,
-    UserCheck, Clock, CheckCircle, Search, Plus
+    Calendar, Edit, Info,
+    UserCheck, Clock, CheckCircle, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
@@ -61,17 +61,7 @@ export default function JadwalAdmisiPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
-      try {
-        await deleteAdmissionDeadline(id);
-        toast.success('Jadwal berhasil dihapus');
-        loadDeadlines();
-      } catch (error) {
-        toast.error('Gagal menghapus jadwal');
-      }
-    }
-  };
+
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "-";
@@ -138,14 +128,7 @@ export default function JadwalAdmisiPage() {
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(row.original.id)}
-            className="h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-lg"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+
         </div>
       ),
     },
@@ -174,13 +157,6 @@ export default function JadwalAdmisiPage() {
               className="pl-10 rounded-2xl h-11 border-gray-200 bg-white focus:ring-indigo-500/20"
             />
           </div>
-          <Button 
-            onClick={() => router.push('/admin/admisi/jadwal/create')}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-11 px-8 shadow-xl shadow-indigo-500/20 font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="font-bold">Tambah Jadwal</span>
-          </Button>
         </div>
       </div>
 

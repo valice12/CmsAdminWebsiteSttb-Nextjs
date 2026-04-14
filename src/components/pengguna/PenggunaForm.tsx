@@ -67,7 +67,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
   const [activeType, setActiveType] = useState(typeParam);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [roles, setRoles] = useState<string[]>(['SuperAdmin', 'Admin', 'Staff', 'Editor', 'Lecturer']);
+  const [roles, setRoles] = useState<string[]>(['Admin', 'Staff', 'Editor', 'Lecturer']);
 
   // Dynamic user schema for password validation
   const userSchema = useMemo(() => z.object({
@@ -154,7 +154,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
       const data = await getAllRoles();
       const rolesList = data.items || data.Items || data;
       if (Array.isArray(rolesList)) {
-        setRoles(rolesList.map((r: any) => typeof r === 'string' ? r : (r.name || r.roleName)));
+        const mappedRoles = rolesList.map((r: any) => typeof r === 'string' ? r : (r.name || r.roleName));
+        setRoles(mappedRoles.filter(role => role !== 'SuperAdmin'));
       }
     } catch (error) {
       console.warn('Roles endpoint error, using fallback roles.');
