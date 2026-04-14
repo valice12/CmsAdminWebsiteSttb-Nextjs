@@ -142,15 +142,6 @@ export const getUserColumns = ({ rolePermissionsMap, onEdit, onDelete }: ColumnP
         <Button
           size="icon"
           variant="ghost"
-          onClick={() => toast.info("Reset password function not directly available")}
-          className="h-8 w-8 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-          title="Reset Password"
-        >
-          <Key className="w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
           onClick={() => onDelete(row.original.id)}
           className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-colors"
           title="Hapus User"

@@ -28,6 +28,10 @@ export default function UserPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editData, setEditData] = useState({
+    fullName: '',
+    email: '',
+    newPassword: '',
+    confirmNewPassword: '',
     selectedRoles: [] as string[],
     isActive: true
   });
@@ -118,6 +122,10 @@ export default function UserPage() {
   const handleEditClick = (user: CMSUserDTO) => {
     setSelectedUser(user);
     setEditData({
+      fullName: user.fullName,
+      email: user.email,
+      newPassword: '',
+      confirmNewPassword: '',
       selectedRoles: user.roles || [],
       isActive: user.isActive
     });
@@ -133,8 +141,9 @@ export default function UserPage() {
       setIsLoading(true);
       await updateUser({
         Id: selectedUser.id,
-        FullName: selectedUser.fullName,
-        Email: selectedUser.email,
+        FullName: editData.fullName,
+        Email: editData.email,
+        NewPassword: editData.newPassword || undefined,
         IsActive: editData.isActive,
         Roles: editData.selectedRoles,
         Permissions: selectedUser.permissions || []
