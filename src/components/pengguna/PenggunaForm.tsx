@@ -50,6 +50,7 @@ const lecturerSchema = z.object({
   joinedAt: z.string().min(1, 'Tanggal bergabung wajib diisi'),
   roles: z.string().min(3, 'Jabatan organisasi wajib diisi, pisahkan dengan koma'),
   degrees: z.string().min(2, 'Gelar wajib diisi, pisahkan dengan koma'),
+  isActive: z.boolean().default(true),
 });
 
 interface PenggunaFormProps {
@@ -126,7 +127,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
       organizationalRole: '',
       joinedAt: new Date().toISOString().slice(0, 10),
       roles: '',
-      degrees: ''
+      degrees: '',
+      isActive: true
     }
   });
 
@@ -172,7 +174,8 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
             organizationalRole: data.organizationalRole,
             joinedAt: data.joinedAt ? new Date(data.joinedAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
             roles: data.roles?.join(', ') || '',
-            degrees: data.degrees?.join(', ') || ''
+            degrees: data.degrees?.join(', ') || '',
+            isActive: data.isActive ?? true
           });
           if (data.lecturerImagePath) setPreviewUrl(getImageUrl(data.lecturerImagePath, 'lecturers'));
         }
@@ -212,6 +215,7 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
         formData.append('JoinedAt', new Date(data.joinedAt).toISOString());
         data.roles.split(',').forEach((r: string) => formData.append('Roles', r.trim()));
         data.degrees.split(',').forEach((d: string) => formData.append('Degrees', d.trim()));
+        formData.append('IsActive', data.isActive.toString());
         if (selectedFile) formData.append('LecturerImage', selectedFile);
 
         if (isEdit) await editLecturer(formData);
@@ -427,6 +431,18 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                   {lecturerForm.formState.errors.roles && (
                     <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.roles.message as string}</p>
                   )}
+                </div>
+                <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus-within:border-indigo-100 transition-all">
+                  <Checkbox 
+                    id="is-active" 
+                    checked={lecturerForm.watch('isActive')}
+                    onCheckedChange={(val) => lecturerForm.setValue('isActive', !!val)}
+                    className="h-5 w-5 border-2 rounded-xl"
+                  />
+                  <div className="flex flex-col">
+                    <label htmlFor="is-active" className="text-xs font-black text-gray-700 uppercase tracking-widest cursor-pointer">Status Aktif</label>
+                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Tampilkan dosen ini di halaman publik</span>
+                  </div>
                 </div>
               </div>
               <div className="md:col-span-1 space-y-4">

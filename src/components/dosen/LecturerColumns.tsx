@@ -14,6 +14,8 @@ export interface LecturerDTO {
   lecturerImagePath: string;
   roles: string[];
   degrees: string[];
+  joinedAt?: string;
+  isActive?: boolean;
 }
 
 interface LecturerColumnsProps {
@@ -53,7 +55,7 @@ export const getLecturerColumns = ({
     },
     {
       accessorKey: 'organizationalRole',
-      header: 'Jabatan Mengajar',
+      header: 'Organizational Role',
       cell: ({ row }) => (
         <Badge variant="outline" className="font-extrabold uppercase tracking-widest text-[9px] px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm">
           {row.original.organizationalRole || '-'}
@@ -62,7 +64,7 @@ export const getLecturerColumns = ({
     },
     {
       accessorKey: 'roles',
-      header: 'Jabatan Organisasi',
+      header: 'Roles',
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1 max-w-[200px]">
           {row.original.roles && row.original.roles.length > 0 ? row.original.roles.map((r, i) => (
@@ -73,6 +75,34 @@ export const getLecturerColumns = ({
             <span className="text-sm font-bold text-gray-400 ml-4">-</span>
           )}
         </div>
+      )
+    },
+    {
+      accessorKey: 'joinedAt',
+      header: 'Tgl Bergabung',
+      cell: ({ row }) => {
+        const date = row.original.joinedAt;
+        if (!date || date.startsWith('0001')) return <span className="text-gray-400 font-bold ml-4">-</span>;
+        return (
+          <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-lg">
+            {new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
+        );
+      }
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.isActive ? "default" : "secondary"}
+          className={`font-black text-[9px] uppercase tracking-widest px-2 ${row.original.isActive
+            ? 'bg-green-50 text-green-700 border-green-200'
+            : 'bg-gray-100 text-gray-400 border-gray-200'
+            }`}
+        >
+          {row.original.isActive ? 'Aktif' : 'Non-Aktif'}
+        </Badge>
       )
     },
     {
