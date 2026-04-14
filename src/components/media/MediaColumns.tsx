@@ -3,7 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, ExternalLink } from 'lucide-react';
+import { Trash2, ExternalLink, Edit } from 'lucide-react';
 import { formatDateTime, getImageUrl } from '@/lib/utils';
 
 export interface MediaDTO {
@@ -89,6 +89,14 @@ export const getMediaColumns = ({
     header: 'Aksi',
     cell: ({ row }) => (
       <div className="flex items-center gap-1">
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => onView(row.original)}
+          className="h-8 w-8 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+        >
+          <Edit className="w-4 h-4" />
+        </Button>
         <Button
           size="icon"
           variant="ghost"

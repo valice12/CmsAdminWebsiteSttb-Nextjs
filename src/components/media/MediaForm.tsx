@@ -66,8 +66,8 @@ const mediaSchema = z.object({
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'DOI wajib diisi untuk Jurnal', path: ['doi'] });
     }
   } else {
-    // For other formats, mediaDescription is mandatory
-    if (!data.mediaDescription || data.mediaDescription.trim().length < 10) {
+    // For other formats (except Monograf), mediaDescription is mandatory
+    if (data.format !== 'monograf' && (!data.mediaDescription || data.mediaDescription.trim().length < 10)) {
       ctx.addIssue({ 
         code: z.ZodIssueCode.custom, 
         message: 'Ringkasan/Sinopsis wajib diisi minimal 10 karakter', 
@@ -281,7 +281,7 @@ export function MediaForm({ id }: MediaFormProps) {
           formData.append('JournalFile', selectedFile);
         } else if (activeFormat === 'buletin') {
           formData.append('BuletinFile', selectedFile);
-        } else if (activeFormat !== 'artikel' && activeFormat !== 'video') {
+        } else if (activeFormat !== 'article' && activeFormat !== 'artikel' && activeFormat !== 'video' && activeFormat !== 'monograf') {
           formData.append('PdfFile', selectedFile);
         }
       }
@@ -405,9 +405,16 @@ export function MediaForm({ id }: MediaFormProps) {
                 <Textarea 
                   {...form.register('abstract')} 
                   rows={6} 
-                  className="rounded-2xl bg-blue-50/30 border-none shadow-inner p-4 text-sm font-medium leading-relaxed" 
+                  className={`rounded-2xl bg-blue-50/30 border-2 shadow-inner p-4 text-sm font-medium leading-relaxed transition-all ${
+                    form.formState.errors.abstract 
+                    ? 'border-red-500 bg-red-50/50' 
+                    : 'border-transparent'
+                  }`} 
                   placeholder="Tuliskan abstrak jurnal ilmiah di sini..." 
                 />
+                {form.formState.errors.abstract && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 italic">{form.formState.errors.abstract.message}</p>
+                )}
               </div>
             )}
             {activeFormat !== 'journal' && (
@@ -493,8 +500,19 @@ export function MediaForm({ id }: MediaFormProps) {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Penulis / Kontributor <span className="text-gray-300 normal-case font-normal">(pisahkan dengan koma)</span></label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                <Input {...form.register('authors')} placeholder="John Doe, Jane Smith..." className="pl-12 h-12 bg-gray-50/50 border-none rounded-xl text-sm font-bold shadow-inner" />
+                <Input 
+                  {...form.register('authors')} 
+                  placeholder="John Doe, Jane Smith..." 
+                  className={`pl-12 h-12 rounded-xl text-sm font-bold shadow-inner border-2 transition-all ${
+                    form.formState.errors.authors 
+                    ? 'border-red-500 bg-red-50/50' 
+                    : 'bg-gray-50/50 border-transparent focus:bg-white'
+                  }`} 
+                />
               </div>
+              {form.formState.errors.authors && (
+                <p className="text-[10px] text-red-500 font-bold ml-1 italic">{form.formState.errors.authors.message}</p>
+              )}
             </div>
 
             {activeFormat === 'video' && (
@@ -507,7 +525,7 @@ export function MediaForm({ id }: MediaFormProps) {
               </div>
             )}
 
-            {(activeFormat !== 'video') && (
+            {(activeFormat !== 'video' && activeFormat !== 'monograf' && activeFormat !== 'article' && activeFormat !== 'artikel') && (
               <div className="space-y-3 pt-4 border-t border-gray-50">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">File Dokumen (Hanya PDF)</label>
                 <div className="border-2 border-dashed border-gray-100 rounded-2xl p-8 flex flex-col items-center gap-4 bg-gray-50/30 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer relative">
@@ -599,6 +617,9 @@ export function MediaForm({ id }: MediaFormProps) {
               <p className="text-[9px] text-gray-500 font-medium italic mt-1 leading-tight">
                 *Pilih dari daftar atau ketik langsung di kolom input (legacy support).
               </p>
+              {form.formState.errors.category && (
+                <p className="text-[10px] text-red-400 font-bold italic mt-2">{form.formState.errors.category.message}</p>
+              )}
             </div>
             <div className="space-y-3 pt-4 border-t border-white/5">
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Publikasi</label>
