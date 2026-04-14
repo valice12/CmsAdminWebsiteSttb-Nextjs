@@ -465,12 +465,26 @@ export function MediaForm({ id }: MediaFormProps) {
 
             {(activeFormat !== 'video') && (
               <div className="space-y-3 pt-4 border-t border-gray-50">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">File Dokumen (PDF/DOCX)</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">File Dokumen (Hanya PDF)</label>
                 <div className="border-2 border-dashed border-gray-100 rounded-2xl p-8 flex flex-col items-center gap-4 bg-gray-50/30 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer relative">
-                  <input type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <input 
+                    type="file" 
+                    accept=".pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+                        toast.error('Hanya file PDF yang diperbolehkan');
+                        e.target.value = '';
+                        setSelectedFile(null);
+                        return;
+                      }
+                      setSelectedFile(file);
+                    }} 
+                    className="absolute inset-0 opacity-0 cursor-pointer" 
+                  />
                   <FileUp className="w-10 h-10 text-gray-300" />
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter text-center">
-                    {selectedFile ? selectedFile.name : 'Klik atau seret file ke sini untuk upload'}
+                    {selectedFile ? selectedFile.name : 'Klik atau seret file PDF ke sini untuk upload'}
                   </p>
                 </div>
               </div>
