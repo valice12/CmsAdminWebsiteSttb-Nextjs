@@ -298,9 +298,14 @@ export function AkademikForm({ id }: AkademikFormProps) {
                     <Input 
                        {...form.register('programName')} 
                        placeholder="e.g. Teknik Informatika" 
-                       className="pl-12 h-14 bg-gray-50/50 border-none rounded-2xl text-base font-bold text-gray-700 shadow-inner focus:bg-white transition-all"
+                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                         form.formState.errors.programName 
+                         ? 'border-red-500 bg-red-50/50' 
+                         : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                       }`}
                     />
                   </div>
+                  {form.formState.errors.programName && <p className="text-[10px] text-red-500 font-bold ml-1">{form.formState.errors.programName.message as string}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -310,22 +315,32 @@ export function AkademikForm({ id }: AkademikFormProps) {
                     <Input 
                        {...form.register('motto')} 
                        placeholder="e.g. Innovating the Future" 
-                       className="pl-12 h-14 bg-gray-50/50 border-none rounded-2xl text-base font-bold text-gray-700 shadow-inner focus:bg-white transition-all"
+                       className={`pl-12 h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                         form.formState.errors.motto 
+                         ? 'border-red-500 bg-red-50/50' 
+                         : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                       }`}
                     />
                   </div>
+                  {form.formState.errors.motto && <p className="text-[10px] text-red-500 font-bold ml-1">{form.formState.errors.motto.message as string}</p>}
                 </div>
              </div>
 
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Deskripsi & Profil Program</label>
-                <div className="relative rounded-3xl overflow-hidden border border-gray-50 bg-gray-50/50 focus-within:bg-white transition-all shadow-inner">
+                <div className={`relative rounded-3xl overflow-hidden transition-all shadow-inner border ${
+                  form.formState.errors.programDescription 
+                  ? 'border-red-500 bg-red-50/50' 
+                  : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+                }`}>
                   <Textarea
                     {...form.register('programDescription')}
                     placeholder="Jelaskan visi, misi, dan profil lulusan..."
                     rows={6}
-                    className="font-medium text-gray-700 p-8 border-none focus-visible:ring-0 resize-none leading-relaxed text-sm"
+                    className="font-medium text-gray-700 p-8 border-none focus-visible:ring-0 resize-none leading-relaxed text-sm bg-transparent"
                   />
                 </div>
+                {form.formState.errors.programDescription && <p className="text-[10px] text-red-500 font-bold ml-1">{form.formState.errors.programDescription.message as string}</p>}
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

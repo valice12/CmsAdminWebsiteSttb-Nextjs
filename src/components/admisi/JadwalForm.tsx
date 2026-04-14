@@ -174,7 +174,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                 <Input
                                     {...form.register('academicYear')}
                                     placeholder="Contoh: 2026-2027"
-                                    className="h-12 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all ${
+                                        form.formState.errors.academicYear 
+                                        ? 'border-red-500 bg-red-50/50' 
+                                        : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                    }`}
                                 />
                                 {form.formState.errors.academicYear && (
                                     <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{form.formState.errors.academicYear.message}</p>
@@ -185,7 +189,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                 <Input
                                     type="number"
                                     {...form.register('batchOrder')}
-                                    className="h-12 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                    className={`h-12 rounded-xl shadow-inner font-bold transition-all ${
+                                        form.formState.errors.batchOrder 
+                                        ? 'border-red-500 bg-red-50/50' 
+                                        : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                    }`}
                                 />
                                 {form.formState.errors.batchOrder && (
                                     <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{form.formState.errors.batchOrder.message}</p>
@@ -234,7 +242,11 @@ export default function JadwalForm({ id }: JadwalFormProps) {
                                         <Input
                                             type="date"
                                             {...form.register('batchDeadlineAt')}
-                                            className="h-12 pl-10 rounded-xl bg-gray-50/50 border-none shadow-inner font-bold focus:bg-white transition-all text-gray-700"
+                                            className={`h-12 pl-10 rounded-xl shadow-inner font-bold transition-all ${
+                                                form.formState.errors.batchDeadlineAt 
+                                                ? 'border-red-500 bg-red-50/50' 
+                                                : 'bg-gray-50/50 border-none focus:bg-white text-gray-700'
+                                            }`}
                                         />
                                     </div>
                                     {form.formState.errors.batchDeadlineAt && (

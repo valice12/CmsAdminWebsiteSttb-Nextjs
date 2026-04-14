@@ -269,20 +269,36 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input {...adminForm.register('name')} className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none text-lg font-bold" />
+                <div className="relative group">
+                  <Input 
+                    {...adminForm.register('name')} 
+                    placeholder="Masukkan nama lengkap..."
+                    className={`h-14 pl-12 rounded-2xl bg-gray-50 border text-lg font-bold shadow-sm transition-all ${
+                      adminForm.formState.errors.name 
+                      ? 'border-red-500 bg-red-50/30' 
+                      : 'border-gray-100 focus:bg-white focus:border-amber-200'
+                    }`} 
+                  />
                 </div>
+                {adminForm.formState.errors.name && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1">
+                    {adminForm.formState.errors.name.message as string}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Divisi / Unit</label>
-                <div className="relative">
-                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
+                <div className="relative group">
+                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10 group-focus-within:text-amber-500 transition-colors" />
                   <Select 
                     onValueChange={(val) => adminForm.setValue('division', val)} 
                     value={adminForm.watch('division')}
                   >
-                    <SelectTrigger className="h-14 pl-12 rounded-2xl bg-gray-50/50 border-none font-bold text-left focus:ring-amber-500/20">
+                    <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-sm transition-all ${
+                      adminForm.formState.errors.division 
+                      ? 'bg-red-50/30 border-red-500' 
+                      : 'bg-gray-50 border-gray-100 focus:ring-amber-500/20 focus:border-amber-200 focus:bg-white'
+                    }`}>
                       <SelectValue placeholder="Pilih Divisi" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
@@ -292,18 +308,27 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
+                {adminForm.formState.errors.division && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1">
+                    {adminForm.formState.errors.division.message as string}
+                  </p>
+                )}
               </div>
 
               {adminForm.watch('division') === 'Dewan Pengurus' && (
-                <div className="space-y-2 animate-in zoom-in-95 duration-300">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-amber-600">Jabatan (Role)</label>
-                  <div className="relative">
-                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400 z-10" />
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                  <label className="text-xs font-black text-amber-600 uppercase tracking-widest ml-1">Jabatan (Role)</label>
+                  <div className="relative group">
+                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500 z-10 group-focus-within:scale-110 transition-transform" />
                     <Select 
                       onValueChange={(val) => adminForm.setValue('role', val)} 
                       value={adminForm.watch('role')}
                     >
-                      <SelectTrigger className="h-14 pl-12 rounded-2xl bg-amber-50/50 border-none font-bold text-left ring-2 ring-amber-100/50 focus:ring-amber-500/20">
+                      <SelectTrigger className={`h-14 pl-12 rounded-2xl font-bold text-left shadow-md transition-all text-amber-900 ${
+                        adminForm.formState.errors.role 
+                        ? 'bg-red-50 border-red-500' 
+                        : 'bg-amber-50 border-2 border-amber-100/50 focus:ring-amber-500/20 focus:bg-white'
+                      }`}>
                         <SelectValue placeholder="Pilih Jabatan" />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl border-amber-100 shadow-2xl">
@@ -314,6 +339,11 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                       </SelectContent>
                     </Select>
                   </div>
+                  {adminForm.formState.errors.role && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1">
+                      {adminForm.formState.errors.role.message as string}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -322,19 +352,61 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
               <div className="space-y-6 md:col-span-1">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Dosen</label>
-                  <Input {...lecturerForm.register('lecturerName')} className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                  <Input 
+                    {...lecturerForm.register('lecturerName')} 
+                    className={`h-14 rounded-2xl font-bold transition-all ${
+                      lecturerForm.formState.errors.lecturerName 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`} 
+                  />
+                  {lecturerForm.formState.errors.lecturerName && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.lecturerName.message as string}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Spesialisasi</label>
-                  <Input {...lecturerForm.register('organizationalRole')} className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                  <Input 
+                    {...lecturerForm.register('organizationalRole')} 
+                    className={`h-14 rounded-2xl font-bold transition-all ${
+                      lecturerForm.formState.errors.organizationalRole 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`} 
+                  />
+                  {lecturerForm.formState.errors.organizationalRole && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.organizationalRole.message as string}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Gelar (Pisahkan koma)</label>
-                  <Input {...lecturerForm.register('degrees')} placeholder="S.Kom, M.T" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                  <Input 
+                    {...lecturerForm.register('degrees')} 
+                    placeholder="S.Kom, M.T" 
+                    className={`h-14 rounded-2xl font-bold transition-all ${
+                      lecturerForm.formState.errors.degrees 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`} 
+                  />
+                  {lecturerForm.formState.errors.degrees && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.degrees.message as string}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Jabatan Organisasi (Pisahkan koma)</label>
-                  <Input {...lecturerForm.register('roles')} placeholder="Ketua, Kaprodi, Dosen Tetap" className="h-14 bg-gray-50/50 border-none rounded-2xl font-bold" />
+                  <Input 
+                    {...lecturerForm.register('roles')} 
+                    placeholder="Ketua, Kaprodi, Dosen Tetap" 
+                    className={`h-14 rounded-2xl font-bold transition-all ${
+                      lecturerForm.formState.errors.roles 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`} 
+                  />
+                  {lecturerForm.formState.errors.roles && (
+                    <p className="text-[10px] text-red-500 font-bold ml-1">{lecturerForm.formState.errors.roles.message as string}</p>
+                  )}
                 </div>
               </div>
               <div className="md:col-span-1 space-y-4">
@@ -364,17 +436,34 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap Pengguna</label>
                 <div className="relative">
                   <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input {...userForm.register('fullName')} placeholder="Masukkan nama lengkap..." className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none text-lg font-bold focus:bg-white transition-all shadow-inner" />
+                  <Input 
+                    {...userForm.register('fullName')} 
+                    placeholder="Masukkan nama lengkap..." 
+                    className={`h-14 pl-12 rounded-2xl text-lg font-bold transition-all ${
+                      userForm.formState.errors.fullName 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
+                    }`} 
+                  />
                 </div>
-                {userForm.formState.errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.fullName.message}</p>}
+                {userForm.formState.errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.fullName.message as string}</p>}
               </div>
               <div className="space-y-2 md:col-span-2 sm:col-span-1">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email User</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input type="email" {...userForm.register('email')} placeholder="email@sttb.ac.id" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                  <Input 
+                    type="email" 
+                    {...userForm.register('email')} 
+                    placeholder="email@sttb.ac.id" 
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
+                      userForm.formState.errors.email 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
+                    }`} 
+                  />
                 </div>
-                {userForm.formState.errors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.email.message}</p>}
+                {userForm.formState.errors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.email.message as string}</p>}
               </div>
 
               {/* Password Section */}
@@ -382,17 +471,35 @@ export function PenggunaForm({ id, type }: PenggunaFormProps) {
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password Baru</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input type="password" {...userForm.register('password')} placeholder="Min. 8 karakter" className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                  <Input 
+                    type="password" 
+                    {...userForm.register('password')} 
+                    placeholder="Min. 8 karakter" 
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
+                      userForm.formState.errors.password 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
+                    }`} 
+                  />
                 </div>
-                {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message}</p>}
+                {userForm.formState.errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.password.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Ulangi Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300" />
-                  <Input type="password" {...userForm.register('confirmPassword')} placeholder="Konfirmasi password..." className="h-14 pl-12 rounded-2xl bg-indigo-50/30 border-none font-bold focus:bg-white transition-all shadow-inner" />
+                  <Input 
+                    type="password" 
+                    {...userForm.register('confirmPassword')} 
+                    placeholder="Konfirmasi password..." 
+                    className={`h-14 pl-12 rounded-2xl font-bold transition-all ${
+                      userForm.formState.errors.confirmPassword 
+                      ? 'bg-red-50 border-red-500' 
+                      : 'bg-indigo-50/30 border-none focus:bg-white shadow-inner'
+                    }`} 
+                  />
                 </div>
-                {userForm.formState.errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.confirmPassword.message}</p>}
+                {userForm.formState.errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1">{userForm.formState.errors.confirmPassword.message as string}</p>}
               </div>
 
               {/* Roles Section */}

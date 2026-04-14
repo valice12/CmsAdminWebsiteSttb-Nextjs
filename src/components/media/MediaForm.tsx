@@ -360,8 +360,19 @@ export function MediaForm({ id }: MediaFormProps) {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Judul Media</label>
                 <div className="relative group">
-                  <Input {...form.register('mediaTitle')} placeholder="Judul konten..." className="h-14 bg-gray-50/50 border-none rounded-2xl text-base font-bold shadow-inner focus:bg-white transition-all" />
+                  <Input 
+                    {...form.register('mediaTitle')} 
+                    placeholder="Judul konten..." 
+                    className={`h-14 rounded-2xl text-base font-bold shadow-inner transition-all ${
+                      form.formState.errors.mediaTitle 
+                      ? 'border-red-500 bg-red-50/50' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`} 
+                  />
                 </div>
+                {form.formState.errors.mediaTitle && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 italic">{form.formState.errors.mediaTitle.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tanggal Publikasi</label>
@@ -389,16 +400,38 @@ export function MediaForm({ id }: MediaFormProps) {
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                   {(activeFormat === 'article' || activeFormat === 'artikel') ? 'Ringkasan / Abstrak' : 'Keterangan / Sinopsis'}
                 </label>
-                <Textarea {...form.register('mediaDescription')} rows={3} className="rounded-3xl bg-gray-50/50 border-none shadow-inner p-6 text-sm font-medium leading-relaxed" placeholder="Tuliskan ringkasan singkat..." />
+                <Textarea 
+                  {...form.register('mediaDescription')} 
+                  rows={3} 
+                  className={`rounded-3xl p-6 text-sm font-medium leading-relaxed shadow-inner transition-all ${
+                    form.formState.errors.mediaDescription 
+                    ? 'border-red-500 bg-red-50/50' 
+                    : 'bg-gray-50/50 border-none focus:bg-white'
+                  }`} 
+                  placeholder="Tuliskan ringkasan singkat..." 
+                />
+                {form.formState.errors.mediaDescription && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 italic">{form.formState.errors.mediaDescription.message}</p>
+                )}
               </div>
             )}
 
-            {(activeFormat === 'article' || activeFormat === 'artikel') && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Isi Lengkap Artikel</label>
-                <Textarea {...form.register('mediaContent')} rows={12} className="rounded-[2rem] bg-gray-50/50 border-none shadow-inner p-8 text-sm font-medium leading-relaxed min-h-[300px]" placeholder="Tuliskan isi artikel selengkapnya di sini..." />
+                <Textarea 
+                  {...form.register('mediaContent')} 
+                  rows={12} 
+                  className={`rounded-[2rem] shadow-inner p-8 text-sm font-medium leading-relaxed min-h-[300px] transition-all ${
+                    form.formState.errors.mediaContent 
+                    ? 'border-red-500 bg-red-50/50' 
+                    : 'bg-gray-50/50 border-none focus:bg-white'
+                  }`} 
+                  placeholder="Tuliskan isi artikel selengkapnya di sini..." 
+                />
+                {form.formState.errors.mediaContent && (
+                  <p className="text-[10px] text-red-500 font-bold ml-1 italic">{form.formState.errors.mediaContent.message}</p>
+                )}
               </div>
-            )}
             {(activeFormat === 'monograf') && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="space-y-2">

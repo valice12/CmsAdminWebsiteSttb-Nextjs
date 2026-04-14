@@ -180,7 +180,11 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('title')}
                     placeholder="Masukkan judul berita..."
-                    className="pl-12 h-14 bg-gray-50/50 border-gray-100 rounded-2xl text-lg font-bold focus:bg-white transition-all shadow-inner border-none"
+                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner ${
+                      form.formState.errors.title 
+                      ? 'border-red-500 bg-red-50/50' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`}
                   />
                 </div>
                 {form.formState.errors.title && (
@@ -197,7 +201,11 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('slug')}
                     placeholder="judul-berita-anda"
-                    className="pl-12 h-14 bg-gray-50/50 border-gray-100 rounded-2xl text-base font-bold text-gray-500 focus:bg-white transition-all shadow-inner border-none"
+                    className={`pl-12 h-14 rounded-2xl text-base font-bold transition-all shadow-inner ${
+                      form.formState.errors.slug 
+                      ? 'border-red-500 bg-red-50/50 text-red-900' 
+                      : 'bg-gray-50/50 border-none focus:bg-white text-gray-500'
+                    }`}
                   />
                 </div>
                 {form.formState.errors.slug && (
@@ -210,13 +218,16 @@ export function BeritaForm({ id }: BeritaFormProps) {
 
             {/* Content Editor Placeholder */}
             <div className="space-y-2">
-              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-[0.2em] ml-1">Konten Narasi</label>
-              <div className="relative rounded-2xl overflow-hidden border border-gray-50 bg-gray-50/50 focus-within:bg-white transition-all shadow-inner">
+              <div className={`relative rounded-2xl overflow-hidden transition-all shadow-inner ${
+                form.formState.errors.content 
+                ? 'border-red-500 bg-red-50/50' 
+                : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+              }`}>
                 <Textarea
                   {...form.register('content')}
                   placeholder="Tuliskan berita lengkap di sini..."
                   rows={20}
-                  className="font-medium text-gray-700 p-6 border-none focus-visible:ring-0 resize-none leading-relaxed"
+                  className="font-medium text-gray-700 p-6 border-none focus-visible:ring-0 resize-none leading-relaxed bg-transparent"
                 />
               </div>
               {form.formState.errors.content && (

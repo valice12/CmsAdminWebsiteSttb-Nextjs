@@ -190,7 +190,11 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
                   <Input
                     {...form.register('eventTitle')}
                     placeholder="Masukkan nama kegiatan..."
-                    className="pl-12 h-14 bg-gray-50/50 border-gray-100 rounded-2xl text-lg font-bold focus:bg-white transition-all shadow-inner border-none"
+                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner ${
+                      form.formState.errors?.eventTitle 
+                      ? 'border-red-500 bg-red-50/50' 
+                      : 'bg-gray-50/50 border-none focus:bg-white'
+                    }`}
                   />
                 </div>
                 {form.formState.errors?.eventTitle && (
@@ -213,12 +217,16 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
 
             <div className="space-y-2">
               <label className="text-xs font-extrabold text-gray-500 uppercase tracking-[0.2em] ml-1">Deskripsi Kegiatan</label>
-              <div className="relative rounded-2xl overflow-hidden border border-gray-50 bg-gray-50/50 focus-within:bg-white transition-all shadow-inner">
+              <div className={`relative rounded-2xl overflow-hidden shadow-inner transition-all border ${
+                form.formState.errors?.description 
+                ? 'border-red-500 bg-red-50/50' 
+                : 'border-gray-50 bg-gray-50/50 focus-within:bg-white'
+              }`}>
                 <Textarea
                   {...form.register('description')}
                   placeholder="Jelaskan mengenai kegiatan ini, tujuan, dan detail lainnya..."
                   rows={8}
-                  className="font-medium text-gray-700 p-6 border-none focus-visible:ring-0 resize-none leading-relaxed"
+                  className="font-medium text-gray-700 p-6 border-none focus-visible:ring-0 resize-none leading-relaxed bg-transparent"
                 />
               </div>
               {form.formState.errors?.description && (
@@ -234,7 +242,11 @@ export function KegiatanForm({ id }: KegiatanFormProps) {
                      <Input
                        {...form.register('organizerName')}
                        placeholder="e.g. BEM STTB"
-                       className="pl-12 h-12 bg-gray-50/50 border-gray-100 rounded-xl text-sm font-bold focus:bg-white transition-all shadow-inner border-none"
+                       className={`pl-12 h-12 rounded-xl text-sm font-bold transition-all shadow-inner ${
+                         form.formState.errors?.organizerName 
+                         ? 'border-red-500 bg-red-50/50' 
+                         : 'bg-gray-50/50 border-none focus:bg-white'
+                       }`}
                      />
                    </div>
                    {form.formState.errors?.organizerName && (
