@@ -120,88 +120,84 @@ export function BiayaForm({ id }: BiayaFormProps) {
 
       <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-200/50 border border-gray-100 max-w-2xl mx-auto">
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8 text-left">
-           <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Kategori Biaya</label>
-                <div className="relative">
-                  <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
-                  <select 
-                    {...form.register('categoryName')}
-                    className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${
-                      form.formState.errors.categoryName 
-                      ? 'border-red-500 bg-red-50/50' 
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Kategori Biaya</label>
+              <div className="relative">
+                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
+                <select
+                  {...form.register('categoryName')}
+                  className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${form.formState.errors.categoryName
+                      ? 'border-red-500 bg-red-50/50'
                       : 'bg-gray-50/50 border-transparent focus:ring-2 focus:ring-amber-500/20'
                     }`}
-                  >
-                    <option value="">-- Pilih Kategori --</option>
-                    {Array.isArray(categories) && categories.map((cat: any) => (
-                      <option key={cat.id || cat} value={cat.categoryName || cat.name || cat}>
-                        {cat.categoryName || cat.name || cat}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-                {form.formState.errors.categoryName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.categoryName.message}</p>}
+                >
+                  <option value="">-- Pilih Kategori --</option>
+                  {Array.isArray(categories) && categories.map((cat: any) => (
+                    <option key={cat.id || cat} value={cat.categoryName || cat.name || cat}>
+                      {cat.categoryName || cat.name || cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
+              {form.formState.errors.categoryName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.categoryName.message}</p>}
+            </div>
 
-              <div className="space-y-2 text-left">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Program / Jurusan</label>
-                <div className="relative">
-                  <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
-                  <select 
-                    {...form.register('programName')}
-                    className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${
-                      form.formState.errors.programName 
-                      ? 'border-red-500 bg-red-50/50' 
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Pilih Program / Jurusan</label>
+              <div className="relative">
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 z-10" />
+                <select
+                  {...form.register('programName')}
+                  className={`w-full h-14 pl-12 pr-10 rounded-2xl text-base font-bold appearance-none outline-none transition-all cursor-pointer border-2 ${form.formState.errors.programName
+                      ? 'border-red-500 bg-red-50/50'
                       : 'bg-gray-50/50 border-transparent focus:ring-2 focus:ring-amber-500/20'
                     }`}
-                  >
-                    <option value="">-- Pilih Program --</option>
-                    <option value="Semua Program">Semua Program</option>
-                    {programs.map((prog: any) => (
-                      <option key={prog.id} value={prog.programName}>{prog.programName}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-                {form.formState.errors.programName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.programName.message}</p>}
+                >
+                  <option value="">-- Pilih Program --</option>
+                  <option value="Semua Program">Semua Program</option>
+                  {programs.map((prog: any) => (
+                    <option key={prog.id} value={prog.programName}>{prog.programName}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
+              {form.formState.errors.programName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.programName.message}</p>}
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Nama Rincian Biaya</label>
-                <div className="relative text-left">
-                  <FileSpreadsheet className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-                  <Input 
-                    {...form.register('costName')} 
-                    placeholder="Contoh: Biaya Pendaftaran, SPP..." 
-                    className={`h-14 pl-12 rounded-2xl text-base font-bold transition-all shadow-sm border-2 ${
-                      form.formState.errors.costName 
-                      ? 'bg-red-50/50 border-red-500' 
+            <div className="space-y-2">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Nama Rincian Biaya</label>
+              <div className="relative text-left">
+                <FileSpreadsheet className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                <Input
+                  {...form.register('costName')}
+                  placeholder="Contoh: Biaya Pendaftaran, SPP..."
+                  className={`h-14 pl-12 rounded-2xl text-base font-bold transition-all shadow-sm border-2 ${form.formState.errors.costName
+                      ? 'bg-red-50/50 border-red-500'
                       : 'bg-gray-50/50 border-transparent focus:bg-white'
-                    }`} 
-                  />
-                </div>
-                {form.formState.errors.costName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.costName.message}</p>}
+                    }`}
+                />
               </div>
+              {form.formState.errors.costName && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.costName.message}</p>}
+            </div>
 
-              <div className="space-y-2 text-left">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Jumlah Biaya (IDR)</label>
-                <div className="relative text-left">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-amber-500">Rp</span>
-                  <Input 
-                    type="number" 
-                    {...form.register('cost')} 
-                    className={`h-14 pl-12 rounded-2xl text-lg font-black transition-all border-2 ${
-                      form.formState.errors.cost 
-                      ? 'bg-red-50/50 border-red-500 text-red-900' 
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 text-left block">Jumlah Biaya (IDR)</label>
+              <div className="relative text-left">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-amber-500">Rp</span>
+                <Input
+                  type="number"
+                  {...form.register('cost')}
+                  className={`h-14 pl-12 rounded-2xl text-lg font-black transition-all border-2 ${form.formState.errors.cost
+                      ? 'bg-red-50/50 border-red-500 text-red-900'
                       : 'bg-amber-50/30 border-transparent text-amber-600'
-                    }`} 
-                  />
-                </div>
-                {form.formState.errors.cost && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.cost.message}</p>}
+                    }`}
+                />
               </div>
-           </div>
+              {form.formState.errors.cost && <p className="text-xs text-red-500 font-bold ml-1">{form.formState.errors.cost.message}</p>}
+            </div>
+          </div>
 
           <div className="pt-6 flex justify-end gap-3 border-t border-gray-50 text-left">
             <Button type="button" variant="outline" onClick={() => router.push('/admin/biaya')} className="rounded-xl px-8 h-12 font-bold text-gray-400">Batalkan</Button>
