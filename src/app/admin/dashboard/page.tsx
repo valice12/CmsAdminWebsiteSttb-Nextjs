@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   getDashboardData
 } from '@/lib/api';
-import { 
-  Newspaper, 
-  Calendar, 
-  Users, 
-  Shield, 
-  GraduationCap, 
+import {
+  Newspaper,
+  Calendar,
+  Users,
+  Shield,
+  GraduationCap,
   ArrowRight,
   ExternalLink,
   Activity,
@@ -105,14 +105,14 @@ export default function DashboardPage() {
       path: '/admin/akademik',
       description: 'Pusat data akademik'
     },
-    {
-       label: 'Mata Kuliah',
-       value: stats.courses,
-       icon: BookOpen,
-       color: 'bg-indigo-600',
-       path: '/admin/akademik/mata-kuliah',
-       description: 'Database kurikulum'
-    },
+    // {
+    //    label: 'Mata Kuliah',
+    //    value: stats.courses,
+    //    icon: BookOpen,
+    //    color: 'bg-indigo-600',
+    //    path: '/admin/akademik/mata-kuliah',
+    //    description: 'Database kurikulum'
+    // },
     {
       label: 'Tenaga Pengajar',
       value: stats.lecturers,
@@ -167,53 +167,53 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase flex items-center gap-3">
-             <Zap className="w-8 h-8 text-[#D4AF37] fill-[#D4AF37] animate-pulse" />
-             Dashboard Utama
+            <Zap className="w-8 h-8 text-[#D4AF37] fill-[#D4AF37] animate-pulse" />
+            Dashboard Utama
           </h1>
           <p className="text-muted-foreground font-medium text-lg ml-1">
             Pantau statistik real-time dan kelola konten <span className="text-primary font-black tracking-tighter uppercase italic">STT Bandung</span>.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2 bg-gray-100/50 p-2 rounded-2xl">
-           <Badge variant="outline" className="bg-white px-4 py-2 font-black text-[10px] uppercase tracking-widest border-gray-100 shadow-sm">
-              <Activity className="w-3 h-3 mr-2 text-green-500" /> Synchronize secara real-time
-           </Badge>
+          <Badge variant="outline" className="bg-white px-4 py-2 font-black text-[10px] uppercase tracking-widest border-gray-100 shadow-sm">
+            <Activity className="w-3 h-3 mr-2 text-green-500" /> Synchronize secara real-time
+          </Badge>
         </div>
       </div>
 
       {/* Primary Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
         {primaryStats.map((stat, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             onClick={() => stat.path && router.push(stat.path)}
             className="group relative bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-100 hover:border-primary/20 transition-all hover:-translate-y-2 cursor-pointer flex flex-col justify-between overflow-hidden"
           >
-             <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-                <div className="scale-[3] text-gray-900">
-                   <stat.icon />
-                </div>
-             </div>
+            <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+              <div className="scale-[3] text-gray-900">
+                <stat.icon />
+              </div>
+            </div>
 
-             <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                    <div className={`${stat.color} text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                        <stat.icon className="w-6 h-6" />
-                    </div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <div className={`${stat.color} text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                <h3 className="text-4xl font-black text-gray-900 tracking-tighter group-hover:text-primary transition-colors">
-                  {isLoading ? '...' : stat.value}
-                </h3>
-             </div>
+              </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+              <h3 className="text-4xl font-black text-gray-900 tracking-tighter group-hover:text-primary transition-colors">
+                {isLoading ? '...' : stat.value}
+              </h3>
+            </div>
 
-             <div className="mt-8 flex items-center justify-between relative z-10">
-                <p className="text-[10px] font-bold text-gray-400 italic">{stat.description}</p>
-                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                   <ArrowRight className="w-4 h-4" />
-                </div>
-             </div>
+            <div className="mt-8 flex items-center justify-between relative z-10">
+              <p className="text-[10px] font-bold text-gray-400 italic">{stat.description}</p>
+              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                 {stats.video + stats.article + stats.journal + stats.monograf + stats.buletin} Aset
               </Badge>
             </div>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-2">
               {mediaStats.map((stat, i) => (
                 <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all group flex flex-col justify-center items-center text-center shadow-sm min-h-[140px]">
@@ -244,18 +244,18 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          
+
           <div className="mt-10 p-7 rounded-2xl bg-gray-50 border border-gray-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
-                  <Video className="w-5 h-5 text-primary" />
-               </div>
-               <p className="text-xs font-bold text-gray-500 italic max-w-xs leading-relaxed">
-                  Akses dan kelola seluruh library media akademik secara terpusat melalui portal administrator.
-               </p>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
+                <Video className="w-5 h-5 text-primary" />
+              </div>
+              <p className="text-xs font-bold text-gray-500 italic max-w-xs leading-relaxed">
+                Akses dan kelola seluruh library media akademik secara terpusat melalui portal administrator.
+              </p>
             </div>
             <Button onClick={() => router.push('/admin/media')} className="h-11 px-8 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white transition-all">
-               Browse Library <ArrowRight className="ml-3 w-4 h-4" />
+              Browse Library <ArrowRight className="ml-3 w-4 h-4" />
             </Button>
           </div>
         </div>

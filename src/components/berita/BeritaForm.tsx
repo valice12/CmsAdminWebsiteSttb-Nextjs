@@ -40,7 +40,7 @@ export function BeritaForm({ id }: BeritaFormProps) {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const data = await getAllNewsCategories();
+        const data = await getAllNewsCategories(1, 10, true);
         setCategories(data.items || []);
       } catch (error) {
         console.error('Failed to load categories:', error);
@@ -106,7 +106,7 @@ export function BeritaForm({ id }: BeritaFormProps) {
       formData.append('PublicationDate', new Date(data.publishDate).toISOString());
       formData.append('IsPublished', data.isPublished.toString());
       formData.append('Category', data.category);
-      
+
       if (selectedFile) {
         formData.append('NewsImage', selectedFile);
       }
@@ -147,9 +147,9 @@ export function BeritaForm({ id }: BeritaFormProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => router.push('/admin/berita')}
             className="h-10 w-10 rounded-full hover:bg-white hover:shadow-md transition-all"
           >
@@ -180,11 +180,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('title')}
                     placeholder="Masukkan judul berita..."
-                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner border-2 ${
-                      form.formState.errors.title 
-                      ? 'border-red-500 bg-red-50/50' 
+                    className={`pl-12 h-14 rounded-2xl text-lg font-bold transition-all shadow-inner border-2 ${form.formState.errors.title
+                      ? 'border-red-500 bg-red-50/50'
                       : 'bg-gray-50/50 border-transparent focus:bg-white'
-                    }`}
+                      }`}
                   />
                 </div>
                 {form.formState.errors.title && (
@@ -201,11 +200,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   <Input
                     {...form.register('slug')}
                     placeholder="judul-berita-anda"
-                    className={`pl-12 h-14 rounded-2xl text-base font-bold transition-all shadow-inner border-2 ${
-                      form.formState.errors.slug 
-                      ? 'border-red-500 bg-red-50/50 text-red-900' 
+                    className={`pl-12 h-14 rounded-2xl text-base font-bold transition-all shadow-inner border-2 ${form.formState.errors.slug
+                      ? 'border-red-500 bg-red-50/50 text-red-900'
                       : 'bg-gray-50/50 border-transparent focus:bg-white text-gray-500'
-                    }`}
+                      }`}
                   />
                 </div>
                 {form.formState.errors.slug && (
@@ -218,11 +216,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
 
             {/* Content Editor Placeholder */}
             <div className="space-y-2">
-              <div className={`relative rounded-2xl overflow-hidden transition-all shadow-inner border-2 ${
-                form.formState.errors.content 
-                ? 'border-red-500 bg-red-50/50' 
+              <div className={`relative rounded-2xl overflow-hidden transition-all shadow-inner border-2 ${form.formState.errors.content
+                ? 'border-red-500 bg-red-50/50'
                 : 'border-transparent bg-gray-50/50 focus-within:bg-white'
-              }`}>
+                }`}>
                 <Textarea
                   {...form.register('content')}
                   placeholder="Tuliskan berita lengkap di sini..."
@@ -236,10 +233,10 @@ export function BeritaForm({ id }: BeritaFormProps) {
                 </p>
               )}
               <div className="bg-blue-50/50 p-4 rounded-xl flex items-start gap-3 mt-4 border border-blue-100/50">
-                  <Globe className="w-5 h-5 text-blue-500 mt-0.5" />
-                  <p className="text-[11px] text-blue-700 font-medium">
-                     <span className="font-bold">Pro-tip:</span> Anda dapat menggunakan tag HTML standar seperti <b>&lt;p&gt;</b>, <b>&lt;h2&gt;</b>, dan <b>&lt;strong&gt;</b> untuk memformat tampilan konten di portal utama.
-                  </p>
+                <Globe className="w-5 h-5 text-blue-500 mt-0.5" />
+                <p className="text-[11px] text-blue-700 font-medium">
+                  <span className="font-bold">Pro-tip:</span> Anda dapat menggunakan tag HTML standar seperti <b>&lt;p&gt;</b>, <b>&lt;h2&gt;</b>, dan <b>&lt;strong&gt;</b> untuk memformat tampilan konten di portal utama.
+                </p>
               </div>
             </div>
           </div>
@@ -250,37 +247,35 @@ export function BeritaForm({ id }: BeritaFormProps) {
           {/* Metadata Card */}
           <div className="bg-[#0B1B3D] rounded-[2rem] p-8 text-white shadow-2xl shadow-navy/30 space-y-8 relative overflow-hidden text-left">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            
+
             <h3 className="text-sm font-extrabold uppercase tracking-[0.3em] text-[#D4AF37] flex items-center gap-2">
-               <Globe className="w-4 h-4" /> Publikasi
+              <Globe className="w-4 h-4" /> Publikasi
             </h3>
 
             {/* Status Selection */}
             <div className="space-y-3">
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Visibilitas Konten</label>
               <div className="grid grid-cols-2 gap-2">
-                  <button 
-                     type="button"
-                     onClick={() => form.setValue('isPublished', false)}
-                     className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs font-bold transition-all border ${
-                        !form.watch('isPublished') 
-                        ? 'bg-[#1E3A5F] border-[#D4AF37]/50 text-[#D4AF37]' 
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                     }`}
-                  >
-                     Draft
-                  </button>
-                  <button 
-                     type="button"
-                     onClick={() => form.setValue('isPublished', true)}
-                     className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs font-bold transition-all border ${
-                        form.watch('isPublished') 
-                        ? 'bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/20' 
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                     }`}
-                  >
-                     Publish
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => form.setValue('isPublished', false)}
+                  className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs font-bold transition-all border ${!form.watch('isPublished')
+                    ? 'bg-[#1E3A5F] border-[#D4AF37]/50 text-[#D4AF37]'
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                >
+                  Draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => form.setValue('isPublished', true)}
+                  className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs font-bold transition-all border ${form.watch('isPublished')
+                    ? 'bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/20'
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                >
+                  Publish
+                </button>
               </div>
             </div>
 
@@ -298,31 +293,31 @@ export function BeritaForm({ id }: BeritaFormProps) {
             </div>
           </div>
 
-            {/* Category Select - Fixed alignment with backend (reads single Category) */}
-            <div className="space-y-3">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori Berita</label>
-              <select
-                {...form.register('category')}
-                className="w-full h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-700 appearance-none focus-visible:outline-none focus:bg-white transition-all cursor-pointer"
-              >
-                <option value="" className="font-bold">Pilih Kategori...</option>
-                {categories.map((cat: any) => (
-                  <option key={cat.id || cat} value={cat.categoryName || cat} className="font-bold">
-                    {cat.categoryName || cat}
-                  </option>
-                ))}
-              </select>
-              {form.formState.errors.category && (
-                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                  {form.formState.errors.category.message}
-                </p>
-              )}
-            </div>
+          {/* Category Select - Fixed alignment with backend (reads single Category) */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori Berita</label>
+            <select
+              {...form.register('category')}
+              className="w-full h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-700 appearance-none focus-visible:outline-none focus:bg-white transition-all cursor-pointer"
+            >
+              <option value="" className="font-bold">Pilih Kategori...</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id || cat} value={cat.categoryName || cat} className="font-bold">
+                  {cat.categoryName || cat}
+                </option>
+              ))}
+            </select>
+            {form.formState.errors.category && (
+              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                {form.formState.errors.category.message}
+              </p>
+            )}
+          </div>
 
           {/* Media Card */}
           <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 space-y-6 text-left">
             <h3 className="text-sm font-extrabold uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
-               <ImageIcon className="w-4 h-4" /> Media Utama
+              <ImageIcon className="w-4 h-4" /> Media Utama
             </h3>
 
             <div className="space-y-3">
@@ -335,8 +330,8 @@ export function BeritaForm({ id }: BeritaFormProps) {
                   className="absolute inset-0 opacity-0 cursor-pointer z-10"
                 />
                 <div className="flex flex-col items-center gap-2 py-4">
-                   <Upload className="w-8 h-8 text-gray-400 group-hover:text-primary transition-colors" />
-                   <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Pilih File Gambar</p>
+                  <Upload className="w-8 h-8 text-gray-400 group-hover:text-primary transition-colors" />
+                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Pilih File Gambar</p>
                 </div>
               </div>
             </div>
@@ -351,12 +346,12 @@ export function BeritaForm({ id }: BeritaFormProps) {
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 opacity-30">
-                   <ImageIcon className="w-10 h-10" />
-                   <p className="text-[10px] font-bold uppercase tracking-widest">No Selection</p>
+                  <ImageIcon className="w-10 h-10" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">No Selection</p>
                 </div>
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <Eye className="w-8 h-8 text-white" />
+                <Eye className="w-8 h-8 text-white" />
               </div>
             </div>
           </div>
